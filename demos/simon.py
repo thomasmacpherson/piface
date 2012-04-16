@@ -71,11 +71,12 @@ while game:						# while game in play
 		
 		while event != 0:					# wait till no buttons pressed
 			event = pfio.read_input()[2] ^ 0b11111111	# so a single button press is not read as 2
-			
+			sleep(0.001)					# delay
 				
 		while event == 0:					# wait for any input 
 			event = pfio.read_input()[2] ^ 0b11111111
-			
+		
+		sleep(0.001)						# delay
 		pin_number = pfio.get_pin_number(event)			# calculate the input pin
 		
 		if screen_output:

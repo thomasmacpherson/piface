@@ -56,7 +56,7 @@ while True:
 					current = next_colour()			# get next colour
 				
 				if ((score + misses) %30) ==29:
-					if set_time > 100:
+					if set_time > 125:
 						set_time /= 2			# reduce the time allowed to hit the light
 						print "Time left is: %s" %set_time
 			
@@ -88,7 +88,7 @@ while True:
 			current = next_colour()				# get next colour
 				
 		if ((score + misses) %30)==29:
-			if set_time > 100:
+			if set_time > 125:
 				set_time /= 2				# reduce the allowed time
 				print "Time left is: %s" %set_time
 				
