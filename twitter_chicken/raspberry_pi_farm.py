@@ -8,7 +8,7 @@ date  : 18/06/2012
 """
 
 import subprocess
-#import pfio
+import PFIO
 
 
 VERBOSE_MODE = True
@@ -17,21 +17,21 @@ VERBOSE_MODE = True
 class Chicken(object):
 	"""The wobbling/talking chicken"""
 	def __init__(self):
-		self.relay_pin = 2
+		self.relay_pin = 1
 		self.voice_pitch = 50 # 0-99
 		self.voice_speed = 160 # words per min
 
 	def start_wobble(self):
 		"""Starts wobbling the chicken"""
+		PFIO.digitalWrite(self.relay_pin, 1)
 		if VERBOSE_MODE:
 			print "Chicken has started wobbling."
-		#pfio.digitalWrite(self.relay_pin, 1)
 
 	def stop_wobble(self):
 		"""Stops wobbling the chicken"""
+		PFIO.digitalWrite(self.relay_pin, 0)
 		if VERBOSE_MODE:
 			print "Chicken has stopped wobbling."
-		#pfio.digitalWrite(self.relay_pin, 0)
 
 	def say(self, text_to_say):
 		"""Makes the chicken say something"""
