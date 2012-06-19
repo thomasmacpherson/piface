@@ -26,6 +26,8 @@
 #include <linux/types.h>
 #include <sys/ioctl.h>
 
+#define VERBOSE_MODE // comment out to turn off debugging
+
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #define MAXPATH 16
 
@@ -104,8 +106,10 @@ static PyObject* SPI_transfer(SPI *self, PyObject *args)
 	int i=0;
 
 	PyArg_ParseTuple(args, "s|i:transfer", &list, &length_list);
+#ifdef VERBOSE_MODE
 	printf ("Length of String List from Python: %d\n", length_list);
-	//printf ("Read in String List from Python: %s\n", list);
+	printf ("Read in String List from Python: %s\n", list);
+#endif
 
 	char hexbyte[3] = {0};
 	uint8_t tx[length_list];
@@ -123,15 +127,15 @@ static PyObject* SPI_transfer(SPI *self, PyObject *args)
 		printf("Got HEX: 0x%2.2X\n\n",tx[i]);
 	}
 
-
+#ifdef VERBOSE_MODE
 	//printf("TX array size after conversion: %d\n",ARRAY_SIZE(tx));
 
-
-	//printf("Data for SPI to Transmit!!  TX:  ");
+	printf("Data for SPI to Transmit!!  TX:  ");
 	for (ret=0; ret<ARRAY_SIZE(tx); ret++){
 		printf("%.2X ",tx[ret]);
 	}
-	puts("\n");
+	puts(""); // newline
+#endif
 
 	uint8_t rx[ARRAY_SIZE(tx)];
 
@@ -146,16 +150,15 @@ static PyObject* SPI_transfer(SPI *self, PyObject *args)
 		.bits_per_word = bits,
 	};
 
-	//The Actuall Transfer command and data, does send and receive!! Very important!
+	//The actual transfer command and data, does send and receive!! Very important!
 	ret = ioctl(self->fd, SPI_IOC_MESSAGE(1), &tr);
 	if (ret < 1){
 
 		printf("ERROR: Can't send spi message");
 		perror(0);
+	}
 
-}
-
-
+#ifdef VERBOSE_MODE
 	//This part prints the Received data of the SPI transmission of equal size to TX
 	//printf("Data that was received from SPI!!  RX:  ");
 	
@@ -166,12 +169,11 @@ static PyObject* SPI_transfer(SPI *self, PyObject *args)
 		
 		
 	}
-	puts("");
-
-
+	puts(""); // newline
+#endif
 
 	Py_INCREF(list);
-	printf("Hello\n");
+
 	//return list;
 	return Py_BuildValue("[i,i,i,i,i,i]", rx[0],rx[1],rx[2],rx[3],rx[4],rx[5]);
 
