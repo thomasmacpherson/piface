@@ -21,6 +21,11 @@ class Chicken(object):
 		self.voice_pitch = 50 # 0-99
 		self.voice_speed = 160 # words per min
 
+		PFIO.init()
+	
+	def __del__(self):
+		PFIO.deinit()
+
 	def start_wobble(self):
 		"""Starts wobbling the chicken"""
 		PFIO.digitalWrite(self.relay_pin, 1)
