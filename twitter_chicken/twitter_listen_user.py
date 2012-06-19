@@ -15,7 +15,7 @@ import raspberry_pi_farm
 
 
 DEFAULT_USER = "tommarkpreston" # the default user we should follow
-TIME_DELAY = 5 # seconds between each status check
+TIME_DELAY = 2 # seconds between each status check
 
 def main():
 	api = twitter.Api()
