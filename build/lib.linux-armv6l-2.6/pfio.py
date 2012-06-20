@@ -3,6 +3,9 @@
 pfio.py
 Provides I/O methods for interfacing with the RaspberryPi interface (piface)
 
+piface has two ports (input/output) each with eight pins with several
+peripherals connected for interacting with the raspberry pi
+
 Notes
 20/06/2012 - Thomas Preston (prestotx)
 tidied up the code, reordered methods and fixed one or two bugs
@@ -33,21 +36,61 @@ GPPUB  = 0x0D # port B pullups
 OUTPUT_PORT = GPIOA
 INPUT_PORT  = GPIOB
 
+# piface peripheral pin numbers
+# (each peripheral is connected to an I/O pin)
+PH_PIN_LED_1 = 1
+PH_PIN_LED_2 = 1
+PH_PIN_LED_3 = 1
+PH_PIN_LED_4 = 1
+PH_PIN_RELAY_1 = 1
+PH_PIN_RELAY_2 = 1
+
+
 spi_handler = None
 
 
-class Pin(object):
-	"""A I/O pin on the RaspberryPi"""
+class Item(object):
+	"""An item connected to a pin on the RaspberryPi"""
 	def __init__(self, pin_number):
-		self.number = pin_number
+		self.pin_number = pin_number
 
-	value = property(self._get_pin_value, self._set_pin_value)
+	state = property(self._get_state, self._set_state)
 
-	def _get_pin_value(self):
+	def _get_state(self):
 		return digital_read(self.pin_number)
 
-	def _set_pin_value(self, data)
+	def _set_state(self, data):
 		return digital_write(self.pin_number, data)
+
+	def turn_on(self):
+		self.state = 1;
+	
+	def turn_off(self):
+		self.state = 0;
+
+class LED(Item):
+	"""An LED on the RaspberryPi"""
+	def __init__(self, led_number):
+		if led_number == 1:
+			pin_number = PH_PIN_LED_1
+		elif led_number == 2:
+			pin_number = PH_PIN_LED_2
+		elif led_number == 3:
+			pin_number = PH_PIN_LED_3
+		else:
+			pin_number = PH_PIN_LED_4
+
+		Item.__init__(self, pin_number)
+
+class Relay(Item):
+	"""A relay on the RaspberryPi"""
+	def __init__(self, relay_number):
+		if relay_number == 1:
+			pin_number = PH_PIN_RELAY_1
+		else:
+			pin_number = PH_PIN_RELAY_2
+
+		Item.__init__(self, pin_number)
 
 
 def init():
