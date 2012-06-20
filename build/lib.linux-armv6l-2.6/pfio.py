@@ -44,7 +44,13 @@ def init():
 	global spi_handler
 	spi_handler = spi.SPI(0,0) # spi.SPI(X,Y) is /dev/spidevX.Y
 
-
+	# set up the ports
+	write(IOCON,  8)    # enable hardware addressing
+	write(IODIRA, 0)    # set port A as outputs
+	write(IODIRB, 0xFF) # set port B as inputs
+	write(GPIOA,  0xFF) # set port A on
+	#write(GPIOB,  0xFF) # set port B on
+	write(GPPUB,  0xFF) # set port B pullups on
 
 def deinit():
 	"""Deinitialises the PiFace"""
@@ -70,28 +76,6 @@ def build_hex_string(items):
 	for item in items:
 		hex_string += "%02x" % item # 10 = 0a
 	return hex_string
-
-def send(data):
-	"""Sends a list of data to the PiFace"""
-	# a place to store the returned values for each transfer
-	returned_values_list = list() 
-
-	for datum in data:
-		# calculates the length, and devides by 2 for two bytes of data sent.
-		length_data = len(datum) / 2 # why? -thomas preston
-
-		if VERBOSE_MODE:
-		 pfio_print("transfering data: %s" % data)
-
-		# transfer the data string
-		returned_values = a.transfer(data[0], length_data)
-		returned_values_list.append(returned_values)
-
-		if VERBOSE_MODE:
-			pfio_print("SPI module returned:")
-			print [hex(value) for value in returned_values]
-
-	return returned_values_list
 
 def digital_write(pin_number, value):
 	"""Writes the value given to the pin specified"""
@@ -142,27 +126,60 @@ def digital_read(pin_number):
 
 	return pin
 
+"""
+Some wrapper functions so the user doesn't have to deal with
+ugly port variables
+"""
 def read_output():
 	"""Returns the values of the output pins"""
-	# data byte is padded with 1's since it isn't going to be used
-	data_as_hex = build_hex_string((READ_CMD, OUTPUT_PORT, "ff"))
-	return send([data_as_hex]) # send is expecting a list
+	return read(OUTPUT_PORT)
 
 def read_input():
 	"""Returns the values of the input pins"""
-	# data byte is padded with 1's since it isn't going to be used
-	data_as_hex = build_hex_string((READ_CMD, INPUT_PORT, "ff"))
-	return send([data_as_hex]) # send is expecting a list
+	return read(INPUT_PORT)
 
 def write_output(data):
 	"""Writed the values of the output pins"""
-	data_as_hex = build_hex_string((WRITE_CMD, OUTPUT_PORT, data))
-	return send([data_as_hex]) # send is expecting a list
+	return write(OUTPUT_PORT, data)
 
 def write_input(data):
 	"""Returns the values of the input pins"""
-	data_as_hex = build_hex_string((WRITE_CMD, INPUT_PORT, data))
+	return write(INPUT_PORT, data)
+
+
+def read(port):
+	"""Reads from the port specified"""
+	# data byte is padded with 1's since it isn't going to be used
+	data_as_hex = build_hex_string((READ_CMD, port, "ff"))
 	return send([data_as_hex]) # send is expecting a list
+
+def write(port, data):
+	"""Writes data to the port specified"""
+	data_as_hex = build_hex_string((WRITE_CMD, port, data))
+	return send([data_as_hex]) # send is expecting a list
+
+
+def send(data):
+	"""Sends a list of data to the PiFace"""
+	# a place to store the returned values for each transfer
+	returned_values_list = list() 
+
+	for datum in data:
+		# calculates the length, and devides by 2 for two bytes of data sent.
+		length_data = len(datum) / 2 # why? -thomas preston
+
+		if VERBOSE_MODE:
+		 pfio_print("transfering data: %s" % data)
+
+		# transfer the data string
+		returned_values = a.transfer(data[0], length_data)
+		returned_values_list.append(returned_values)
+
+		if VERBOSE_MODE:
+			pfio_print("SPI module returned:")
+			print [hex(value) for value in returned_values]
+
+	return returned_values_list
 
 
 """Boiler plate stuff"""
