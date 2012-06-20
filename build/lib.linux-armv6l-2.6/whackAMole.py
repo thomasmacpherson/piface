@@ -8,13 +8,13 @@ The amount of time you have to hit the button will get shorter as the game progr
 """
 
 from time import sleep
-import PFIO
+import pfio
 
 
-PFIO.init()	# initialise pfio (sets up the spi transfers)
+pfio.init()	# initialise pfio (sets up the spi transfers)
 
 current = next_colour() 	# create first random colour to be lit
-PFIO.digital_write(current,1)	# turn colour on
+pfio.digital_write(current,1)	# turn colour on
 set_time = 100000		# time allowed to hit each light (starts off large and reduced after each hit)
 time_left = set_time		# countdown timer for hitting the light
 hit = 0				# the input value
@@ -31,7 +31,7 @@ while True:
 			pfio.digital_write(current, 0)	# turn off hit light
 			current = next_colour()		# get next colour
 			set_time -= 100			# reduce the allowed time
-			time_left = setTime		# set the countdown time
+			time_left = set_time		# set the countdown time
 			pfio.digital_write(current,1)	# turn the new light on
 
 			sleep(1)			# leave the light on for a second
