@@ -48,6 +48,8 @@ while game:	# while game in play
 	sleep(2)	# small break before flashing the new extended sequence
 
 pfio.write_output(0xFF)		# if the game has been lost, set all the button leds on
+pfio.deinit()			# close the pfio
+
 print "Your score was: {}".format(score) 	# print the players score
 
 def next_colour():
