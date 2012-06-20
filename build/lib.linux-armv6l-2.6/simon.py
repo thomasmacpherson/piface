@@ -21,30 +21,30 @@ score = 0
 
 while game:	#
 	for i in array:
-		PFIO.digital_write(i,1)
+		pfio.digital_write(i,1)
 		sleep(3)
-		PFIO.digital_write(i,0)
+		pfio.digital_write(i,0)
 		sleep(1)
 
 	for i in array:
-		while (event = PFIO.read_input()) == 0:
+		while (event = pfio.read_input()) == 0:
 			pass
 
-		PFIO.write_output(event)
+		pfio.write_output(event)
 		if event != pfio.get_pin_bit_mask(i):
 			game = 0
 			break
 
 		else
 			sleep(1)
-			PFIO.digital_write(i,0)
+			pfio.digital_write(i,0)
 
 
 	array.append(next())
 	score +=1
 	sleep(2)
 
-PFIO.write_output(0xFF)
+pfio.write_output(0xFF)
 print score
 
 def next():
