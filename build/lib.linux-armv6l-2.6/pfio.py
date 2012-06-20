@@ -37,22 +37,37 @@ OUTPUT_PORT = GPIOA
 INPUT_PORT  = GPIOB
 
 # piface peripheral pin numbers
-# (each peripheral is connected to an I/O pin)
+# each peripheral is connected to an I/O pin
+# some pins are connected to many peripherals
+# outputs
 PH_PIN_LED_1 = 1
-PH_PIN_LED_2 = 1
-PH_PIN_LED_3 = 1
-PH_PIN_LED_4 = 1
+PH_PIN_LED_2 = 2
+PH_PIN_LED_3 = 3
+PH_PIN_LED_4 = 4
 PH_PIN_RELAY_1 = 1
-PH_PIN_RELAY_2 = 1
+PH_PIN_RELAY_2 = 2
+# inputs
+PH_PIN_SWITCH_1 = 1
+PH_PIN_SWITCH_2 = 2
+PH_PIN_SWITCH_3 = 3
+PH_PIN_SWITCH_4 = 4
 
 
 spi_handler = None
 
 
+# custom exceptions
+class InputDeviceError(Exception):
+	pass
+
+
+# classes
 class Item(object):
 	"""An item connected to a pin on the RaspberryPi"""
-	def __init__(self, pin_number):
+	def __init__(self, pin_number, is_input=False):
+		# an item defaults to an output device
 		self.pin_number = pin_number
+		self.is_input = is_input
 
 	state = property(self._get_state, self._set_state)
 
@@ -63,10 +78,16 @@ class Item(object):
 		return digital_write(self.pin_number, data)
 
 	def turn_on(self):
-		self.state = 1;
+		if self.is_input:
+			raise InputDeviceError("You cannot turn on an input!")
+		else:
+			self.state = 1;
 	
 	def turn_off(self):
-		self.state = 0;
+		if self.is_input:
+			raise InputDeviceError("You cannot turn off an input!")
+		else:
+			self.state = 0;
 
 class LED(Item):
 	"""An LED on the RaspberryPi"""
@@ -92,7 +113,22 @@ class Relay(Item):
 
 		Item.__init__(self, pin_number)
 
+class Switch(Item):
+	"""A switch on the RaspberryPi"""
+	def __init__(self, switch_number):
+		if led_number == 1:
+			switch_number = PH_PIN_SWITCH_1
+		elif led_number == 2:
+			switch_number = PH_PIN_SWITCH_2
+		elif led_number == 3:
+			switch_number = PH_PIN_SWITCH_3
+		else:
+			switch_number = PH_PIN_SWITCH_4
 
+		Item.__init__(self, switch_number, True)
+
+
+# functions/methods/whatever you want to call them
 def init():
 	"""Initialises the PiFace"""
 	if VERBOSE_MODE:
