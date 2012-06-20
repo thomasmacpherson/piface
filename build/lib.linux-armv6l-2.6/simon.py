@@ -10,17 +10,32 @@ first = next()
 
 array = [first]
 
+game = 1
 
-while True:
+
+while game:
 	for i in array:
-		PFIO.digitalWrite(i,1)
+		PFIO.digital_write(i,1)
 		sleep(3)
-		PFIO.digitalWrite(i,0)
+		PFIO.digital_write(i,0)
 		sleep(1)
 
-	PFIO.dig
+	for i in array:
+		while (event = PFIO.read_input()) == 0:
+			pass
+		PFIO.digital_write(i,1)
+
+		if event != i:
+			game = 0
+			break
+
+		else
+			sleep(1)
+			PFIO.digital_write(i,0)
 
 
+	array.append(next())
+	sleep(2)
 
 
 
