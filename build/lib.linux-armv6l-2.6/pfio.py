@@ -22,19 +22,29 @@ PFIO_PRINT_PREFIX = "PFIO: " # prefix for pfio messages
 WRITE_CMD = 0x40
 READ_CMD  = 0x41
 
-# Ports
-OUTPUT_PORT = 0x12
-INPUT_PORT  = 0x13
+# Port configuration
+IODIRA = 0x00 # I/O direction A
+IODIRB = 0x01 # I/O direction B
+IOCON  = 0x0A # I/O config
+GPIOA  = 0x12 # port A
+GPIOB  = 0x13 # port B
+GPPUA  = 0x0C # port A pullups
+GPPUB  = 0x0D # port B pullups
+OUTPUT_PORT = GPIOA
+INPUT_PORT  = GPIOB
 
 spi_handler = None
 
 def init():
 	"""Initialises the PiFace"""
-	global spi_handler
 	if VERBOSE_MODE:
 		 #print "PIFO: initialising SPI mode, reading data, reading length . . . \n"
 		 pfio_print("initialising SPI")
-		 spi_handler = spi.SPI(0,0) # spi.SPI(X,Y) is /dev/spidevX.Y
+
+	global spi_handler
+	spi_handler = spi.SPI(0,0) # spi.SPI(X,Y) is /dev/spidevX.Y
+
+
 
 def deinit():
 	"""Deinitialises the PiFace"""
@@ -134,25 +144,25 @@ def digital_read(pin_number):
 
 def read_output():
 	"""Returns the values of the output pins"""
+	# data byte is padded with 1's since it isn't going to be used
 	data_as_hex = build_hex_string((READ_CMD, OUTPUT_PORT, "ff"))
-
-	# send is expecting a list
-	data = list()
-	data.append(data_as_hex)
-	send(data)
-
-	return result
+	return send([data_as_hex]) # send is expecting a list
 
 def read_input():
 	"""Returns the values of the input pins"""
-	data_as_hex = build_hex_string((READ_CMD, OUTPUT_PORT, "ff"))
+	# data byte is padded with 1's since it isn't going to be used
+	data_as_hex = build_hex_string((READ_CMD, INPUT_PORT, "ff"))
+	return send([data_as_hex]) # send is expecting a list
 
-	# send is expecting a list
-	data = list()
-	data.append(data_as_hex)
-	send(data)
+def write_output(data):
+	"""Writed the values of the output pins"""
+	data_as_hex = build_hex_string((WRITE_CMD, OUTPUT_PORT, data))
+	return send([data_as_hex]) # send is expecting a list
 
-	return result
+def write_input(data):
+	"""Returns the values of the input pins"""
+	data_as_hex = build_hex_string((WRITE_CMD, INPUT_PORT, data))
+	return send([data_as_hex]) # send is expecting a list
 
 
 """Boiler plate stuff"""
