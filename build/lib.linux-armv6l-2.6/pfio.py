@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-PFIO.py
+pfio.py
 Provides I/O methods for interfacing with the RaspberryPi interface (piface)
 
 Notes
@@ -34,6 +34,21 @@ OUTPUT_PORT = GPIOA
 INPUT_PORT  = GPIOB
 
 spi_handler = None
+
+
+class Pin(object):
+	"""A I/O pin on the RaspberryPi"""
+	def __init__(self, pin_number):
+		self.number = pin_number
+
+	value = property(self._get_pin_value, self._set_pin_value)
+
+	def _get_pin_value(self):
+		return digital_read(self.pin_number)
+
+	def _set_pin_value(self, data)
+		return digital_write(self.pin_number, data)
+
 
 def init():
 	"""Initialises the PiFace"""
