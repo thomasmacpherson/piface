@@ -76,7 +76,7 @@ volatile unsigned *spi0;
 #define SPI0_CS_CLRFIFOS     0x00000030 // Clear BOTH FIFOs (auto clear bit)
 #define SPI0_CS_CLK_IDLHI    0x00000008 // Clock pin is high when idle
 #define SPI0_CS_CLKTRANS     0x00000004 // 0=first clock in middle of data bit
-                                        // 1=first clock at begin of data bit
+		                                    // 1=first clock at begin of data bit
 #define SPI0_CS_CHIPSEL0     0x00000000 // Use chip select 0
 #define SPI0_CS_CHIPSEL1     0x00000001 // Use chip select 1
 #define SPI0_CS_CHIPSEL2     0x00000002 // Use chip select 2
@@ -102,198 +102,214 @@ int readIOReg(char address, char data, char chip);
 void setup_io();
 
 int main(int argc, char **argv)
-{ int g,status,w,x;
-
-  setup_io();  // Set up direct access to I/O for GPIO and SPI
-
-  // Switch GPIO 7..11 to SPI mode (ALT function 0)
-
- /************************************************************************\
-  * You are about to change the GPIO settings of your computer.          *
-  * Mess this up and it will stop working!                               *
-  * It might be a good idea to 'sync' before running this program        *
-  * so at least you still have your code changes written to the SD-card! *
- \************************************************************************/
-
-  for (g=7; g<=11; g++)
-  {
-    INP_GPIO(g);       // clear bits (= input)
-    SET_GPIO_ALT(g,0); // set function 0
-  }
-
-  // Want to have 1 MHz SPI clock.
-  // Divide 250MHz system clock by 250
-  SPI0_CLKSPEED = 250;
-
-  // clear FIFOs and all status bits
-  SPI0_CNTLSTAT = SPI0_CS_CLRALL;
-  SPI0_CNTLSTAT = SPI0_CS_DONE; // make sure done bit is cleared
-
-  // send ten times a single byte
-  // Using chip select 0
-WriteIOReg(IOCON,8,0);// enable hardware addressing
-
-WriteIOReg(IODIRA,0,0);// set port A as outputs
-WriteIOReg(IODIRB,0,0);// set port B as outputs
-
-WriteIOReg(IODIRA,0,0);// set port A as outputs
-WriteIOReg(IODIRB,0xFF,0);// set port B as inputs
-WriteIOReg(GPIOA,0xFF,0); // set port A on
-//WriteIOReg(GPIOB,0xFF,0); // set port A on
-WriteIOReg(GPPUB,0xFF,0); // set port B pullups  on
-printf("Read -%d\n",readIOReg(GPIOB,0x00,0));
-
-//return 0;
-for (x=0;x<10;x++)
 {
-  for (g=2; g<8; g++)
-  {
- //   WriteIOReg(GPIOA,1<<g,0); // set port A on
-printf("Read - %d\n",readIOReg(GPIOB,0x00,0));
-   usleep(200000);
-  }
-  for (g=2; g<8; g++)
-  {
-    WriteIOReg(GPIOA,0x80>>g,0); // set port A on
-   usleep(200000);
-  }
+	int g,status,w,x;
 
-}
+	setup_io();  // Set up direct access to I/O for GPIO and SPI
 
-  return 0;
+	// Switch GPIO 7..11 to SPI mode (ALT function 0)
+
+	/************************************************************************\
+	 * You are about to change the GPIO settings of your computer.          *
+	 * Mess this up and it will stop working!                               *
+	 * It might be a good idea to 'sync' before running this program        *
+	 * so at least you still have your code changes written to the SD-card! *
+	\************************************************************************/
+
+	for (g=7; g<=11; g++)
+	{
+		INP_GPIO(g);       // clear bits (= input)
+		SET_GPIO_ALT(g,0); // set function 0
+	}
+
+	// Want to have 1 MHz SPI clock.
+	// Divide 250MHz system clock by 250
+	SPI0_CLKSPEED = 250;
+
+	// clear FIFOs and all status bits
+	SPI0_CNTLSTAT = SPI0_CS_CLRALL;
+	SPI0_CNTLSTAT = SPI0_CS_DONE; // make sure done bit is cleared
+
+	// send ten times a single byte
+	// Using chip select 0
+	WriteIOReg(IOCON,8,0);// enable hardware addressing
+
+	WriteIOReg(IODIRA,0,0);// set port A as outputs
+	WriteIOReg(IODIRB,0,0);// set port B as outputs
+
+	WriteIOReg(IODIRA,0,0);// set port A as outputs
+	WriteIOReg(IODIRB,0xFF,0);// set port B as inputs
+	WriteIOReg(GPIOA,0xFF,0); // set port A on
+	//WriteIOReg(GPIOB,0xFF,0); // set port A on
+	WriteIOReg(GPPUB,0xFF,0); // set port B pullups  on
+	printf("Read -%d\n",readIOReg(GPIOB,0x00,0));
+
+	//return 0;
+	for (x=0;x<10;x++)
+	{
+		for (g=2; g<8; g++)
+		{
+			// WriteIOReg(GPIOA,1<<g,0); // set port A on
+			printf("Read - %d\n", readIOReg(GPIOB,0x00,0));
+			usleep(200000);
+		}
+
+		for (g=2; g<8; g++)
+		{
+			WriteIOReg(GPIOA, 0x80>>g,0); // set port A on
+			usleep(200000);
+		}
+	}
+
+	return 0;
 
 } // main
 
 int readIOReg(char address, char data, char chip)
 {
-    int w,status;
-    char rec_c;
+	int w, status;
+	char rec_c;
 
-    // Small delay so CS does not blib up and down too fast
-    for (w=0; w<100; w++)
-    { w++;
-       w--;
-    }
-    // Enable: Use CS 0 and set activate bit
-    SPI0_CNTLSTAT = SPI0_CS_CHIPSEL0|SPI0_CS_ACTIVATE;
+	// Small delay so CS does not blib up and down too fast
+	for (w=0; w<100; w++)
+	{
+		w++;
+		w--;
+	}
+	// Enable: Use CS 0 and set activate bit
+	SPI0_CNTLSTAT = SPI0_CS_CHIPSEL0|SPI0_CS_ACTIVATE;
 
-    // Write single 8-bit value (0x8A) to SPI
-    SPI0_FIFO = 0x41; // or with bottom bits of chip
+	// Write single 8-bit value (0x8A) to SPI
+	SPI0_FIFO = 0x41; // or with bottom bits of chip
 
-    // wait for SPI to be ready
-    do {
-       status = SPI0_CNTLSTAT;
-    } while ((status & SPI0_CS_DONE)==0);
+	// wait for SPI to be ready
+	do {
+		status = SPI0_CNTLSTAT;
+	} while ((status & SPI0_CS_DONE)==0);
 
-    // Small delay so CS does not blib up and down too fast
-    for (w=0; w<100; w++)
-    { w++;
-       w--;
-    }
-    // Enable: Use CS 0 and set activate bit
-    SPI0_CNTLSTAT = SPI0_CS_CHIPSEL0|SPI0_CS_ACTIVATE;
+	// Small delay so CS does not blib up and down too fast
+	for (w=0; w<100; w++)
+	{
+		w++;
+		w--;
+	}
 
-    // Write single 8-bit value (0x8A) to SPI
-    SPI0_FIFO = address; //
+	// Enable: Use CS 0 and set activate bit
+	SPI0_CNTLSTAT = SPI0_CS_CHIPSEL0|SPI0_CS_ACTIVATE;
 
-    // wait for SPI to be ready
-    do {
-       status = SPI0_CNTLSTAT;
-    } while ((status & SPI0_CS_DONE)==0);
- /*   SPI0_CNTLSTAT = SPI0_CS_DONE; // clear the done bit
+	// Write single 8-bit value (0x8A) to SPI
+	SPI0_FIFO = address;
 
-    // Must read received data from FIFO!
-    // even if we do not use it!
-    rec_c = SPI0_FIFO;
+	// wait for SPI to be ready
+	do {
+		status = SPI0_CNTLSTAT;
+	} while ((status & SPI0_CS_DONE)==0);
+
+/*	SPI0_CNTLSTAT = SPI0_CS_DONE; // clear the done bit
+
+	// Must read received data from FIFO!
+	// even if we do not use it!
+	rec_c = SPI0_FIFO;
 
 
-    // Small delay so CS does not blib up and down too fast
-    for (w=0; w<100; w++)
-    { w++;
-       w--;
-    }
-    // Enable: Use CS 0 and set activate bit
-    SPI0_CNTLSTAT = SPI0_CS_CHIPSEL0|SPI0_CS_ACTIVATE;
+	// Small delay so CS does not blib up and down too fast
+	for (w=0; w<100; w++)
+	{
+		w++;
+		w--;
+	}
+
+	// Enable: Use CS 0 and set activate bit
+	SPI0_CNTLSTAT = SPI0_CS_CHIPSEL0|SPI0_CS_ACTIVATE;
 */
-    // Write single 8-bit value (0x8A) to SPI
-    SPI0_FIFO = data; //
 
-    // wait for SPI to be ready
-    do {
-       status = SPI0_CNTLSTAT;
-    } while ((status & SPI0_CS_DONE)==0);
-    SPI0_CNTLSTAT = SPI0_CS_DONE; // clear the done bit
+	// Write single 8-bit value (0x8A) to SPI
+	SPI0_FIFO = data;
 
-    // Must read received data from FIFO!
-    // even if we do not use it!
-    rec_c = SPI0_FIFO;
-    return rec_c;
+	// wait for SPI to be ready
+	do {
+		status = SPI0_CNTLSTAT;
+	} while ((status & SPI0_CS_DONE) == 0);
+
+	SPI0_CNTLSTAT = SPI0_CS_DONE; // clear the done bit
+
+	// Must read received data from FIFO!
+	// even if we do not use it!
+	rec_c = SPI0_FIFO;
+	return rec_c;
 }
-
 
 void WriteIOReg(char address, char data, char chip)
 {
-    int w,status;
-    char rec_c;
+	int w, status;
+	char rec_c;
 
-    // Small delay so CS does not blib up and down too fast
-    for (w=0; w<100; w++)
-    { w++;
-       w--;
-    }
-    // Enable: Use CS 0 and set activate bit
-    SPI0_CNTLSTAT = SPI0_CS_CHIPSEL0|SPI0_CS_ACTIVATE;
+	// Small delay so CS does not blib up and down too fast
+	for (w=0; w<100; w++)
+	{
+		w++;
+		w--;
+	}
 
-    // Write single 8-bit value (0x8A) to SPI
-    SPI0_FIFO = 0x40; // or with bottom bits of chip
+	// Enable: Use CS 0 and set activate bit
+	SPI0_CNTLSTAT = SPI0_CS_CHIPSEL0|SPI0_CS_ACTIVATE;
 
-    // wait for SPI to be ready
-    do {
-       status = SPI0_CNTLSTAT;
-    } while ((status & SPI0_CS_DONE)==0);
+	// Write single 8-bit value (0x8A) to SPI
+	SPI0_FIFO = 0x40; // or with bottom bits of chip
 
-    // Small delay so CS does not blib up and down too fast
-    for (w=0; w<100; w++)
-    { w++;
-       w--;
-    }
-    // Enable: Use CS 0 and set activate bit
-    SPI0_CNTLSTAT = SPI0_CS_CHIPSEL0|SPI0_CS_ACTIVATE;
+	// wait for SPI to be ready
+	do {
+		status = SPI0_CNTLSTAT;
+	} while ((status & SPI0_CS_DONE)==0);
 
-    // Write single 8-bit value (0x8A) to SPI
-    SPI0_FIFO = address; //
+	// Small delay so CS does not blib up and down too fast
+	for (w=0; w<100; w++)
+	{
+		w++;
+		w--;
+	}
 
-    // wait for SPI to be ready
-    do {
-       status = SPI0_CNTLSTAT;
-    } while ((status & SPI0_CS_DONE)==0);
- /*   SPI0_CNTLSTAT = SPI0_CS_DONE; // clear the done bit
+	// Enable: Use CS 0 and set activate bit
+	SPI0_CNTLSTAT = SPI0_CS_CHIPSEL0|SPI0_CS_ACTIVATE;
 
-    // Must read received data from FIFO!
-    // even if we do not use it!
-    rec_c = SPI0_FIFO;
+	// Write single 8-bit value (0x8A) to SPI
+	SPI0_FIFO = address; //
+
+	// wait for SPI to be ready
+	do {
+		status = SPI0_CNTLSTAT;
+	} while ((status & SPI0_CS_DONE)==0);
+
+/*   SPI0_CNTLSTAT = SPI0_CS_DONE; // clear the done bit
+
+	// Must read received data from FIFO!
+	// even if we do not use it!
+	rec_c = SPI0_FIFO;
 
 
-    // Small delay so CS does not blib up and down too fast
-    for (w=0; w<100; w++)
-    { w++;
-       w--;
-    }
-    // Enable: Use CS 0 and set activate bit
-    SPI0_CNTLSTAT = SPI0_CS_CHIPSEL0|SPI0_CS_ACTIVATE;
+	// Small delay so CS does not blib up and down too fast
+	for (w=0; w<100; w++)
+	{
+		w++;
+		w--;
+	}
+	// Enable: Use CS 0 and set activate bit
+
+	SPI0_CNTLSTAT = SPI0_CS_CHIPSEL0|SPI0_CS_ACTIVATE;
 */
-    // Write single 8-bit value (0x8A) to SPI
-    SPI0_FIFO = data; //
+	// Write single 8-bit value (0x8A) to SPI
+	SPI0_FIFO = data; //
 
-    // wait for SPI to be ready
-    do {
-       status = SPI0_CNTLSTAT;
-    } while ((status & SPI0_CS_DONE)==0);
-    SPI0_CNTLSTAT = SPI0_CS_DONE; // clear the done bit
+	// wait for SPI to be ready
+	do {
+		status = SPI0_CNTLSTAT;
+	} while ((status & SPI0_CS_DONE)==0);
 
-    // Must read received data from FIFO!
-    // even if we do not use it!
-    rec_c = SPI0_FIFO;
+	SPI0_CNTLSTAT = SPI0_CS_DONE; // clear the done bit
+
+	// Must read received data from FIFO!
+	// even if we do not use it!
+	rec_c = SPI0_FIFO;
 }
 
 //
@@ -301,57 +317,57 @@ void WriteIOReg(char address, char data, char chip)
 //
 void setup_io()
 {
+	/* open /dev/mem */
+	if ((mem_fd = open("/dev/mem", O_RDWR|O_SYNC) ) < 0) {
+		printf("can't open /dev/mem \n");
+		exit (-1);
+	}
 
-   /* open /dev/mem */
-   if ((mem_fd = open("/dev/mem", O_RDWR|O_SYNC) ) < 0) {
-      printf("can't open /dev/mem \n");
-      exit (-1);
-   }
+	/* mmap GPIO */
+	if ((gpio_mem = malloc(BLOCK_SIZE + (PAGE_SIZE-1))) == NULL) {
+		printf("allocation error \n");
+		exit (-1);
+	}
+	if ((unsigned long)gpio_mem % PAGE_SIZE)
+		gpio_mem += PAGE_SIZE - ((unsigned long)gpio_mem % PAGE_SIZE);
 
-   /* mmap GPIO */
-   if ((gpio_mem = malloc(BLOCK_SIZE + (PAGE_SIZE-1))) == NULL) {
-      printf("allocation error \n");
-      exit (-1);
-   }
-   if ((unsigned long)gpio_mem % PAGE_SIZE)
-     gpio_mem += PAGE_SIZE - ((unsigned long)gpio_mem % PAGE_SIZE);
+	gpio_map = (unsigned char *)mmap(
+		(caddr_t)gpio_mem,
+		BLOCK_SIZE,
+		PROT_READ|PROT_WRITE,
+		MAP_SHARED|MAP_FIXED,
+		mem_fd,
+		GPIO_BASE
+	);
 
-   gpio_map = (unsigned char *)mmap(
-      (caddr_t)gpio_mem,
-      BLOCK_SIZE,
-      PROT_READ|PROT_WRITE,
-      MAP_SHARED|MAP_FIXED,
-      mem_fd,
-      GPIO_BASE
-   );
+	if ((long)gpio_map < 0) {
+		printf("mmap error %d\n", (int)gpio_map);
+		exit (-1);
+	}
+	gpio = (volatile unsigned *)gpio_map;
 
-   if ((long)gpio_map < 0) {
-      printf("mmap error %d\n", (int)gpio_map);
-      exit (-1);
-   }
-   gpio = (volatile unsigned *)gpio_map;
+	/* mmap SPI0 */
+	if ((spi0_mem = malloc(BLOCK_SIZE + (PAGE_SIZE-1))) == NULL) {
+		printf("allocation error \n");
+		exit (-1);
+	}
 
-   /* mmap SPI0 */
-   if ((spi0_mem = malloc(BLOCK_SIZE + (PAGE_SIZE-1))) == NULL) {
-      printf("allocation error \n");
-      exit (-1);
-   }
-   if ((unsigned long)spi0_mem % PAGE_SIZE)
-     spi0_mem += PAGE_SIZE - ((unsigned long)spi0_mem % PAGE_SIZE);
+	if ((unsigned long)spi0_mem % PAGE_SIZE)
+		spi0_mem += PAGE_SIZE - ((unsigned long)spi0_mem % PAGE_SIZE);
 
-   spi0_map = (unsigned char *)mmap(
-      (caddr_t)spi0_mem,
-      BLOCK_SIZE,
-      PROT_READ|PROT_WRITE,
-      MAP_SHARED|MAP_FIXED,
-      mem_fd,
-      SPI0_BASE
-   );
+	spi0_map = (unsigned char *)mmap(
+		(caddr_t)spi0_mem,
+		BLOCK_SIZE,
+		PROT_READ|PROT_WRITE,
+		MAP_SHARED|MAP_FIXED,
+		mem_fd,
+		SPI0_BASE
+	);
 
-   if ((long)spi0_map < 0) {
-      printf("mmap error %d\n", (int)spi0_map);
-      exit (-1);
-   }
-   spi0 = (volatile unsigned *)spi0_map;
+	if ((long)spi0_map < 0) {
+		printf("mmap error %d\n", (int)spi0_map);
+		exit (-1);
+	}
+	spi0 = (volatile unsigned *)spi0_map;
 
 } // setup_io
