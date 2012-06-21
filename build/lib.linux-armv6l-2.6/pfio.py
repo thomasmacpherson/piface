@@ -165,8 +165,8 @@ def get_pin_bit_mask(pin_number):
 
 	TODO: throw and exception if the pin number is out of range
 	"""
-	#return 2**(pin-1)
-	return 1 << (pin - 1) # shifting makes more sense
+	#return 2**(pin_number-1)
+	return 1 << (pin_number - 1) # shifting makes more sense
 
 def build_hex_string(items):
 	"""Builds a hexidecimal string comprised of the given items"""
@@ -185,6 +185,7 @@ def digital_write(pin_number, value):
 	if VERBOSE_MODE:
 		pfio_print("pin bit mask: %s" % bin(pin_bit_mask))
 
+	print read_output()
 	old_pin_values = read_output()[2]
 
 	if VERBOSE_MODE:
@@ -212,7 +213,7 @@ def digital_write(pin_number, value):
 def digital_read(pin_number):
 	"""Returns the value of the pin specified"""
 	current_pin_values = read_input()[2]
-	pin_bit_mask = pin_translation(pin_number)
+	pin_bit_mask = get_pin_bit_mask(pin_number)
 
 	result = current_pin_values & pin_bit_mask
 
@@ -248,13 +249,13 @@ def write_input(data):
 def read(port):
 	"""Reads from the port specified"""
 	# data byte is padded with 1's since it isn't going to be used
-	data_as_hex = build_hex_string((READ_CMD, port, "ff"))
-	return send([data_as_hex]) # send is expecting a list
+	data_as_hex = build_hex_string((READ_CMD, port, 0xff))
+	return send([data_as_hex])[0] # send is expecting and returns a list
 
 def write(port, data):
 	"""Writes data to the port specified"""
 	data_as_hex = build_hex_string((WRITE_CMD, port, data))
-	return send([data_as_hex]) # send is expecting a list
+	return send([data_as_hex])[0] # send is expecting and returns a list
 
 
 def send(data):

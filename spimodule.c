@@ -26,7 +26,7 @@
 #include <linux/types.h>
 #include <sys/ioctl.h>
 
-#define VERBOSE_MODE // comment out to turn off debugging
+//#define VERBOSE_MODE // comment out to turn off debugging
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #define MAXPATH 16
@@ -124,7 +124,9 @@ static PyObject* SPI_transfer(SPI *self, PyObject *args)
 
 		//Passing the 2 byte string into a Hex unsigned int 8-bit and then printing result
 		sscanf(hexbyte, "%X", &tx[i]);
+#ifdef VERBOSE_MODE
 		printf("Got HEX: 0x%2.2X\n\n",tx[i]);
+#endif
 	}
 
 #ifdef VERBOSE_MODE
