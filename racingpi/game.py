@@ -18,7 +18,7 @@ class RacingPiGame(threading.Thread):
 		self.gui = gui
 
 		# set up the hardware interface
-		#pfio.init()
+		pfio.init()
 
 		# set up the players
 		self.player1 = Player("Adam", RacingCar(1))
@@ -34,12 +34,12 @@ class RacingPiGame(threading.Thread):
 		random.shuffle(self.questions)
 
 		# set up the buttons
-		buttons = list()
-		buttons.append(Button(ButtonSwitch(1), ButtonLight(1)))
-		buttons.append(Button(ButtonSwitch(2), ButtonLight(2)))
-		buttons.append(Button(ButtonSwitch(3), ButtonLight(3)))
-		buttons.append(Button(ButtonSwitch(4), ButtonLight(4)))
-		buttons.append(Button(ButtonSwitch(5), ButtonLight(5)))
+		self.buttons = list()
+		self.buttons.append(Button(ButtonSwitch(1), ButtonLight(1)))
+		self.buttons.append(Button(ButtonSwitch(2), ButtonLight(2)))
+		self.buttons.append(Button(ButtonSwitch(3), ButtonLight(3)))
+		self.buttons.append(Button(ButtonSwitch(4), ButtonLight(4)))
+		self.buttons.append(Button(ButtonSwitch(5), ButtonLight(5)))
 
 	def run(self):
 		"""The main game stuff goes here"""
@@ -48,13 +48,18 @@ class RacingPiGame(threading.Thread):
 			self.gui.update_question(question.text) # TODO: something with answers
 
 			# wait for a button press
-			while (pin_bit_pattern = pfio.read_input()) == 0:
-				pass
+			pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
+			while pin_bit_pattern == 0:
+				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 
-			pin_number = pfio.get_pin_number(pin_bit_pattern)
+			#pin_number = pfio.get_pin_number(pin_bit_pattern)
+			for button in self.buttons:
+				print button.switch.value
 
-			if VERBOSE_MODE:
-				print "Pin %d was pressed!" % pin_number
+			# wait until nothing is pressed
+			pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
+			while pin_bit_pattern != 0:
+				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 
 			# check answer
 
@@ -77,7 +82,7 @@ class ButtonLight(pfio.Item):
 class ButtonSwitch(pfio.Item):
 	def __init__(self, button_number):
 		# button switches are connected directly to pins
-		pfio.Item.__init__(self, button_number, True) # output
+		pfio.Item.__init__(self, button_number, True) # input
 
 class Button(object):
 	def __init__(self, button_switch, button_light):

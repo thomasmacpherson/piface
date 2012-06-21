@@ -73,7 +73,7 @@ class Item(object):
 		self.is_input = is_input
 
 	def _get_value(self):
-		if self.is_input:
+		if not self.is_input:
 			raise InputDeviceError("You cannot get the value of an output!")
 		else:
 			return digital_read(self.pin_number)
