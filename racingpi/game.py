@@ -38,8 +38,8 @@ class RacingPiGame(threading.Thread):
 		self.buttons.append(Button(ButtonSwitch(5), ButtonLight(5)))
 
 		# set up the players
-		self.player1 = Player("Adam", RacingCar(1), (self.buttons[1], self.buttons[2]))
-		self.player2 = Player("Eve", RacingCar(2), (self.buttons[3], self.buttons[4]))
+		self.player1 = Player("Adam", RacingCar(1), (self.buttons[0], self.buttons[1]))
+		self.player2 = Player("Eve", RacingCar(2), (self.buttons[2], self.buttons[3]))
 
 	def run(self):
 		"""The main game stuff goes here"""
@@ -47,7 +47,7 @@ class RacingPiGame(threading.Thread):
 			# ask a question
 			# TODO: shuffle answers
 			self.gui.update_question("%s\nA: %s\nB: %s" % (question.text,
-				questions.correct_answer, questions.wrong_answer))
+				question.correct_answer, question.wrong_answer))
 
 			correct_answer = 0 # either 0 (A) or 1 (B)
 			wrong_answer = 1
@@ -58,19 +58,24 @@ class RacingPiGame(threading.Thread):
 				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 
 			# find out which button was pressed
-			if self.player1.buttons[correct_answer].value == 1:
+			if self.player1.buttons[correct_answer].switch.value == 1:
+				print "Player 1 got the correct answer!"
 				self.player1.car.drive(3)
 
-			elif self.player1.buttons[wrong_answer].value == 1:
+			elif self.player1.buttons[wrong_answer].switch.value == 1:
+				print "Player 1 got the WRONG answer!"
 				self.player2.car.drive(3)
 
-			elif self.player2.buttons[correct_answer].value == 1:
+			elif self.player2.buttons[correct_answer].switch.value == 1:
+				print "Player 2 got the correct answer!"
 				self.player2.car.drive(3)
 
-			elif self.player2.buttons[wrong_answer].value == 1:
+			elif self.player2.buttons[wrong_answer].switch.value == 1:
+				print "Player 2 got the WRONG answer!"
 				self.player1.car.drive(3)
 
-			elif self.buttons[4] == 1:
+			elif self.buttons[4].switch.value == 1:
+				print "PASS"
 				pass
 				
 
