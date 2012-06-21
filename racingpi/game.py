@@ -11,6 +11,7 @@ class RacingPiGame(threading.Thread):
 	def __init__(self, gui):
 		threading.Thread.__init__(self)
 		self.gui = gui
+		pfio.init()
 
 	def run(self):
 		"""The main game stuff goes here"""

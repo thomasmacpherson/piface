@@ -42,7 +42,7 @@ class RacingPiGUI(object):
 		"""Generates the contents of the window"""
 		# label
 		main_title = gtk.Label()
-		main_title.set_use_markup(gtk.TRUE)
+		main_title.set_use_markup(True)
 		main_title.set_markup("<span size='%d'>%s</span>"%(TITLE_SIZE, TITLE))
 		main_title.show()
 
