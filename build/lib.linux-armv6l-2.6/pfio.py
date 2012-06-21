@@ -18,7 +18,7 @@ import spi
 from time import sleep
 
 
-VERBOSE_MODE = True # toggle verbosity
+VERBOSE_MODE = False # toggle verbosity
 PFIO_PRINT_PREFIX = "PFIO: " # prefix for pfio messages
 
 # SPI operations
@@ -119,7 +119,7 @@ class Relay(Item):
 class Switch(Item):
 	"""A switch on the RaspberryPi"""
 	def __init__(self, switch_number):
-		if led_number == 1:
+		if switch_number == 1:
 			switch_number = PH_PIN_SWITCH_1
 		elif led_number == 2:
 			switch_number = PH_PIN_SWITCH_2
@@ -148,6 +148,10 @@ def init():
 	write(GPIOA,  0xFF) # set port A on
 	#write(GPIOB,  0xFF) # set port B on
 	write(GPPUB,  0xFF) # set port B pullups on
+
+	# initialise all outputs to 0
+	for pin in range(1, 9):
+		digital_write(pin, 0)
 
 def deinit():
 	"""Deinitialises the PiFace"""
