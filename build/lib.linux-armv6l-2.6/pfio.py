@@ -72,13 +72,13 @@ class Item(object):
 		self.pin_number = pin_number
 		self.is_input = is_input
 
-	value = property(_get_value, _set_value)
-
 	def _get_value(self):
 		return digital_read(self.pin_number)
 
 	def _set_value(self, data):
 		return digital_write(self.pin_number, data)
+
+	value = property(_get_value, _set_value)
 
 	def turn_on(self):
 		if self.is_input:
