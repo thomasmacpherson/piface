@@ -20,10 +20,6 @@ class RacingPiGame(threading.Thread):
 		# set up the hardware interface
 		pfio.init()
 
-		# set up the players
-		self.player1 = Player("Adam", RacingCar(1))
-		self.player2 = Player("Eve", RacingCar(2))
-
 		# set up the questions
 		question_file = open("racingpi/questions.txt", "r")
 		self.questions = list()
@@ -41,27 +37,47 @@ class RacingPiGame(threading.Thread):
 		self.buttons.append(Button(ButtonSwitch(4), ButtonLight(4)))
 		self.buttons.append(Button(ButtonSwitch(5), ButtonLight(5)))
 
+		# set up the players
+		self.player1 = Player("Adam", RacingCar(1), (self.buttons[1], self.buttons[2]))
+		self.player2 = Player("Eve", RacingCar(2), (self.buttons[3], self.buttons[4]))
+
 	def run(self):
 		"""The main game stuff goes here"""
 		for question in self.questions:
 			# ask a question
-			self.gui.update_question(question.text) # TODO: something with answers
+			# TODO: shuffle answers
+			self.gui.update_question("%s\nA: %s\nB: %s" % (question.text,
+				questions.correct_answer, questions.wrong_answer))
+
+			correct_answer = 0 # either 0 (A) or 1 (B)
+			wrong_answer = 1
 
 			# wait for a button press
 			pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 			while pin_bit_pattern == 0:
 				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 
-			#pin_number = pfio.get_pin_number(pin_bit_pattern)
-			for button in self.buttons:
-				print button.switch.value
+			# find out which button was pressed
+			if self.player1.buttons[correct_answer].value == 1:
+				self.player1.car.drive(3)
+
+			elif self.player1.buttons[wrong_answer].value == 1:
+				self.player2.car.drive(3)
+
+			elif self.player2.buttons[correct_answer].value == 1:
+				self.player2.car.drive(3)
+
+			elif self.player2.buttons[wrong_answer].value == 1:
+				self.player1.car.drive(3)
+
+			elif self.buttons[4] == 1:
+				pass
+				
 
 			# wait until nothing is pressed
 			pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 			while pin_bit_pattern != 0:
 				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
-
-			# check answer
 
 class RacingCar(pfio.Relay):
 	def __init__(self, racing_car_number):
@@ -90,13 +106,14 @@ class Button(object):
 		self.light = button_light
 
 class Player(object):
-	def __init__(self, name, car):
+	def __init__(self, name, car, buttons):
 		self.name = name
 		self.car = car
+		self.buttons = buttons
 		self.points = 0
 
 class Question(object):
-	def __init__(self, question_text, right_answer, wrong_answer):
+	def __init__(self, question_text, correct_answer, wrong_answer):
 		self.text = question_text
-		self.right_answer = right_answer
+		self.correct_answer = correct_answer
 		self.wrong_answer = wrong_answer
