@@ -168,6 +168,18 @@ def get_pin_bit_mask(pin_number):
 	#return 2**(pin_number-1)
 	return 1 << (pin_number - 1) # shifting makes more sense
 
+def get_pin_number(bit_pattern):
+	"""Returns the lowest pin number from a given bit pattern"""
+	pin_number = 1 # assume pin 1
+	while (bit_pattern & 1) == 0:
+		bit_pattern = bit_pattern >> 1
+		pin_number += 1
+		if pin_number > 8:
+			pin_number = 0
+			break
+	
+	return pin_number
+
 def build_hex_string(items):
 	"""Builds a hexidecimal string comprised of the given items"""
 	hex_string = ""
