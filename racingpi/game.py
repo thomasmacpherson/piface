@@ -81,11 +81,12 @@ class RacingPiGame(threading.Thread):
 				print "PASS"
 				pass
 				
-
 			# wait until nothing is pressed
 			pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 			while pin_bit_pattern != 0:
 				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
+
+		self.gui.destroy() # end the gui
 
 class RacingCar(pfio.Relay):
 	def __init__(self, racing_car_number):
