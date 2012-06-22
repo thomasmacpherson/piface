@@ -73,24 +73,24 @@ class Item(object):
 		self.is_input = is_input
 
 	def _get_value(self):
-		return digital_read(self.pin_number)
+		if self.is_input:
+			raise InputDeviceError("You cannot get the value of an output!")
+		else:
+			return digital_read(self.pin_number)
 
 	def _set_value(self, data):
-		return digital_write(self.pin_number, data)
+		if self.is_input:
+			raise InputDeviceError("You cannot set an input's values!")
+		else:
+			return digital_write(self.pin_number, data)
 
 	value = property(_get_value, _set_value)
 
 	def turn_on(self):
-		if self.is_input:
-			raise InputDeviceError("You cannot turn on an input!")
-		else:
-			self.value = 1;
+		self.value = 1;
 	
 	def turn_off(self):
-		if self.is_input:
-			raise InputDeviceError("You cannot turn off an input!")
-		else:
-			self.value = 0;
+		self.value = 0;
 
 class LED(Item):
 	"""An LED on the RaspberryPi"""

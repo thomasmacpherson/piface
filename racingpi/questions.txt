@@ -1,0 +1,10 @@
+How many bits in a byte?,8,10
+What does RAM stand for?,Random Access Memory, Real Auditing Memory
+What company did Bill Gates start?, Microsoft,Apple
+What is larger a Gigabyte or a Megabyte?,Gigabyte,Megabyte
+What are the two home keys on a keyboard?,F and J,P and Q
+What country owns this WWW suffix  .de ?,Germany,France
+What type of file has this file format .jpg ?,Image,Spreadsheet
+Computers are great?, True, False
+What type of processor does the RaspberryPi use?,ARM,LEG
+What famous computer scientist broke the Enigma codes at Bletchley Park?,Alan Turing,Steve Jobs
