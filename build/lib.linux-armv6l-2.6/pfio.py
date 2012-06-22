@@ -201,7 +201,6 @@ def digital_write(pin_number, value):
 	if VERBOSE_MODE:
 		pfio_print("pin bit mask: %s" % bin(pin_bit_mask))
 
-	print read_output()
 	old_pin_values = read_output()[2]
 
 	if VERBOSE_MODE:
