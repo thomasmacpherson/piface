@@ -72,7 +72,7 @@ class Item(object):
 		self.pin_number = pin_number
 		self.is_input = is_input
 
-	value = property(self._get_value, self._set_value)
+	value = property(_get_value, _set_value)
 
 	def _get_value(self):
 		return digital_read(self.pin_number)
