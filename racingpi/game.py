@@ -45,12 +45,15 @@ class RacingPiGame(threading.Thread):
 		"""The main game stuff goes here"""
 		for question in self.questions:
 			# ask a question
-			# TODO: shuffle answers
-			self.gui.update_question("%s\nA: %s\nB: %s" % (question.text,
-				question.correct_answer, question.wrong_answer))
+			correct_answer_index = 2 * random.random()
+			wrong_answer_index = correct_answer ^ 1
+			answers = ["", ""]
+			answers[correct_answer_index] = question.correct_answer
+			answers[wrong_answer_index] = question.wrong_answer
 
-			correct_answer = 0 # either 0 (A) or 1 (B)
-			wrong_answer = 1
+			values = [question.text]
+			values.extend(answers)
+			self.gui.update_question("%s\nA: %s\nB: %s" % values)
 
 			# wait for a button press
 			pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
