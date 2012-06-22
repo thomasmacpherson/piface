@@ -45,15 +45,15 @@ class RacingPiGame(threading.Thread):
 		"""The main game stuff goes here"""
 		for question in self.questions:
 			# ask a question
-			correct_answer_index = 2 * random.random()
-			wrong_answer_index = correct_answer ^ 1
+			correct_answer_index = int(2 * random.random())
+			wrong_answer_index = correct_answer_index ^ 1
 			answers = ["", ""]
 			answers[correct_answer_index] = question.correct_answer
 			answers[wrong_answer_index] = question.wrong_answer
 
 			values = [question.text]
 			values.extend(answers)
-			self.gui.update_question("%s\nA: %s\nB: %s" % values)
+			self.gui.update_question("%s\nA: %s\nB: %s" % tuple(values))
 
 			# wait for a button press
 			pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
@@ -61,19 +61,19 @@ class RacingPiGame(threading.Thread):
 				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 
 			# find out which button was pressed
-			if self.player1.buttons[correct_answer].switch.value == 1:
+			if self.player1.buttons[correct_answer_index].switch.value == 1:
 				print "Player 1 got the correct answer!"
 				self.player1.car.drive(3)
 
-			elif self.player1.buttons[wrong_answer].switch.value == 1:
+			elif self.player1.buttons[wrong_answer_index].switch.value == 1:
 				print "Player 1 got the WRONG answer!"
 				self.player2.car.drive(3)
 
-			elif self.player2.buttons[correct_answer].switch.value == 1:
+			elif self.player2.buttons[correct_answer_index].switch.value == 1:
 				print "Player 2 got the correct answer!"
 				self.player2.car.drive(3)
 
-			elif self.player2.buttons[wrong_answer].switch.value == 1:
+			elif self.player2.buttons[wrong_answer_index].switch.value == 1:
 				print "Player 2 got the WRONG answer!"
 				self.player1.car.drive(3)
 
