@@ -31,11 +31,11 @@ class RacingPiGame(threading.Thread):
 
 		# set up the buttons
 		self.buttons = list()
-		self.buttons.append(Button(ButtonSwitch(1), ButtonLight(1)))
-		self.buttons.append(Button(ButtonSwitch(2), ButtonLight(2)))
-		self.buttons.append(Button(ButtonSwitch(3), ButtonLight(3)))
-		self.buttons.append(Button(ButtonSwitch(4), ButtonLight(4)))
-		self.buttons.append(Button(ButtonSwitch(5), ButtonLight(5)))
+		self.buttons.append(Button(ButtonSwitch(1), ButtonLight(3)))
+		self.buttons.append(Button(ButtonSwitch(2), ButtonLight(4)))
+		self.buttons.append(Button(ButtonSwitch(3), ButtonLight(5)))
+		self.buttons.append(Button(ButtonSwitch(4), ButtonLight(6)))
+		self.buttons.append(Button(ButtonSwitch(5), ButtonLight(7)))
 
 		# set up the players
 		self.player1 = Player("Adam", RacingCar(1), (self.buttons[0], self.buttons[1]))
@@ -63,19 +63,27 @@ class RacingPiGame(threading.Thread):
 			# find out which button was pressed
 			if self.player1.buttons[correct_answer_index].switch.value == 1:
 				print "Player 1 got the correct answer!"
+				self.player1.buttons[correct_answer_index].light.turn_on()
 				self.player1.car.drive(3)
+				self.player1.buttons[correct_answer_index].light.turn_off()
 
 			elif self.player1.buttons[wrong_answer_index].switch.value == 1:
 				print "Player 1 got the WRONG answer!"
+				self.player1.buttons[wrong_answer_index].light.turn_on()
 				self.player2.car.drive(3)
+				self.player1.buttons[wrong_answer_index].light.turn_on()
 
 			elif self.player2.buttons[correct_answer_index].switch.value == 1:
 				print "Player 2 got the correct answer!"
+				self.player2.buttons[correct_answer_index].light.turn_on()
 				self.player2.car.drive(3)
+				self.player2.buttons[correct_answer_index].light.turn_on()
 
 			elif self.player2.buttons[wrong_answer_index].switch.value == 1:
 				print "Player 2 got the WRONG answer!"
-				self.player1.car.drive(3)
+				self.player2.buttons[wrong_answer_index].light.turn_on()
+				self.player2.car.drive(3)
+				self.player2.buttons[wrong_answer_index].light.turn_on()
 
 			elif self.buttons[4].switch.value == 1:
 				print "PASS"
@@ -86,7 +94,7 @@ class RacingPiGame(threading.Thread):
 			while pin_bit_pattern != 0:
 				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 
-		self.gui.destroy() # end the gui
+		print "No more questions!"
 
 class RacingCar(pfio.Relay):
 	def __init__(self, racing_car_number):
