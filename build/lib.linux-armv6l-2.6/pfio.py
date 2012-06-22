@@ -57,6 +57,9 @@ spi_handler = None
 
 
 # custom exceptions
+class InitialisationError(Exception):
+	pass
+
 class InputDeviceError(Exception):
 	pass
 
@@ -69,25 +72,25 @@ class Item(object):
 		self.pin_number = pin_number
 		self.is_input = is_input
 
-	state = property(self._get_state, self._set_state)
+	value = property(self._get_value, self._set_value)
 
-	def _get_state(self):
+	def _get_value(self):
 		return digital_read(self.pin_number)
 
-	def _set_state(self, data):
+	def _set_value(self, data):
 		return digital_write(self.pin_number, data)
 
 	def turn_on(self):
 		if self.is_input:
 			raise InputDeviceError("You cannot turn on an input!")
 		else:
-			self.state = 1;
+			self.value = 1;
 	
 	def turn_off(self):
 		if self.is_input:
 			raise InputDeviceError("You cannot turn off an input!")
 		else:
-			self.state = 0;
+			self.value = 0;
 
 class LED(Item):
 	"""An LED on the RaspberryPi"""
@@ -149,6 +152,7 @@ def init():
 def deinit():
 	"""Deinitialises the PiFace"""
 	spi_handler.close()
+	spi_handler = None
 
 def pfio_print(text):
 	"""Prints a string with the pfio print prefix"""
@@ -255,6 +259,8 @@ def write(port, data):
 
 def send(data):
 	"""Sends a list of data to the PiFace"""
+	if spi_handler == None:
+		raise InitialisationError("The pfio module has not yet been initialised. Before send(), call init().")
 	# a place to store the returned values for each transfer
 	returned_values_list = list() 
 
@@ -266,7 +272,7 @@ def send(data):
 		 pfio_print("transfering data: %s" % data)
 
 		# transfer the data string
-		returned_values = a.transfer(data[0], length_data)
+		returned_values = spi_handler.transfer(data[0], length_data)
 		returned_values_list.append(returned_values)
 
 		if VERBOSE_MODE:
