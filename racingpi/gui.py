@@ -7,12 +7,13 @@ pygtk.require("2.0")
 import gtk
 
 import game
+import sys
 
 
 VERBOSE_MODE = True
 
 TITLE = "RacingPi"
-TITLE_SIZE = 20000
+TITLE_SIZE = 40000
 DEFAULT_QUESTION = "What... is the air-speed velocity of an unladen swallow?"
 QUESTION_SIZE = 10000
 DEFAULT_SPACING = 10
@@ -27,14 +28,11 @@ class RacingPiGUI(object):
 		self.window.connect("destroy", self.destroy)
 		self.window.set_border_width(10)
 		self.window.set_title(TITLE)
+		self.window.set_icon_from_file("racingPi.png")
 		self.generate_contents()
 		self.window.show()
 
-		try:
-            self.set_icon_from_file("racingPi.png")
-        except Exception, e:
-            print e.message
-            sys.exit(1)
+
 
 
 	def delete_event(self, widget, data=None):
@@ -56,13 +54,27 @@ class RacingPiGUI(object):
 		main_title.set_use_markup(True)
 		main_title.set_markup("<span size='%d'>%s</span>"%(TITLE_SIZE, TITLE))
 		main_title.show()
+		
+		image = gtk.Image()
+		image.set_from_file("racingPi.png")
+		image.show()
 
+		
 		# question space
 		self.question_label = gtk.Label(DEFAULT_QUESTION)
 		self.question_label.show()
 
 		main_box = make_vbox(elements=[main_title, self.question_label])
+		main_box.add(image)
 		self.window.add(main_box)
+		"""
+		try:
+			self.set_icon_from_file("racingPi.png")
+		except Exception, e:
+			print e.message
+			sys.exit(1)	
+		"""
+	
 	
 	def update_question(self, new_question):
 		gtk.gdk.threads_enter()
