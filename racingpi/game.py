@@ -55,42 +55,50 @@ class RacingPiGame(threading.Thread):
 				values = [question.text]
 				values.extend(answers)
 				self.gui.update_question("%s\nA: %s\nB: %s" % tuple(values))
-
+				print "t1"
 				# wait for a button press
 				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 				while pin_bit_pattern == 0:
 					pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
-
 				# find out which button was pressed
+				#print bin(pin_bit_pattern)
 				if self.player1.buttons[correct_answer_index].switch.value == 1:
-					print "Player 1 got the correct answer!"
+					print "t3"
 					self.player1.buttons[correct_answer_index].light.turn_on()
+					print "Player 1 got the correct answer!"
+					#print "The answer was: {}".format(question.correct_answer)
 					self.player1.car.drive(3)
 					self.player1.buttons[correct_answer_index].light.turn_off()
 
 				elif self.player1.buttons[wrong_answer_index].switch.value == 1:
-					print "Player 1 got the WRONG answer!"
 					self.player1.buttons[wrong_answer_index].light.turn_on()
+					print "Player 1 got the WRONG answer!"
+					#print "The answer was: {}".format(question.correct_answer)
 					self.player2.car.drive(3)
 					self.player1.buttons[wrong_answer_index].light.turn_off()
 
 				elif self.player2.buttons[correct_answer_index].switch.value == 1:
-					print "Player 2 got the correct answer!"
 					self.player2.buttons[correct_answer_index].light.turn_on()
+					print "Player 2 got the correct answer!"
+					#print "The answer was: {}".format(question.correct_answer)
 					self.player2.car.drive(3)
 					self.player2.buttons[correct_answer_index].light.turn_off()
 
 				elif self.player2.buttons[wrong_answer_index].switch.value == 1:
-					print "Player 2 got the WRONG answer!"
 					self.player2.buttons[wrong_answer_index].light.turn_on()
+					print "Player 2 got the WRONG answer!"
+					#print "The answer was: {}".format(question.correct_answer)
 					self.player1.car.drive(3)
 					self.player2.buttons[wrong_answer_index].light.turn_off()
 
 				elif self.buttons[4].switch.value == 1:
-					print "PASS"
 					self.buttons[4].light.turn_on()
+					print "PASS"
+					#print "The answer was: {}".format(question.correct_answer)
 					time.sleep(1)
 					self.buttons[4].light.turn_off()
+				else:
+					print "oops"
 					pass
 				
 				# wait until nothing is pressed
