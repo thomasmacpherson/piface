@@ -37,10 +37,11 @@ print "Time left is: %s" %time_left
 while True:
 	#print pfio.read_input
 	in_bit_pattern = pfio.read_input()[2] ^ 0b11111111 # see if any buttons have been hit
-	if in_bit_pattern:
-		#print "in bit pattern:      %s" % bin(in_bit_pattern)
-		#print bin(current)
-		#print "current bit pattern: %s" % bin(pfio.get_pin_bit_mask(current))
+	#TODO: insert check for button release (while 0)
+	if in_bit_pattern > 0:
+		print "in bit pattern:      %s" % bin(in_bit_pattern)
+		print bin(current)
+		print "current bit pattern: %s" % bin(pfio.get_pin_bit_mask(current))
 		if in_bit_pattern == pfio.get_pin_bit_mask(current):	# check that only the correct button was hit
 			pfio.digital_write(current+2, 0)	# turn off hit light
 			previous = current
@@ -59,6 +60,7 @@ while True:
 			#sleep(1)			# leave the light on for a second
 
 		else:
+			print "shit"
 			score -= 1
 	elif time_left==0:
 			pfio.digital_write(current+2, 0)	# turn off hit light
