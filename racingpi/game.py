@@ -43,58 +43,62 @@ class RacingPiGame(threading.Thread):
 
 	def run(self):
 		"""The main game stuff goes here"""
-		for question in self.questions:
-			# ask a question
-			correct_answer_index = int(2 * random.random())
-			wrong_answer_index = correct_answer_index ^ 1
-			answers = ["", ""]
-			answers[correct_answer_index] = question.correct_answer
-			answers[wrong_answer_index] = question.wrong_answer
+		while True:
+			for question in self.questions:
+				# ask a question
+				correct_answer_index = int(2 * random.random())
+				wrong_answer_index = correct_answer_index ^ 1
+				answers = ["", ""]
+				answers[correct_answer_index] = question.correct_answer
+				answers[wrong_answer_index] = question.wrong_answer
 
-			values = [question.text]
-			values.extend(answers)
-			self.gui.update_question("%s\nA: %s\nB: %s" % tuple(values))
+				values = [question.text]
+				values.extend(answers)
+				self.gui.update_question("%s\nA: %s\nB: %s" % tuple(values))
 
-			# wait for a button press
-			pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
-			while pin_bit_pattern == 0:
+				# wait for a button press
 				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
+				while pin_bit_pattern == 0:
+					pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 
-			# find out which button was pressed
-			if self.player1.buttons[correct_answer_index].switch.value == 1:
-				print "Player 1 got the correct answer!"
-				self.player1.buttons[correct_answer_index].light.turn_on()
-				self.player1.car.drive(3)
-				self.player1.buttons[correct_answer_index].light.turn_off()
+				# find out which button was pressed
+				if self.player1.buttons[correct_answer_index].switch.value == 1:
+					print "Player 1 got the correct answer!"
+					self.player1.buttons[correct_answer_index].light.turn_on()
+					self.player1.car.drive(3)
+					self.player1.buttons[correct_answer_index].light.turn_off()
 
-			elif self.player1.buttons[wrong_answer_index].switch.value == 1:
-				print "Player 1 got the WRONG answer!"
-				self.player1.buttons[wrong_answer_index].light.turn_on()
-				self.player2.car.drive(3)
-				self.player1.buttons[wrong_answer_index].light.turn_on()
+				elif self.player1.buttons[wrong_answer_index].switch.value == 1:
+					print "Player 1 got the WRONG answer!"
+					self.player1.buttons[wrong_answer_index].light.turn_on()
+					self.player2.car.drive(3)
+					self.player1.buttons[wrong_answer_index].light.turn_off()
 
-			elif self.player2.buttons[correct_answer_index].switch.value == 1:
-				print "Player 2 got the correct answer!"
-				self.player2.buttons[correct_answer_index].light.turn_on()
-				self.player2.car.drive(3)
-				self.player2.buttons[correct_answer_index].light.turn_on()
+				elif self.player2.buttons[correct_answer_index].switch.value == 1:
+					print "Player 2 got the correct answer!"
+					self.player2.buttons[correct_answer_index].light.turn_on()
+					self.player2.car.drive(3)
+					self.player2.buttons[correct_answer_index].light.turn_off()
 
-			elif self.player2.buttons[wrong_answer_index].switch.value == 1:
-				print "Player 2 got the WRONG answer!"
-				self.player2.buttons[wrong_answer_index].light.turn_on()
-				self.player2.car.drive(3)
-				self.player2.buttons[wrong_answer_index].light.turn_on()
+				elif self.player2.buttons[wrong_answer_index].switch.value == 1:
+					print "Player 2 got the WRONG answer!"
+					self.player2.buttons[wrong_answer_index].light.turn_on()
+					self.player1.car.drive(3)
+					self.player2.buttons[wrong_answer_index].light.turn_off()
 
-			elif self.buttons[4].switch.value == 1:
-				print "PASS"
-				pass
+				elif self.buttons[4].switch.value == 1:
+					print "PASS"
+					self.buttons[4].light.turn_on()
+					time.sleep(1)
+					self.buttons[4].light.turn_off()
+					pass
 				
-			# wait until nothing is pressed
-			pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
-			while pin_bit_pattern != 0:
+				# wait until nothing is pressed
 				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
+				while pin_bit_pattern != 0:
+					pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 
-		print "No more questions!"
+		#print "No more questions!"
 
 class RacingCar(pfio.Relay):
 	def __init__(self, racing_car_number):

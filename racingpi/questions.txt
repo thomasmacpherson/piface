@@ -8,3 +8,7 @@ What type of file has this file format .jpg ?,Image,Spreadsheet
 Computers are great?, True, False
 What type of processor does the RaspberryPi use?,ARM,LEG
 What famous computer scientist broke the Enigma codes at Bletchley Park?,Alan Turing,Steve Jobs
+A Cathode Ray Tube is found in what?, Monitor, CPU
+What does CPU stand for?, Central Processing Unit, Computer Power Unit
+What is the command to list files in Windows?, dir, ls
+What does UNIX stand for?, Nothing, UNIt eXchange
