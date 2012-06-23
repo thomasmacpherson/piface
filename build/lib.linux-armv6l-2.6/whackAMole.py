@@ -22,21 +22,22 @@ def next_colour():
 
 current = next_colour() 	# create first random colour to be lit
 pfio.digital_write(current+2,1)	# turn colour on
-set_time = 10000		# time allowed to hit each light (starts off large and reduced after each hit)
+set_time = 2000		# time allowed to hit each light (starts off large and reduced after each hit)
 time_left = set_time		# countdown timer for hitting the light
 hit = 0				# the input value
 score = 0
+misses = 0
+
+colours = ["Red","Green","Blue","Yellow","White"]
 
 
-print "first pin %s " % current
+
+print "Time left is: %s" %time_left
 
 while True:
-	if time_left ==0:
-		break	# if the light is not hit in time, exit the game while loop
 	#print pfio.read_input
 	in_bit_pattern = pfio.read_input()[2] ^ 0b11111111 # see if any buttons have been hit
 	if in_bit_pattern:
-		print "reged"
 		#print "in bit pattern:      %s" % bin(in_bit_pattern)
 		#print bin(current)
 		#print "current bit pattern: %s" % bin(pfio.get_pin_bit_mask(current))
@@ -47,20 +48,39 @@ while True:
 			while current == previous:		# ensure differnt colour each time
 				current = next_colour()		# get next colour
 				
-			set_time -= 100			# reduce the allowed time
+			if ((score + misses) %50) ==49:
+					set_time /= 2			# reduce the allowed time
+					print "Time left is: %s" %time_left
 			time_left = set_time		# set the countdown time
-			print "Time left is: %s" %time_left
+			
 			score += 1
 			pfio.digital_write(current+2,1)	# turn the new light on
 
-			sleep(1)			# leave the light on for a second
+			#sleep(1)			# leave the light on for a second
+
 		else:
-			break	# a wrong button was hit so exit the game while loop
-
-
+			score -= 1
+	elif time_left==0:
+			pfio.digital_write(current+2, 0)	# turn off hit light
+			misses +=1
+			if misses == 10:
+				break
+			previous = current
+			current = next_colour()			# get next colour
+			while current == previous:		# ensure differnt colour each time
+				current = next_colour()		# get next colour
+				
+			if ((score + misses) %50)==49:
+					set_time /= 2		# reduce the allowed time
+					print "Time left is: %s" %time_left
+			time_left = set_time		# set the countdown time
+			
+			score += 1
+			pfio.digital_write(current+2,1)	# turn the new light on		
+	
 	time_left -=1	# decrement the time left to hit the current light
 
-	pass
+	
 
 pfio.write_output(0)	# turn all lights off	
 print "Your score was: %s" %score
