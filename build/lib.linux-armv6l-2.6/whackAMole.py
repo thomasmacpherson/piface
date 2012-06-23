@@ -21,25 +21,37 @@ def next_colour():
 
 
 current = next_colour() 	# create first random colour to be lit
-pfio.digital_write(current,1)	# turn colour on
-set_time = 100000		# time allowed to hit each light (starts off large and reduced after each hit)
+pfio.digital_write(current+2,1)	# turn colour on
+set_time = 10000		# time allowed to hit each light (starts off large and reduced after each hit)
 time_left = set_time		# countdown timer for hitting the light
 hit = 0				# the input value
+score = 0
 
 
+print "first pin %s " % current
 
 while True:
 	if time_left ==0:
 		break	# if the light is not hit in time, exit the game while loop
-	
-	hit = pfio.read_input() # see if any buttons have been hit
-	if hit:
-		if hit == pfio.get_pin_bit_mask(current):	# check that only the correct button was hit
-			pfio.digital_write(current, 0)	# turn off hit light
+	#print pfio.read_input
+	in_bit_pattern = pfio.read_input()[2] ^ 0b11111111 # see if any buttons have been hit
+	if in_bit_pattern:
+		print "reged"
+		#print "in bit pattern:      %s" % bin(in_bit_pattern)
+		#print bin(current)
+		#print "current bit pattern: %s" % bin(pfio.get_pin_bit_mask(current))
+		if in_bit_pattern == pfio.get_pin_bit_mask(current):	# check that only the correct button was hit
+			pfio.digital_write(current+2, 0)	# turn off hit light
+			previous = current
 			current = next_colour()		# get next colour
+			while current == previous:		# ensure differnt colour each time
+				current = next_colour()		# get next colour
+				
 			set_time -= 100			# reduce the allowed time
 			time_left = set_time		# set the countdown time
-			pfio.digital_write(current,1)	# turn the new light on
+			print "Time left is: %s" %time_left
+			score += 1
+			pfio.digital_write(current+2,1)	# turn the new light on
 
 			sleep(1)			# leave the light on for a second
 		else:
@@ -48,9 +60,10 @@ while True:
 
 	time_left -=1	# decrement the time left to hit the current light
 
+	pass
 
 pfio.write_output(0)	# turn all lights off	
-
-pfio.deinit()		# close the pfio
+print "Your score was: %s" %score
+#pfio.deinit()		# close the pfio
 	
 
