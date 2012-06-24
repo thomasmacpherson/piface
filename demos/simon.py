@@ -2,7 +2,8 @@
 """
 simon.py
 Simple simon game for use with pfio and the RaspberryPi interface (piface)
-*You must remember an ever increasing sequence of flashes and input them correctly*
+
+Objective of the game: You must remember an ever increasing sequence of flashes and input them correctly*
 
 """
 
@@ -13,6 +14,7 @@ import pfio			# piface library
 pfio.init()			# initialise pfio (sets up the spi transfers)
 
 colours = ["Red","Green","Blue","Yellow","White"]		# colour names for printing to screen
+
 
 
 def next_colour():

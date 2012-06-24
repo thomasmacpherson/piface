@@ -3,15 +3,17 @@
 whackAMole.py
 Simple whack a mole game for use with pfio and the RaspberryPi interface (piface)
 
-Objective of game: a random LED will light up and you must hit the corresponding button as quickly as possible.
+Objective of game: A random LED will light up and you must hit the corresponding button as quickly as possible.
 The amount of time you have to hit the button will get shorter as the game progresses.
 """
-from time import sleep
-import pfio
-import random
+
+from time import sleep		# for delays
+import random			# for generating the next random button flash
+
+import pfio			# piface library		
 
 
-pfio.init()	# initialise pfio (sets up the spi transfers)
+pfio.init()			# initialise pfio (sets up the spi transfers)
 
 
 def next_colour():
@@ -25,14 +27,14 @@ pfio.digital_write(current+2,1)			# turn colour on
 set_time = 2000					# time allowed to hit each light (starts off large and reduced after each hit)
 time_left = set_time				# countdown timer for hitting the light
 hit = 0						# the input value
-score = 0
-misses = 0
+score = 0					# keep track of the player's score
+misses = 0					# keep track of how many the player misses
 
 colours = ["Red","Green","Blue","Yellow","White"]	# colour list for printing to screen
 previous_pressed = 255
 
 
-print "Time left is: %s" %time_left
+print "Time left is: %s" %time_left		# notify the player how long they have to hit each flash
 
 
 while True:
@@ -53,7 +55,7 @@ while True:
 				while current == previous:			# ensure differnt colour each time
 					current = next_colour()			# get next colour
 				
-				if ((score + misses) %30) ==49:
+				if ((score + misses) %30) ==29:
 					if set_time > 100:
 						set_time /= 2			# reduce the time allowed to hit the light
 						print "Time left is: %s" %set_time
@@ -75,18 +77,21 @@ while True:
 		pfio.digital_write(current+2, 0)			# turn off hit light
 		misses +=1						# increment misses
 		print "Missed one!"
+		
 		if misses == 10:					# too many misses = Game Over!
 			break
 			
 		previous = current					#
 		current = next_colour()					# get next colour
+		
 		while current == previous:				# ensure differnt colour each time
 			current = next_colour()				# get next colour
 				
-		if ((score + misses) %30)==49:
+		if ((score + misses) %30)==29:
 			if set_time > 100:
 				set_time /= 2				# reduce the allowed time
 				print "Time left is: %s" %set_time
+				
 		time_left = set_time					# set the countdown time
 			
 		pfio.digital_write(current+2,1)				# turn the new light on		
