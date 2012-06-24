@@ -4,14 +4,14 @@ import gtk, gobject, cairo
 from math import pi
 
 
-VIRT_PI_IMAGE = "/home/X09/prestotx/raspberry_pi/piface/piem/pi.png"
+VIRT_PI_IMAGE = "pi.png"
 
 PIN_COLOUR_R = 0
 PIN_COLOUR_G = 1
 PIN_COLOUR_B = 1
 
 # pin circle locations
-ledsX = [183.0,183.0,222.0,239.0]
+ledsX = [183.0,183.0,239.0,222.0]
 ledsY = [135.0,78.0,27.0,27.0]
 switchesX = [14.3, 39.3, 64.3, 89.3]
 switchesY = [157.5, 157.5, 157.5, 157.5]
@@ -50,10 +50,11 @@ pfio = None # the pfio module that has been passed in
 
 class Item(object):
 	"""A virtual item connected to a pin on the RaspberryPi emulator"""
-	def __init__(self, pin_number, is_input=False):
+	def __init__(self, pin_number, is_input=False, is_relay_ext_pin=False):
 		# an item defaults to an output device
 		self.pin_number = pin_number
 		self.is_input = is_input
+		self.is_relay_ext_pin = is_relay_ext_pin
 
 		self._value = 0 # hidden value for property stuff
 		self._hold  = False # this value cannot be changed unless forced
@@ -63,8 +64,8 @@ class Item(object):
 		# if the pfio is here then cross reference the virtual input
 		# with the physical input
 		global pfio
-		if pfio and is_input:
-			self.value = self._value | pfio.digital_read(self.pin_number)
+		if pfio and self.is_input:
+			self._value = self._value | pfio.digital_read(self.pin_number)
 
 		return self._value
 
@@ -79,9 +80,10 @@ class Item(object):
 				emu_screen.qdraw()
 
 			global pfio
-			if pfio and not is_input:
+			if pfio and not self.is_input and not self.is_relay_ext_pin:
 				# update the state of the actual output devices
 				pfio.digital_write(self.pin_number, new_value)
+				#print "Setting pin %d to %d" % (self.pin_number, new_value)
 
 	value = property(_get_value, _set_value)
 
@@ -111,7 +113,8 @@ class Item(object):
 
 class Pin(Item):
 	def __init__(self, pin_number, is_input=False,
-			is_relay1_pin=False, is_relay2_pin=False):
+			is_relay1_pin=False, is_relay2_pin=False,
+			is_relay_ext_pin=False):
 		if is_relay1_pin:
 			self.x = relay1PinsX[pin_number]
 			self.y = relay1PinsY[pin_number]
@@ -125,7 +128,7 @@ class Pin(Item):
 			self.x = boardOutputPinsX[pin_number-1]
 			self.y = boardOutputPinsY[pin_number-1]
 
-		Item.__init__(self, pin_number, is_input)
+		Item.__init__(self, pin_number, is_input, is_relay_ext_pin)
 
 	def draw_hidden(self, cr):
 		cr.arc(self.x, self.y, 5, 0, 2*pi)
@@ -191,9 +194,9 @@ class Relay(Item):
 		self.attach_pin(attached_pin, relay_number)
 
 		if relay_number == 1:
-			self.pins = [Pin(i, False, True, False) for i in range(3)]
+			self.pins = [Pin(i, False, True, False, True) for i in range(3)]
 		else:
-			self.pins = [Pin(i, False, False, True) for i in range(3)]
+			self.pins = [Pin(i, False, False, True, True) for i in range(3)]
 
 		Item.__init__(self, relay_number)
 

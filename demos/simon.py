@@ -11,6 +11,9 @@ from time import sleep 		# for delays
 import random			# for random sequence generation
 import pfio			# piface library
 
+
+
+
 pfio.init()			# initialise pfio (sets up the spi transfers)
 
 colours = ["Red","Green","Blue","Yellow","White"]		# colour names for printing to screen
@@ -100,18 +103,49 @@ while game:						# while game in play
 	sleep(0.3)
 	pfio.write_output(0x0)	
 
-	next = next_colour()		# set next colour
-	
-	while next == array[-1]:	# ensure the same colour isn't chosen twice in a row
-		next = next_colour()
+	if game:
+		next = next_colour()		# set next colour
+		while next == array[-1]:	# ensure the same colour isn't chosen twice in a row
+			next = next_colour()
 		
-	array.append(next)		# add another colour to the sequence
-	score +=1			# increment the score counter
-	sleep(0.4)			# small break before flashing the new extended sequence
+		array.append(next)		# add another colour to the sequence
+		score +=1			# increment the score counter
+		sleep(0.4)			# small break before flashing the new extended sequence
 
 
 
 pfio.write_output(0x00)			# if the game has been lost, set all the button leds off
-pfio.deinit()				# close the pfio
 
-print "Your score was: %s" %score 	# print the players score
+print "Your score was %s" %score 	# print the players score
+
+"""
+f = open('high_scores.txt','r+')
+
+high_scores = f.readlines()
+
+
+high_score = 0
+index = 0
+
+for indx, line in enumerate(high_scores):
+	if "simon" in line:
+		line = line.split(",")
+		high_score = int(line[1])
+		index = indx
+		break 
+		
+f.close()
+
+print "The high score was %d" %high_score
+
+
+if score > high_score:
+	print "Congratulations! You have the new high score"
+	f = open('high_scores.txt','r+')
+	f.write(replace(str(high_score),str(score)))
+	f.close()
+else:
+	print "You haven't beaten the high score, keep trying!"
+
+"""
+pfio.deinit()				# close the pfio

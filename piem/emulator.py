@@ -28,7 +28,7 @@ import emulator_parts
 
 VERBOSE_MODE = False
 
-PFIO_CONNECT = False
+PFIO_CONNECT = True
 if PFIO_CONNECT:
 	 import pfio
 
@@ -57,6 +57,7 @@ class Emulator(threading.Thread):
 
 		global emu_screen
 		if PFIO_CONNECT:
+			pfio.init()
 			emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED, pfio)
 		else:
 			emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED)
