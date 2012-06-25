@@ -7,6 +7,7 @@ import threading
 import random
 
 import pfio
+import racingpi_db_helper
 
 
 VERBOSE_MODE = True
@@ -25,7 +26,7 @@ class RacingPiGame(threading.Thread):
 		self.questions = list()
 		for line in question_file.readlines():
 			q_parts = line.split(",") # this can be moved into db later...
-			self.questions.append(Question(q_parts[0], q_parts[1], q_parts[2]))
+			self.questions.append(racingpi_db_helper.Question(q_parts[0], q_parts[1], q_parts[2]))
 
 		random.shuffle(self.questions)
 
@@ -43,13 +44,13 @@ class RacingPiGame(threading.Thread):
 
 	def run(self):
 		"""The main game stuff goes here"""
+		answers = ["", ""]
 		for question in self.questions:
 			# ask a question
 			correct_answer_index = int(2 * random.random())
-			wrong_answer_index = correct_answer_index ^ 1
-			answers = ["", ""]
+			incorrect_answer_index = correct_answer_index ^ 1
 			answers[correct_answer_index] = question.correct_answer
-			answers[wrong_answer_index] = question.wrong_answer
+			answers[incorrect_answer_index] = question.incorrect_answer
 
 			values = [question.text]
 			values.extend(answers)
@@ -67,11 +68,11 @@ class RacingPiGame(threading.Thread):
 				self.player1.car.drive(3)
 				self.player1.buttons[correct_answer_index].light.turn_off()
 
-			elif self.player1.buttons[wrong_answer_index].switch.value == 1:
-				print "Player 1 got the WRONG answer!"
-				self.player1.buttons[wrong_answer_index].light.turn_on()
+			elif self.player1.buttons[incorrect_answer_index].switch.value == 1:
+				print "Player 1 got the incorrect answer!"
+				self.player1.buttons[incorrect_answer_index].light.turn_on()
 				self.player2.car.drive(3)
-				self.player1.buttons[wrong_answer_index].light.turn_on()
+				self.player1.buttons[incorrect_answer_index].light.turn_on()
 
 			elif self.player2.buttons[correct_answer_index].switch.value == 1:
 				print "Player 2 got the correct answer!"
@@ -79,11 +80,11 @@ class RacingPiGame(threading.Thread):
 				self.player2.car.drive(3)
 				self.player2.buttons[correct_answer_index].light.turn_on()
 
-			elif self.player2.buttons[wrong_answer_index].switch.value == 1:
-				print "Player 2 got the WRONG answer!"
-				self.player2.buttons[wrong_answer_index].light.turn_on()
+			elif self.player2.buttons[incorrect_answer_index].switch.value == 1:
+				print "Player 2 got the incorrect answer!"
+				self.player2.buttons[incorrect_answer_index].light.turn_on()
 				self.player2.car.drive(3)
-				self.player2.buttons[wrong_answer_index].light.turn_on()
+				self.player2.buttons[incorrect_answer_index].light.turn_on()
 
 			elif self.buttons[4].switch.value == 1:
 				print "PASS"
@@ -128,9 +129,4 @@ class Player(object):
 		self.car = car
 		self.buttons = buttons
 		self.points = 0
-
-class Question(object):
-	def __init__(self, question_text, correct_answer, wrong_answer):
-		self.text = question_text
-		self.correct_answer = correct_answer
-		self.wrong_answer = wrong_answer
+		self.incorrect_answer = incorrect_answer
