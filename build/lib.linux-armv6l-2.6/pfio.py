@@ -147,6 +147,7 @@ def init():
 	write(IODIRB, 0xFF) # set port B as inputs
 	write(GPIOA,  0xFF) # set port A on
 	#write(GPIOB,  0xFF) # set port B on
+	write(GPPUA,  0xFF) # set port A pullups on
 	write(GPPUB,  0xFF) # set port B pullups on
 
 	# initialise all outputs to 0
