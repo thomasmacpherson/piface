@@ -64,35 +64,35 @@ class RacingPiGame(threading.Thread):
 				# find out which button was pressed
 				pin_number = pfio.get_pin_number(pin_bit_pattern)
 
-				if self.player1.buttons[correct_answer_index].pin_number:
+				if self.player1.buttons[correct_answer_index].switch.pin_number:
 					self.player1.buttons[correct_answer_index].light.turn_on()
 					print "Player 1 got the correct answer!"
 					#print "The answer was: {}".format(question.correct_answer)
 					self.player1.car.drive(3)
 					self.player1.buttons[correct_answer_index].light.turn_off()
 
-				elif self.player1.buttons[wrong_answer_index].pin_number:
+				elif self.player1.buttons[wrong_answer_index].switch.pin_number:
 					self.player1.buttons[wrong_answer_index].light.turn_on()
 					print "Player 1 got the WRONG answer!"
 					#print "The answer was: {}".format(question.correct_answer)
 					self.player2.car.drive(3)
 					self.player1.buttons[wrong_answer_index].light.turn_off()
 
-				elif self.player2.buttons[correct_answer_index].pin_number:
+				elif self.player2.buttons[correct_answer_index].switch.pin_number:
 					self.player2.buttons[correct_answer_index].light.turn_on()
 					print "Player 2 got the correct answer!"
 					#print "The answer was: {}".format(question.correct_answer)
 					self.player2.car.drive(3)
 					self.player2.buttons[correct_answer_index].light.turn_off()
 
-				elif self.player2.buttons[wrong_answer_index].pin_number:
+				elif self.player2.buttons[wrong_answer_index].switch.pin_number:
 					self.player2.buttons[wrong_answer_index].light.turn_on()
 					print "Player 2 got the WRONG answer!"
 					#print "The answer was: {}".format(question.correct_answer)
 					self.player1.car.drive(3)
 					self.player2.buttons[wrong_answer_index].light.turn_off()
 
-				elif self.buttons[4].pin_number:
+				elif self.buttons[4].switch.pin_number:
 					self.buttons[4].light.turn_on()
 					print "PASS"
 					#print "The answer was: {}".format(question.correct_answer)
