@@ -20,6 +20,8 @@ DEFAULT_SPACING = 10
 
 class RacingPiGUI(object):
 	def __init__(self):
+		self.the_game = None
+
 		self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
 		self.window.connect("delete_event", self.delete_event)
 		self.window.connect("destroy", self.destroy)
@@ -32,6 +34,8 @@ class RacingPiGUI(object):
 		return False # call the destroy event after this
 
 	def destroy(self, widget, data=None):
+		if self.the_game:
+			self.the_game.stop()
 		gtk.main_quit()
 
 	def main(self):

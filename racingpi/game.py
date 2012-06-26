@@ -46,76 +46,90 @@ class RacingPiGame(threading.Thread):
 		self.player1 = Player("Adam", RacingCar(1), (self.buttons[0], self.buttons[1]))
 		self.player2 = Player("Eve", RacingCar(2), (self.buttons[2], self.buttons[3]))
 
+		"""
+		Threading stopper idea from stack overflow
+		http://stackoverflow.com/questions/323972/is-there-any-way-to-kill-a-thread-in-python
+		"""
+		self._stop = threading.Event() # a stopper to know when to end the game
+
+	def stop(self):
+		self._stop.set()
+
+	def stopped(self):
+		return self._stop.isSet()
+
+
 	def run(self):
 		"""The main game stuff goes here"""
-		while True:
-			for question in self.questions:
-				# ask a question
-				correct_answer_index = int(2 * random.random())
-				wrong_answer_index = correct_answer_index ^ 1
-				answers = ["", ""]
-				answers[correct_answer_index] = question.correct_answer
-				answers[wrong_answer_index] = question.wrong_answer
+		for question in self.questions:
+			# ask a question
+			correct_answer_index = int(2 * random.random())
+			wrong_answer_index = correct_answer_index ^ 1
+			answers = ["", ""]
+			answers[correct_answer_index] = question.correct_answer
+			answers[wrong_answer_index] = question.wrong_answer
 
-				values = [question.text]
-				values.extend(answers)
-				self.gui.update_question("%s\nA: %s\nB: %s" % tuple(values))
+			values = [question.text]
+			values.extend(answers)
+			self.gui.update_question("%s\nA: %s\nB: %s" % tuple(values))
 
-				# wait for a button press
+			# wait for a button press
+			pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
+			while pin_bit_pattern == 0 and not self.stopped():
 				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
-				while pin_bit_pattern == 0:
-					pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 
-				# find out which button was pressed
-				pin_number = pfio.get_pin_number(pin_bit_pattern)
+			# find out which button was pressed
+			pin_number = pfio.get_pin_number(pin_bit_pattern)
 
-				print "pin number: %d" % pin_number
-				print self.player1.buttons[correct_answer_index].switch.pin_number
+			print "pin number: %d" % pin_number
+			print self.player1.buttons[correct_answer_index].switch.pin_number
 
-				if pin_number == self.player1.buttons[correct_answer_index].switch.pin_number:
-					self.player1.buttons[correct_answer_index].light.turn_on()
-					print "Player 1 got the correct answer!"
-					#print "The answer was: {}".format(question.correct_answer)
-					self.player1.car.drive(3)
-					self.player1.buttons[correct_answer_index].light.turn_off()
+			if pin_number == self.player1.buttons[correct_answer_index].switch.pin_number:
+				self.player1.buttons[correct_answer_index].light.turn_on()
+				print "Player 1 got the correct answer!"
+				#print "The answer was: {}".format(question.correct_answer)
+				self.player1.car.drive(3)
+				self.player1.buttons[correct_answer_index].light.turn_off()
 
-				elif pin_number == self.player1.buttons[wrong_answer_index].switch.pin_number:
-					self.player1.buttons[wrong_answer_index].light.turn_on()
-					print "Player 1 got the WRONG answer!"
-					#print "The answer was: {}".format(question.correct_answer)
-					self.player2.car.drive(3)
-					self.player1.buttons[wrong_answer_index].light.turn_off()
+			elif pin_number == self.player1.buttons[wrong_answer_index].switch.pin_number:
+				self.player1.buttons[wrong_answer_index].light.turn_on()
+				print "Player 1 got the WRONG answer!"
+				#print "The answer was: {}".format(question.correct_answer)
+				self.player2.car.drive(3)
+				self.player1.buttons[wrong_answer_index].light.turn_off()
 
-				elif pin_number == self.player2.buttons[correct_answer_index].switch.pin_number:
-					self.player2.buttons[correct_answer_index].light.turn_on()
-					print "Player 2 got the correct answer!"
-					#print "The answer was: {}".format(question.correct_answer)
-					self.player2.car.drive(3)
-					self.player2.buttons[correct_answer_index].light.turn_off()
+			elif pin_number == self.player2.buttons[correct_answer_index].switch.pin_number:
+				self.player2.buttons[correct_answer_index].light.turn_on()
+				print "Player 2 got the correct answer!"
+				#print "The answer was: {}".format(question.correct_answer)
+				self.player2.car.drive(3)
+				self.player2.buttons[correct_answer_index].light.turn_off()
 
-				elif pin_number == self.player2.buttons[wrong_answer_index].switch.pin_number:
-					self.player2.buttons[wrong_answer_index].light.turn_on()
-					print "Player 2 got the WRONG answer!"
-					#print "The answer was: {}".format(question.correct_answer)
-					self.player1.car.drive(3)
-					self.player2.buttons[wrong_answer_index].light.turn_off()
+			elif pin_number == self.player2.buttons[wrong_answer_index].switch.pin_number:
+				self.player2.buttons[wrong_answer_index].light.turn_on()
+				print "Player 2 got the WRONG answer!"
+				#print "The answer was: {}".format(question.correct_answer)
+				self.player1.car.drive(3)
+				self.player2.buttons[wrong_answer_index].light.turn_off()
 
-				elif pin_number == self.buttons[4].switch.pin_number:
-					self.buttons[4].light.turn_on()
-					print "PASS"
-					#print "The answer was: {}".format(question.correct_answer)
-					time.sleep(1)
-					self.buttons[4].light.turn_off()
+			elif pin_number == self.buttons[4].switch.pin_number:
+				self.buttons[4].light.turn_on()
+				print "PASS"
+				#print "The answer was: {}".format(question.correct_answer)
+				time.sleep(1)
+				self.buttons[4].light.turn_off()
 
-				else:
-					print "oops"
-				
-				# wait until nothing is pressed
+			else:
+				print "oops"
+
+			# wait until nothing is pressed
+			pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
+			while pin_bit_pattern != 0:
 				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
-				while pin_bit_pattern != 0:
-					pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 
-		#print "No more questions!"
+			# should we keep playing?
+			if self.stopped():
+				break
 
 class RacingCar(pfio.Relay):
 	def __init__(self, racing_car_number):
