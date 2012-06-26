@@ -31,6 +31,9 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #define MAXPATH 16
 
+// deboucing transfer repetition - thomas preston 26/06/2012
+#define DBOUNCE_REP 2
+
 PyDoc_STRVAR(SPI_module_doc,
 	"This module defines an object type that allows SPI transactions\n"
 	"on hosts running the Linux kernel. The host kernel must have SPI\n"
@@ -139,25 +142,38 @@ static PyObject* SPI_transfer(SPI *self, PyObject *args)
 	puts(""); // newline
 #endif
 
+
 	uint8_t rx[ARRAY_SIZE(tx)];
+	int rx_index;
+	for (rx_index = 0; rx_index <= ARRAY_SIZE(tx); rx_index++)
+		rx[rx_index] = 0;
 
-	/*This is the transfer part, and sets up
-	the details needed to transfer the data*/
-	struct spi_ioc_transfer tr = {
-		.tx_buf = (unsigned long)tx,
-		.rx_buf = (unsigned long)rx,
-		.len = ARRAY_SIZE(tx),
-		.delay_usecs = delay,
-		.speed_hz = speed,
-		.bits_per_word = bits,
-	};
+	int dbounce_index;
+	for (dbounce_index = 0; dbounce_index < DBOUNCE_REP; dbounce_index++)
+	{
+		uint8_t new_rx[ARRAY_SIZE(tx)];
 
-	//The actual transfer command and data, does send and receive!! Very important!
-	ret = ioctl(self->fd, SPI_IOC_MESSAGE(1), &tr);
-	if (ret < 1){
+		/*This is the transfer part, and sets up
+		the details needed to transfer the data*/
+		struct spi_ioc_transfer tr = {
+			.tx_buf = (unsigned long)tx,
+			.rx_buf = (unsigned long)new_rx,
+			.len = ARRAY_SIZE(tx),
+			.delay_usecs = delay,
+			.speed_hz = speed,
+			.bits_per_word = bits,
+		};
 
-		printf("ERROR: Can't send spi message");
-		perror(0);
+		//The actual transfer command and data, does send and receive!! Very important!
+		ret = ioctl(self->fd, SPI_IOC_MESSAGE(1), &tr);
+		if (ret < 1){
+			printf("ERROR: Can't send spi message");
+			perror(0);
+		}
+
+		// now that we have data in new_rx, OR it all into the main rx
+		for (rx_index = 0; rx_index <= ARRAY_SIZE(tx); rx_index++)
+			rx[rx_index] |= new_rx[rx_index];
 	}
 
 #ifdef VERBOSE_MODE
