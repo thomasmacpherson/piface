@@ -6,12 +6,19 @@ Simple whack a mole game for use with pfio and the RaspberryPi interface (piface
 Objective of game: a random LED will light up and you must hit the corresponding button as quickly as possible.
 The amount of time you have to hit the button will get shorter as the game progresses.
 """
-
 from time import sleep
 import pfio
+import random
 
 
 pfio.init()	# initialise pfio (sets up the spi transfers)
+
+
+def next_colour():
+	""" choses a random number between 1 and 5 to represent the coloured leds and their corresponding buttons"""
+	return random.randint(1,5)
+
+
 
 current = next_colour() 	# create first random colour to be lit
 pfio.digital_write(current,1)	# turn colour on
@@ -27,7 +34,7 @@ while True:
 	
 	hit = pfio.read_input() # see if any buttons have been hit
 	if hit:
-		if hit == pfio.get_bit_mask(current):	# check that only the correct button was hit
+		if hit == pfio.get_pin_bit_mask(current):	# check that only the correct button was hit
 			pfio.digital_write(current, 0)	# turn off hit light
 			current = next_colour()		# get next colour
 			set_time -= 100			# reduce the allowed time
@@ -47,6 +54,3 @@ pfio.write_output(0)	# turn all lights off
 pfio.deinit()		# close the pfio
 	
 
-def next_colour():
-	""" choses a random number between 1 and 5 to represent the coloured leds and their corresponding buttons"""
-	return random.randint(1,5)
