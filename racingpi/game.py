@@ -13,6 +13,11 @@ VERBOSE_MODE = True
 
 DEFAULT_QUESTION_FILE = "racingpi/questions.txt"
 
+
+class UnknownButtonError(Exception):
+	pass
+
+
 class RacingPiGame(threading.Thread):
 	def __init__(self, gui, question_file_name=None):
 		threading.Thread.__init__(self)
@@ -78,6 +83,10 @@ class RacingPiGame(threading.Thread):
 			while pin_bit_pattern == 0 and not self.stopped():
 				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
 
+			# since we can't have multi-leveled break statements...
+			if self.stopped():
+				break
+
 			# find out which button was pressed
 			pin_number = pfio.get_pin_number(pin_bit_pattern)
 
@@ -120,7 +129,7 @@ class RacingPiGame(threading.Thread):
 				self.buttons[4].light.turn_off()
 
 			else:
-				print "oops"
+				raise UnknownButtonError("detected change on pin: %d" % pin_number)
 
 			# wait until nothing is pressed
 			pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
