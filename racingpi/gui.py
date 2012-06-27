@@ -30,6 +30,13 @@ class RacingPiGUI(object):
 		self.generate_contents()
 		self.window.show()
 
+		try:
+            self.set_icon_from_file("racingPi.png")
+        except Exception, e:
+            print e.message
+            sys.exit(1)
+
+
 	def delete_event(self, widget, data=None):
 		return False # call the destroy event after this
 
