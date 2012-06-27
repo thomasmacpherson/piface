@@ -40,8 +40,8 @@ PIN_COLOUR_B = 1
 # pin circle locations
 ledsX = [183.0,183.0,222.0,239.0]
 ledsY = [135.0,78.0,27.0,27.0]
-switchesX = [15.0, 40.0, 65.0, 90.0]
-switchesY = [160.0, 160.0, 160.0, 160.0]
+switchesX = [14.3, 39.3, 64.3, 89.3]
+switchesY = [157.5, 157.5, 157.5, 157.5]
 relay1PinsX = [285.0,285.0,285.0]
 relay1PinsY = [124.0,136.0,148.0]
 relay2PinsX = [285.0,285.0,285.0,]
@@ -277,7 +277,7 @@ class Switch(Item):
 		if self.value == 1:
 			cr.save()
 			cr.set_source_rgb(1,1,0)
-			cr.arc (self.x, self.y, 5, 0, 2*pi);
+			cr.arc (self.x, self.y, 4.5, 0, 2*pi);
 			cr.fill()
 			cr.restore()
 
