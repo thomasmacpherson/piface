@@ -12,3 +12,5 @@ def begin(question_file=None):
 
 	the_game.start()
 	the_gui.main()
+
+	the_game.join()

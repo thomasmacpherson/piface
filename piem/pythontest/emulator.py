@@ -23,7 +23,10 @@ from gtk import gdk
 from math import pi
 import time
 
+
 VERBOSE_MODE = False
+
+VIRT_PI_IMAGE = "/home/X09/prestotx/raspberry_pi/piface/piem/pythontest/pi.png"
 
 EMU_WIDTH  = 292
 EMU_HEIGHT = 193
@@ -67,6 +70,9 @@ PH_PIN_SWITCH_2 = 2
 PH_PIN_SWITCH_3 = 3
 PH_PIN_SWITCH_4 = 4
 
+emu_window = None
+emu_screen = None
+
 
 class Item(object):
 	"""A virtual item connected to a pin on the RaspberryPi emulator"""
@@ -87,7 +93,11 @@ class Item(object):
 			self._value = new_value
 			self._hold  = False
 			self._force = False
-	
+
+			global emu_screen
+			if emu_screen:
+				emu_screen.qdraw()
+
 	value = property(_get_value, _set_value)
 
 	def turn_on(self, hold=False):
@@ -99,6 +109,20 @@ class Item(object):
 		#print "turning off..."
 		self._force = force
 		self.value = 0;
+	
+	def attach_pin(self, pin, pin_number=1, is_input=False):
+		if pin:
+			self.attached_pin = pin
+		elif emu_screen:
+			if is_input:
+				self.attached_pin = emu_screen.input_pins[pin_number-1]
+			else:
+				self.attached_pin = emu_screen.output_pins[pin_number-1]
+		else: # guess
+			if is_input:
+				self.attached_pin = Pin(pin_number)
+			else:
+				self.attached_pin = Pin(pin_number)
 
 class Pin(Item):
 	def __init__(self, pin_number, is_input=False,
@@ -132,8 +156,8 @@ class Pin(Item):
 
 class LED(Item):
 	"""A virtual LED on the RaspberryPi emulator"""
-	def __init__(self, led_number, attached_pin):
-		self.attached_pin = attached_pin
+	def __init__(self, led_number, attached_pin=None):
+		self.attach_pin(attached_pin, led_number)
 
 		self.x = ledsX[led_number-1]
 		self.y = ledsY[led_number-1]
@@ -149,7 +173,7 @@ class LED(Item):
 	value = property(_get_value, _set_value)
 
 	def turn_on(self):
-		#print "turning on"
+		#print "turning on LED"
 		self.value = 1;
 	
 	def turn_off(self):
@@ -178,8 +202,9 @@ class LED(Item):
 
 class Relay(Item):
 	"""A relay on the RaspberryPi"""
-	def __init__(self, relay_number, attached_pin):
-		self.attached_pin = attached_pin
+	def __init__(self, relay_number, attached_pin=None):
+		self.attach_pin(attached_pin, relay_number)
+
 		if relay_number == 1:
 			self.pins = [Pin(i, False, True, False) for i in range(3)]
 		else:
@@ -222,8 +247,9 @@ class Relay(Item):
 
 class Switch(Item):
 	"""A virtual switch on the RaspberryPi emulator"""
-	def __init__(self, switch_number, attached_pin):
-		self.attached_pin = attached_pin
+	def __init__(self, switch_number, attached_pin=None):
+		self.attach_pin(attached_pin, switch_number, True)
+
 		self.x = switchesX[switch_number-1]
 		self.y = switchesY[switch_number-1]
 		Item.__init__(self, switch_number, True)
@@ -316,7 +342,7 @@ class EmulatorScreen(Screen):
 		cr.save ( ) # Start a bubble
 
 		# create the background surface
-		self.surface = cairo.ImageSurface.create_from_png("pi.png")
+		self.surface = cairo.ImageSurface.create_from_png(VIRT_PI_IMAGE)
 		cr.set_source_surface(self.surface, 0, 0)
 
 		# blank everything
@@ -420,13 +446,16 @@ class Emulator(threading.Thread):
 		threading.Thread.__init__(self)
 
 	def run(self):
-		window = gtk.Window()
-		window.connect("delete-event", gtk.main_quit)
+		global emu_window
+		emu_window = gtk.Window()
+		emu_window.connect("delete-event", gtk.main_quit)
+
 		global emu_screen
 		emu_screen = EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED)
 		emu_screen.show()
-		window.add(emu_screen) # add the screen to the window
-		window.present()
+
+		emu_window.add(emu_screen) # add the screen to the window
+		emu_window.present()
 		gtk.main()
 
 def init():
@@ -448,7 +477,11 @@ def init():
 
 def deinit():
 	"""Deinitialises the PiFace"""
+	global emu_window
+	emu_window.destroy()
+
 	gtk.main_quit()
+
 	global emu_screen
 	emu_screen = None
 
@@ -496,7 +529,7 @@ def digital_write(pin_number, value):
 	else:
 		emu_screen.output_pins[pin_number-1].turn_off()
 	
-	emu_screen.qdraw()
+	#emu_screen.qdraw()
 
 	if VERBOSE_MODE:
 		emu_print("digital write end")
@@ -515,14 +548,16 @@ def read_output():
 	global emu_screen
 	output_pin_values = [pin.value for pin in emu_screen.output_pins]
 	output_binary_string = "".join(map(str, output_pin_values))
-	return int(output_binary_string, 2)
+	return [None, None, int(output_binary_string, 2), None, None, None]
 
 def read_input():
 	"""Returns the values of the input pins"""
 	global emu_screen
 	input_pin_values = [pin.value for pin in emu_screen.input_pins]
+	input_pin_values.reverse() # values are mapped the opposite way
 	input_binary_string = "".join(map(str, input_pin_values))
-	return int(input_binary_string, 2)
+	inverted_input = int(input_binary_string, 2) ^ 0b11111111 # input is active low
+	return [None, None, inverted_input, None, None, None]
 
 def write_output(data):
 	"""Writes the values of the output pins"""
@@ -534,7 +569,7 @@ def write_output(data):
 		else:
 			emu_screen.output_pins[i].turn_off()
 
-	emu_screen.qdraw()
+	#emu_screen.qdraw()
 
 def write_input(data):
 	"""Writes the values of the input pins"""
@@ -546,7 +581,7 @@ def write_input(data):
 		else:
 			emu_screen.input_pins[i].turn_off()
 
-	emu_screen.qdraw()
+	#emu_screen.qdraw()
 
 if __name__ == "__main__":
 	init()

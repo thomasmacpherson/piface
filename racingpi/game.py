@@ -6,7 +6,8 @@ import time
 import threading
 import random
 
-import pfio
+#import pfio
+import emulator as pfio
 
 
 VERBOSE_MODE = True
@@ -90,8 +91,8 @@ class RacingPiGame(threading.Thread):
 			# find out which button was pressed
 			pin_number = pfio.get_pin_number(pin_bit_pattern)
 
-			print "pin number: %d" % pin_number
-			print self.player1.buttons[correct_answer_index].switch.pin_number
+			#print "pin number: %d" % pin_number
+			#print self.player1.buttons[correct_answer_index].switch.pin_number
 
 			if pin_number == self.player1.buttons[correct_answer_index].switch.pin_number:
 				self.player1.buttons[correct_answer_index].light.turn_on()
@@ -140,13 +141,16 @@ class RacingPiGame(threading.Thread):
 			if self.stopped():
 				break
 
+		self.stop()
+		pfio.deinit()
+
 class RacingCar(pfio.Relay):
 	def __init__(self, racing_car_number):
 		# racing car number directly translates to the relay number
 		pfio.Relay.__init__(self, racing_car_number)
 	
 	def drive(self, drive_period):
-		" ""Move the car for the specified amount of seconds"" "
+		"""Move the car for the specified amount of seconds"""
 		self.turn_on()
 		time.sleep(drive_period)
 		self.turn_off()
