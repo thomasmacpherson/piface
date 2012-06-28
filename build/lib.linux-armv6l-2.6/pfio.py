@@ -14,7 +14,7 @@ now using underscores for function names since this is closer to the PEP-8
 Method 'send': We are passing this a list of data and then only handling the
 first one. I have changed this to handle every item in the list.
 """
-#import spi
+import spi
 from time import sleep
 
 
