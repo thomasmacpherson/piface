@@ -14,12 +14,12 @@ now using underscores for function names since this is closer to the PEP-8
 Method 'send': We are passing this a list of data and then only handling the
 first one. I have changed this to handle every item in the list.
 """
-import spi
+#import spi
 from time import sleep
 
 
 VERBOSE_MODE = False # toggle verbosity
-PFIO_PRINT_PREFIX = "PFIO: " # prefix for pfio messages
+__pfio_print_PREFIX = "PFIO: " # prefix for pfio messages
 
 # SPI operations
 WRITE_CMD = 0x40
@@ -131,12 +131,12 @@ class Switch(Item):
 		Item.__init__(self, switch_number, True)
 
 
-# functions/methods/whatever you want to call them
+# functions
 def init():
 	"""Initialises the PiFace"""
 	if VERBOSE_MODE:
 		 #print "PIFO: initialising SPI mode, reading data, reading length . . . \n"
-		 pfio_print("initialising SPI")
+		 __pfio_print("initialising SPI")
 
 	global spi_handler
 	spi_handler = spi.SPI(0,0) # spi.SPI(X,Y) is /dev/spidevX.Y
@@ -159,9 +159,9 @@ def deinit():
 	spi_handler.close()
 	spi_handler = None
 
-def pfio_print(text):
+def __pfio_print(text):
 	"""Prints a string with the pfio print prefix"""
-	print "%s %s" % (PFIO_PRINT_PREFIX, text)
+	print "%s %s" % (__pfio_print_PREFIX, text)
 
 def get_pin_bit_mask(pin_number):
 	"""Translates a pin number to pin bit mask. First pin is pin1 (not pin0).
@@ -195,17 +195,17 @@ def build_hex_string(items):
 def digital_write(pin_number, value):
 	"""Writes the value given to the pin specified"""
 	if VERBOSE_MODE:
-		pfio_print("digital write start")
+		__pfio_print("digital write start")
 
 	pin_bit_mask = get_pin_bit_mask(pin_number)
 
 	if VERBOSE_MODE:
-		pfio_print("pin bit mask: %s" % bin(pin_bit_mask))
+		__pfio_print("pin bit mask: %s" % bin(pin_bit_mask))
 
 	old_pin_values = read_output()[2]
 
 	if VERBOSE_MODE:
-		pfio_print("old pin values: %s" % bin(old_pin_values))
+		__pfio_print("old pin values: %s" % bin(old_pin_values))
 
 	# generate the 
 	if value:
@@ -214,7 +214,7 @@ def digital_write(pin_number, value):
 		new_pin_values = old_pin_values & ~pin_bit_mask
 
 	if VERBOSE_MODE:
-		pfio_print("new pin values: %s" % bin(new_pin_values))
+		__pfio_print("new pin values: %s" % bin(new_pin_values))
 
 	data_as_hex = build_hex_string((WRITE_CMD, OUTPUT_PORT, new_pin_values))
 
@@ -224,7 +224,7 @@ def digital_write(pin_number, value):
 	send(data)
 
 	if VERBOSE_MODE:
-		pfio_print("digital write end")
+		__pfio_print("digital write end")
 
 def digital_read(pin_number):
 	"""Returns the value of the pin specified"""
@@ -286,14 +286,14 @@ def send(data):
 		length_data = len(datum) / 2 # why? -thomas preston
 
 		if VERBOSE_MODE:
-		 pfio_print("transfering data: %s" % data)
+			__pfio_print("transfering data: %s" % data)
 
 		# transfer the data string
 		returned_values = spi_handler.transfer(data[0], length_data)
 		returned_values_list.append(returned_values)
 
 		if VERBOSE_MODE:
-			pfio_print("SPI module returned:")
+			__pfio_print("SPI module returned:")
 			print [hex(value) for value in returned_values]
 
 	return returned_values_list
