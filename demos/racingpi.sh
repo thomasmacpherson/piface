@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo python -c "import racingpi; racingpi.begin(\"$1\")"
+sudo python -c "import racingpi; racingpi.begin(\"$1\")"&
