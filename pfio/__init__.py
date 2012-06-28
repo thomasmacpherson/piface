@@ -156,6 +156,7 @@ def init():
 
 def deinit():
 	"""Deinitialises the PiFace"""
+	global spi_handler
 	spi_handler.close()
 	spi_handler = None
 
