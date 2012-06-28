@@ -25,7 +25,12 @@ import time
 
 import emulator_parts
 
+
 VERBOSE_MODE = False
+
+PFIO_CONNECT = False
+if PFIO_CONNECT:
+	 import pfio
 
 DEFAULT_SPACING = 10
 
@@ -51,7 +56,11 @@ class Emulator(threading.Thread):
 		emu_window.connect("delete-event", gtk.main_quit)
 
 		global emu_screen
-		emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED)
+		if PFIO_CONNECT:
+			emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED, pfio)
+		else:
+			emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED)
+
 		emu_screen.finished_setting_up()
 		emu_screen.show()
 

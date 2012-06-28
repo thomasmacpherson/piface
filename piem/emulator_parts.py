@@ -45,6 +45,7 @@ PH_PIN_SWITCH_4 = 4
 
 emu_screen = None
 
+pfio = None # the pfio module that has been passed in
 
 
 class Item(object):
@@ -59,6 +60,12 @@ class Item(object):
 		self._force = False # when true, held values can be changed
 	
 	def _get_value(self):
+		# if the pfio is here then cross reference the virtual input
+		# with the physical input
+		global pfio
+		if pfio and is_input:
+			self.value = self._value | pfio.digital_read(self.pin_number)
+
 		return self._value
 
 	def _set_value(self, new_value):
@@ -70,6 +77,11 @@ class Item(object):
 			global emu_screen
 			if emu_screen:
 				emu_screen.qdraw()
+
+			global pfio
+			if pfio and not is_input:
+				# update the state of the actual output devices
+				pfio.digital_write(self.pin_number, new_value)
 
 	value = property(_get_value, _set_value)
 
@@ -299,8 +311,12 @@ class Screen(gtk.DrawingArea):
 
 class EmulatorScreen(Screen):
 	"""This class is also a Drawing Area, coming from Screen."""
-	def __init__ (self, w, h, speed):
+	def __init__ (self, w, h, speed, pfio_module=None):
 		Screen.__init__(self, w, h, speed)
+
+		global pfio
+		pfio = pfio_module
+
 		self.input_pins = [Pin(i, True) for i in range(1,9)]
 		self.switches = [Switch(i+1, self.input_pins[i]) for i in range(4)]
 
