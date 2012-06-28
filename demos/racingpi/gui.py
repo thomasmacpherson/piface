@@ -18,6 +18,8 @@ DEFAULT_QUESTION = "What... is the air-speed velocity of an unladen swallow?"
 QUESTION_SIZE = 10000
 DEFAULT_SPACING = 10
 
+RACING_PI_IMAGE = "racingpi/racingPi.png"
+
 
 class RacingPiGUI(object):
 	def __init__(self):
@@ -28,7 +30,7 @@ class RacingPiGUI(object):
 		self.window.connect("destroy", self.destroy)
 		self.window.set_border_width(10)
 		self.window.set_title(TITLE)
-		self.window.set_icon_from_file("racingPi.png")
+		self.window.set_icon_from_file(RACING_PI_IMAGE)
 		self.generate_contents()
 		self.window.show()
 
@@ -56,7 +58,7 @@ class RacingPiGUI(object):
 		main_title.show()
 		
 		image = gtk.Image()
-		image.set_from_file("racingPi.png")
+		image.set_from_file(RACING_PI_IMAGE)
 		image.show()
 
 		

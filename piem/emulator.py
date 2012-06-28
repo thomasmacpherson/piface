@@ -26,7 +26,7 @@ import time
 
 VERBOSE_MODE = False
 
-VIRT_PI_IMAGE = "/home/X09/prestotx/raspberry_pi/piface/piem/pi.png"
+VIRT_PI_IMAGE = "pi.png"
 
 EMU_WIDTH  = 292
 EMU_HEIGHT = 193
