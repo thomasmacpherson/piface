@@ -5,6 +5,9 @@ from math import pi
 
 
 VIRT_PI_IMAGE = "pi.png"
+VIRT_LED_ON_IMAGE = "led_on.png"
+
+EMU_PRINT_PREFIX = "EMU:"
 
 PIN_COLOUR_R = 0
 PIN_COLOUR_G = 1
@@ -44,6 +47,7 @@ PH_PIN_SWITCH_3 = 3
 PH_PIN_SWITCH_4 = 4
 
 emu_screen = None
+have_led_image = False
 
 pfio = None # the pfio module that has been passed in
 
@@ -174,19 +178,28 @@ class LED(Item):
 		to be passed in
 		"""
 		if self.value == 1:
-			# draw the yellow circle (r=8)
-			cr.save()
-			cr.set_source_rgb(1,1,0)
-			cr.arc (self.x, self.y, 8, 0, 2*pi);
-			cr.fill()
-			cr.restore()
+			global have_led_image
+			if have_led_image:
+				# draw the illuminated LED
+				cr.save()
+				led_surface = cairo.ImageSurface.create_from_png(VIRT_LED_ON_IMAGE)
+				cr.set_source_surface(led_surface, self.x-6, self.y-8)
+				cr.paint()
+				cr.restore()
+			else:
+				# draw the yellow circle (r=8)
+				cr.save()
+				cr.set_source_rgb(1,1,0)
+				cr.arc (self.x, self.y, 8, 0, 2*pi);
+				cr.fill()
+				cr.restore()
 
-			# draw the red circle (r=6)
-			cr.save()
-			cr.set_source_rgb(1,0,0)
-			cr.arc (self.x, self.y, 6, 0, 2*pi);
-			cr.fill()
-			cr.restore()
+				# draw the red circle (r=6)
+				cr.save()
+				cr.set_source_rgb(1,0,0)
+				cr.arc (self.x, self.y, 6, 0, 2*pi);
+				cr.fill()
+				cr.restore()
 
 class Relay(Item):
 	"""A relay on the RaspberryPi"""
@@ -317,6 +330,15 @@ class EmulatorScreen(Screen):
 	def __init__ (self, w, h, speed, pfio_module=None):
 		Screen.__init__(self, w, h, speed)
 
+		global have_led_image
+		try:
+			f = open(VIRT_LED_ON_IMAGE)
+			f.close()
+			have_led_image = True
+		except:
+			emu_print("could not find the virtual led image: %s" % VIRT_LED_ON_IMAGE)
+			have_led_image = False
+
 		global pfio
 		pfio = pfio_module
 
@@ -408,20 +430,14 @@ class OutputOverrideSection(gtk.VBox):
 		self.output_pins = output_pins
 		self.number_of_override_buttons = 8
 		widgets = list()
-		
+
+		# main override button
 		main_override_btn = gtk.ToggleButton("Override Enable")
 		main_override_btn.connect('clicked', self.main_override_clicked)
 		main_override_btn.show()
-		self.flip_btn = gtk.Button("Flip")
-		self.flip_btn.connect('clicked', self.flip_button_clicked)
-		self.flip_btn.set_sensitive(False)
-		self.flip_btn.show()
-		top_button_containter = gtk.HBox()
-		top_button_containter.pack_start(main_override_btn)
-		top_button_containter.pack_start(self.flip_btn)
-		top_button_containter.show()
-		widgets.append(top_button_containter)
+		widgets.append(main_override_btn)
 
+		# pin override buttons
 		self.override_buttons = list()
 		for i in range(self.number_of_override_buttons):
 			new_button = gtk.ToggleButton("Output Pin %d" % (i+1))
@@ -430,6 +446,29 @@ class OutputOverrideSection(gtk.VBox):
 			new_button.set_sensitive(False)
 			self.override_buttons.append(new_button)
 			widgets.append(new_button)
+
+		# all on/off, flip buttons
+		self.all_on_btn = gtk.Button("All on")
+		self.all_on_btn.connect('clicked', self.all_on_button_clicked)
+		self.all_on_btn.set_sensitive(False)
+		self.all_on_btn.show()
+
+		self.all_off_btn = gtk.Button("All off")
+		self.all_off_btn.connect('clicked', self.all_off_button_clicked)
+		self.all_off_btn.set_sensitive(False)
+		self.all_off_btn.show()
+
+		self.flip_btn = gtk.Button("Flip")
+		self.flip_btn.connect('clicked', self.flip_button_clicked)
+		self.flip_btn.set_sensitive(False)
+		self.flip_btn.show()
+
+		bottom_button_containter = gtk.HBox()
+		bottom_button_containter.pack_start(self.all_on_btn)
+		bottom_button_containter.pack_start(self.all_off_btn)
+		bottom_button_containter.pack_start(self.flip_btn)
+		bottom_button_containter.show()
+		widgets.append(bottom_button_containter)
 
 		# pack 'em in
 		for widget in widgets:
@@ -442,6 +481,16 @@ class OutputOverrideSection(gtk.VBox):
 			self.enable_override_buttons()
 		else:
 			self.disable_override_buttons()
+
+	def all_on_button_clicked(self, all_on_btn, data=None):
+		for i in range(self.number_of_override_buttons):
+			self.override_buttons[i].set_active(True)
+			self.output_pins[i].turn_on()
+
+	def all_off_button_clicked(self, all_on_btn, data=None):
+		for i in range(self.number_of_override_buttons):
+			self.override_buttons[i].set_active(False)
+			self.output_pins[i].turn_off()
 
 	def flip_button_clicked(self, flip_btn, data=None):
 		for i in range(self.number_of_override_buttons):
@@ -465,6 +514,8 @@ class OutputOverrideSection(gtk.VBox):
 			self.output_pins[pin_index].turn_off(True)
 
 	def enable_override_buttons(self):
+		self.all_on_btn.set_sensitive(True)
+		self.all_off_btn.set_sensitive(True)
 		self.flip_btn.set_sensitive(True)
 		for i in range(self.number_of_override_buttons):
 			self.set_pin(i, self.override_buttons[i].get_active())
@@ -476,6 +527,13 @@ class OutputOverrideSection(gtk.VBox):
 			pin.turn_off(True)
 
 		# disable all of the buttons
+		self.all_on_btn.set_sensitive(False)
+		self.all_off_btn.set_sensitive(False)
 		self.flip_btn.set_sensitive(False)
 		for button in self.override_buttons:
 			button.set_sensitive(False)
+
+
+def emu_print(text):
+	"""Prints a string with the pfio print prefix"""
+	print "%s %s" % (EMU_PRINT_PREFIX, text)

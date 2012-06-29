@@ -28,7 +28,7 @@ import emulator_parts
 
 VERBOSE_MODE = False
 
-PFIO_CONNECT = True
+PFIO_CONNECT = False
 if PFIO_CONNECT:
 	 import pfio
 
@@ -37,7 +37,7 @@ DEFAULT_SPACING = 10
 EMU_WIDTH  = 292
 EMU_HEIGHT = 193
 EMU_SPEED  = 20
-EMU_PRINT_PREFIX = "EMU:"
+emulator_parts.emu_print_PREFIX = "EMU:"
 
 
 # global variables are bad, AND YOU SHOULD FEEL BAD!
@@ -95,10 +95,6 @@ def deinit():
 	global emu_screen
 	emu_screen = None
 
-def emu_print(text):
-	"""Prints a string with the pfio print prefix"""
-	print "%s %s" % (EMU_PRINT_PREFIX, text)
-
 def get_pin_bit_mask(pin_number):
 	"""Translates a pin number to pin bit mask. First pin is pin1 (not pin0).
 	pin3 = 0b00000100
@@ -131,7 +127,7 @@ def build_hex_string(items):
 def digital_write(pin_number, value):
 	"""Writes the value given to the pin specified"""
 	if VERBOSE_MODE:
-		emu_print("digital write start")
+		emulator_parts.emu_print("digital write start")
 
 	global emu_screen
 	if value >= 1:
@@ -142,7 +138,7 @@ def digital_write(pin_number, value):
 	#emu_screen.qdraw()
 
 	if VERBOSE_MODE:
-		emu_print("digital write end")
+		emulator_parts.emu_print("digital write end")
 
 def digital_read(pin_number):
 	"""Returns the value of the pin specified"""

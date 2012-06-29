@@ -2,7 +2,7 @@
 
 from distutils.core import setup, Extension
 
-setup(	name="spi",
+setup(name="spi",
 	version="1.5",
 	description="Python SPI access through C module for the Beagleboard XM",
 	author="Brian Hensley",
