@@ -24,8 +24,14 @@ relay2PinsX = [285.0,285.0,285.0,]
 relay2PinsY = [73.0,86.0,98.0]
 boardInputPinsX = [6.0,19.0,31.0,44.0,56.0,68.0,80.0,92.0,104]
 boardInputPinsY = [186.0,186.0,186.0,186.0,186.0,186.0,186.0,186.0,186.0]
+"""
+# 1 -> 9
 boardOutputPinsX = [181.0,194.0,206.0,218.0,230.0,242.0,254.0,266.0,278.0]
 boardOutputPinsY = [8.0,8.0,8.0,8.0,8.0,8.0,8.0,8.0,8.0]
+"""
+# 8 <- 1
+boardOutputPinsX = [266.0, 254.0, 242.0, 230.0, 218.0, 206.0, 194.0, 181.0]
+boardOutputPinsY = [8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0]
 
 RELAY_PIN_PATTERN_ON  = (0, 1, 1)
 RELAY_PIN_PATTERN_OFF = (1, 1, 0)
@@ -345,7 +351,7 @@ class EmulatorScreen(Screen):
 		self.input_pins = [Pin(i, True) for i in range(1,9)]
 		self.switches = [Switch(i+1, self.input_pins[i]) for i in range(4)]
 
-		self.output_pins = [Pin(i) for i in range(1,10)]
+		self.output_pins = [Pin(i) for i in range(1,9)]
 		self.relays = [Relay(i+1, self.output_pins[i]) for i in range(2)]
 		self.leds = [LED(i+1, self.output_pins[i]) for i in range(4)]
 
