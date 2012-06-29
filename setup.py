@@ -2,14 +2,16 @@
 
 from distutils.core import setup, Extension
 
-setup(name="spi",
-	version="1.5",
-	description="Python SPI access through C module for the Beagleboard XM",
-	author="Brian Hensley",
-	author_email="brian.e.hensley@gmail.com",
-	maintainer="none",
-	maintainer_email="none",
-	license="GPLv2",
-	url="http://www.brianhensley.net",
-	ext_modules=[Extension("spi", ["spimodule.c"])])
+DISTUTILS_DEBUG=True
 
+setup(name='piface',
+	version='1.0',
+	description='Tools for interacting with the Pi Face add-on to the Raspberry Pi',
+	author='Thomas Macpherson-Pope, Thomas Preston',
+	author_email='thomas.macpherson-pope@student.manchester.ac.uk, thomasmarkpreston@gmail.com',
+	license='GPLv3',
+	url='http://pi.cs.man.ac.uk/interface.htm',
+	packages=['piface'],
+	ext_modules=[Extension('piface/spi', ['piface/spimodule.c'])],
+	package_data={'piface' : ['images/*.png']},
+)

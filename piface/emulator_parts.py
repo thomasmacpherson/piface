@@ -3,9 +3,21 @@ pygtk.require("2.0")
 import gtk, gobject, cairo
 from math import pi
 
+TESTING = True
 
-VIRT_PI_IMAGE = "pi.png"
-VIRT_LED_ON_IMAGE = "led_on.png"
+# relative directories
+VIRT_PI_IMAGE = "images/pi.png"
+VIRT_LED_ON_IMAGE = "images/led_on.png"
+if not TESTING:
+	import os.path, sys
+	package_dir = os.path.dirname(sys.modules["piface"].__file__)
+	VIRT_PI_IMAGE = os.path.join(package_dir, VIRT_PI_IMAGE)
+	VIRT_LED_ON_IMAGE = os.path.join(package_dir, VIRT_LED_ON_IMAGE)
+"""
+package_dir = os.path.dirname(sys.modules["piface"].__file__)
+VIRT_PI_IMAGE = os.path.join(package_dir, 'images/pi.png')
+VIRT_LED_ON_IMAGE = os.path.join(package_dir, 'images/led_on.png')
+"""
 
 EMU_PRINT_PREFIX = "EMU:"
 
@@ -75,7 +87,7 @@ class Item(object):
 		# with the physical input
 		global pfio
 		if pfio and self.is_input:
-			self._value = self._value | pfio.digital_read(self.pin_number)
+			self._value = pfio.digital_read(self.pin_number)
 
 		return self._value
 
