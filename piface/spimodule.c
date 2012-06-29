@@ -53,6 +53,8 @@ typedef struct {
 	uint32_t msh;	/* current SPI max speed setting in Hz */
 } SPI;
 
+static PyObject * SpiError; // special exception
+
 static PyObject *
 SPI_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
@@ -218,22 +220,38 @@ static PyObject *SPI_open(SPI *self, PyObject *args, PyObject *kwds)
 		return NULL;
 	}
 	if ((self->fd = open(path, O_RDWR, 0)) < 0) {
+		/* changed to exceptions - thomas preston 29/06/2012
 		printf("can't open device");
 		abort();
+		*/
+		PyErr_SetString(SpiError, "can't open device");
+		return 0; // trigger exception
 	}
 	if (ioctl(self->fd, SPI_IOC_RD_MODE, &tmp8) == -1) {
+		/*
 		printf("can't get spi mode");
 		abort();
+		*/
+		PyErr_SetString(SpiError, "can't get spi mode");
+		return 0; // trigger exception
 	}
 	self->mode = tmp8;
 	if (ioctl(self->fd, SPI_IOC_RD_BITS_PER_WORD, &tmp8) == -1) {
+		/*
 		printf("can't get bits per word");
 		abort();
+		*/
+		PyErr_SetString(SpiError, "can't get bits per word");
+		return 0; // trigger exception
 	}
 	self->bpw = tmp8;
 	if (ioctl(self->fd, SPI_IOC_RD_MAX_SPEED_HZ, &tmp32) == -1) {
+		/*
 		printf("can't get max speed hz");
 		abort();
+		*/
+		PyErr_SetString(SpiError, "can't get max speed hz");
+		return 0; // trigger exception
 	}
 	self->msh = tmp32;
 
@@ -256,7 +274,6 @@ static int SPI_init(SPI *self, PyObject *args, PyObject *kwds)
 		if (PyErr_Occurred())
 			return -1;
 	}
-
 	return 0;
 }
 
@@ -336,4 +353,11 @@ PyMODINIT_FUNC initspi(void)
 	m = Py_InitModule3("spi", SPI_module_methods, SPI_module_doc);
 	Py_INCREF(&SPI_type);
 	PyModule_AddObject(m, "SPI", (PyObject *)&SPI_type);
+
+	// make a new exception
+	SpiError = PyErr_NewException("spi.error", NULL, NULL);
+	Py_INCREF(SpiError);
+	PyModule_AddObject(m, "error", SpiError);
+
+
 }
