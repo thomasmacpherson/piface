@@ -8,33 +8,34 @@ date  : 18/06/2012
 """
 
 import subprocess
-import pfio
+import piface.pfio
 
 
 VERBOSE_MODE = True
 
 
-class Chicken(object):
+class Chicken(piface.pfio.Relay):
 	"""The wobbling/talking chicken"""
 	def __init__(self):
 		self.relay_pin = 1
 		self.voice_pitch = 50 # 0-99
 		self.voice_speed = 160 # words per min
 
-		pfio.init()
+		#piface.pfio.init() # this should be external
 	
 	def __del__(self):
-		pfio.deinit()
+		#piface.pfio.deinit() # this should be external
+		pass
 
 	def start_wobble(self):
 		"""Starts wobbling the chicken"""
-		pfio.digital_write(self.relay_pin, 1)
+		self.turn_on()
 		if VERBOSE_MODE:
 			print "Chicken has started wobbling."
 
 	def stop_wobble(self):
 		"""Stops wobbling the chicken"""
-		pfio.digital_write(self.relay_pin, 0)
+		self.turn_off()
 		if VERBOSE_MODE:
 			print "Chicken has stopped wobbling."
 
@@ -49,3 +50,9 @@ class Chicken(object):
 			"-p", str(self.voice_pitch),
 			"-s", str(self.voice_speed),
 			text_to_say])
+
+
+def init():
+	"""Initialises the raspberry pi farm"""
+	piface.pfio.init()
+

@@ -9,10 +9,10 @@ date  : 20/06/2012
 
 from time import sleep
 import twitter
-import pfio
+import piface.pfio
 
 
-pfio.init()
+piface.pfio.init()
 
 twitter = twitter.Api()
 

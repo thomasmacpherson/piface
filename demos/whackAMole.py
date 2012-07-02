@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 whackAMole.py
-Simple whack a mole game for use with pfio and the RaspberryPi interface (piface)
+Simple whack a mole game for use with piface.pfio and the RaspberryPi interface (piface)
 
 Objective of game: A random LED will light up and you must hit the corresponding button as quickly as possible.
 The amount of time you have to hit the button will get shorter as the game progresses.
@@ -10,10 +10,10 @@ The amount of time you have to hit the button will get shorter as the game progr
 from time import sleep		# for delays
 import random			# for generating the next random button flash
 
-import pfio			# piface library		
+import piface.pfio			# piface library		
 
 
-pfio.init()			# initialise pfio (sets up the spi transfers)
+piface.pfio.init()			# initialise piface.pfio (sets up the spi transfers)
 
 
 def next_colour():
@@ -23,7 +23,7 @@ def next_colour():
 
 
 current = next_colour() 			# create first random colour to be lit
-pfio.digital_write(current+2,1)			# turn colour on
+piface.pfio.digital_write(current+2,1)			# turn colour on
 set_time = 2000					# time allowed to hit each light (starts off large and reduced after each hit)
 time_left = set_time				# countdown timer for hitting the light
 hit = 0						# the input value
@@ -39,16 +39,16 @@ print "Time left is: %s" %time_left		# notify the player how long they have to h
 
 while True:
 
-	in_bit_pattern = pfio.read_input()[2] ^ 0b11111111 # see if any buttons have been hit
+	in_bit_pattern = piface.pfio.read_input()[2] ^ 0b11111111 # see if any buttons have been hit
 	
 	if in_bit_pattern != previous_pressed:		# check this is a new button press
 		previous_pressed = in_bit_pattern	# record button press for next time's check
 
 		if in_bit_pattern > 0:
 
-			if in_bit_pattern == pfio.get_pin_bit_mask(current):	# check that only the correct button was hit
+			if in_bit_pattern == piface.pfio.get_pin_bit_mask(current):	# check that only the correct button was hit
 			
-				pfio.digital_write(current+2, 0)		# turn off hit light
+				piface.pfio.digital_write(current+2, 0)		# turn off hit light
 				previous = current
 				current = next_colour()				# get next colour
 			
@@ -64,7 +64,7 @@ while True:
 			
 				score += 1
 				print "Your score %d" %score
-				pfio.digital_write(current+2,1)			# turn the new light on
+				piface.pfio.digital_write(current+2,1)			# turn the new light on
 			
 
 			else:							# wrong button pressed
@@ -74,7 +74,7 @@ while True:
 			
 			
 	elif time_left==0:
-		pfio.digital_write(current+2, 0)			# turn off hit light
+		piface.pfio.digital_write(current+2, 0)			# turn off hit light
 		misses +=1						# increment misses
 		print "Missed one!"
 		
@@ -94,15 +94,15 @@ while True:
 				
 		time_left = set_time					# set the countdown time
 			
-		pfio.digital_write(current+2,1)				# turn the new light on		
+		piface.pfio.digital_write(current+2,1)				# turn the new light on		
 	
 	time_left -=1							# decrement the time left to hit the current light
 
 	
 
-pfio.write_output(0)				# turn all lights off	
+piface.pfio.write_output(0)				# turn all lights off	
 print "\nGame over!\n"
 print "Your score was: %s" %score		# print the player's final score
-#pfio.deinit()					# close the pfio
+#piface.pfio.deinit()					# close the piface.pfio
 	
 

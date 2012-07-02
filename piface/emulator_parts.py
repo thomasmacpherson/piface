@@ -3,7 +3,7 @@ pygtk.require("2.0")
 import gtk, gobject, cairo
 from math import pi
 
-TESTING = True
+TESTING = False
 
 # relative directories
 VIRT_PI_IMAGE = "images/pi.png"
@@ -13,11 +13,6 @@ if not TESTING:
 	package_dir = os.path.dirname(sys.modules["piface"].__file__)
 	VIRT_PI_IMAGE = os.path.join(package_dir, VIRT_PI_IMAGE)
 	VIRT_LED_ON_IMAGE = os.path.join(package_dir, VIRT_LED_ON_IMAGE)
-"""
-package_dir = os.path.dirname(sys.modules["piface"].__file__)
-VIRT_PI_IMAGE = os.path.join(package_dir, 'images/pi.png')
-VIRT_LED_ON_IMAGE = os.path.join(package_dir, 'images/led_on.png')
-"""
 
 EMU_PRINT_PREFIX = "EMU:"
 

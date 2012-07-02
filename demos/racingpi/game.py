@@ -6,8 +6,8 @@ import time
 import threading
 import random
 
-#import pfio
-import emulator as pfio
+#import piface.pfio as pfio
+import piface.emulator as pfio
 
 
 VERBOSE_MODE = True

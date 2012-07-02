@@ -20,6 +20,7 @@ TIME_DELAY = 2 # seconds between each status check
 def main():
 	api = twitter.Api()
 	previous_status = twitter.Status()
+	raspberry_pi_farm.init()
 	chicken = raspberry_pi_farm.Chicken()
 
 	# what are we searching for?
