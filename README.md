@@ -4,6 +4,7 @@ This repository contains code relating to piface projects.
 
 [PFIO Documentation](https://docs.google.com/document/d/1pSfTMevvtkBD4eyeHyry4cFMDAgvq6mMASoTBlw44TU/edit)
 
+
 Installation and Setup
 ======================
 These instructions assume you are on working on a Raspberry Pi. At
@@ -42,3 +43,11 @@ using the following Python syntax:
 The emulator can be used in the same way as the pfio. Upon initialisation,
 an image of the Pi Face will be drawn to a window and its inputs/outputs
 can be seen.
+
+
+Testing
+=======
+To test the installed piface package run the tests in the tests/ directory.
+
+    $ cd tests/
+    $ python piface_test.py
