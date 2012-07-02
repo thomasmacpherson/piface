@@ -25,10 +25,10 @@ import time
 import warnings
 
 import emulator_parts
-import emulator_parts.Item as Item
-import emulator_parts.LED as LED
-import emulator_parts.Relay as Relay
-import emulator_parts.Switch as Switch
+from emulator_parts import Item
+from emulator_parts import LED
+from emulator_parts import Relay
+from emulator_parts import Switch
 
 
 VERBOSE_MODE = False
