@@ -98,6 +98,7 @@ class RacingPiGame(threading.Thread):
 				self.player1.buttons[correct_answer_index].light.turn_on()
 				print "Player 1 got the correct answer!"
 				#print "The answer was: {}".format(question.correct_answer)
+				self.gui.update_question("%s\nThe correct answer was: %s\nPlayer 1 has 3 seconds to race!" % (question.text, question.correct_answer))
 				self.player1.car.drive(3)
 				self.player1.buttons[correct_answer_index].light.turn_off()
 
@@ -105,6 +106,7 @@ class RacingPiGame(threading.Thread):
 				self.player1.buttons[wrong_answer_index].light.turn_on()
 				print "Player 1 got the WRONG answer!"
 				#print "The answer was: {}".format(question.correct_answer)
+				self.gui.update_question("%s\nThe correct answer was: %s\nPlayer 2 has 3 seconds to race!" % (question.text, question.correct_answer))
 				self.player2.car.drive(3)
 				self.player1.buttons[wrong_answer_index].light.turn_off()
 
@@ -112,6 +114,7 @@ class RacingPiGame(threading.Thread):
 				self.player2.buttons[correct_answer_index].light.turn_on()
 				print "Player 2 got the correct answer!"
 				#print "The answer was: {}".format(question.correct_answer)
+				self.gui.update_question("%s\nThe correct answer was: %s\nPlayer 2 has 3 seconds to race!" % (question.text, question.correct_answer))
 				self.player2.car.drive(3)
 				self.player2.buttons[correct_answer_index].light.turn_off()
 
@@ -119,6 +122,7 @@ class RacingPiGame(threading.Thread):
 				self.player2.buttons[wrong_answer_index].light.turn_on()
 				print "Player 2 got the WRONG answer!"
 				#print "The answer was: {}".format(question.correct_answer)
+				self.gui.update_question("%s\nThe correct answer was: %s\nPlayer 1 has 3 seconds to race!" % (question.text, question.correct_answer))
 				self.player1.car.drive(3)
 				self.player2.buttons[wrong_answer_index].light.turn_off()
 

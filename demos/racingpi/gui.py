@@ -15,7 +15,7 @@ VERBOSE_MODE = True
 TITLE = "RacingPi"
 TITLE_SIZE = 40000
 DEFAULT_QUESTION = "What... is the air-speed velocity of an unladen swallow?"
-QUESTION_SIZE = 10000
+QUESTION_SIZE = 12000
 DEFAULT_SPACING = 10
 
 RACING_PI_IMAGE = "racingpi/racingPi.png"
@@ -33,9 +33,6 @@ class RacingPiGUI(object):
 		self.window.set_icon_from_file(RACING_PI_IMAGE)
 		self.generate_contents()
 		self.window.show()
-
-
-
 
 	def delete_event(self, widget, data=None):
 		return False # call the destroy event after this
@@ -63,7 +60,9 @@ class RacingPiGUI(object):
 
 		
 		# question space
-		self.question_label = gtk.Label(DEFAULT_QUESTION)
+		self.question_label = gtk.Label()
+		self.question_label.set_use_markup(True)
+		self.update_question(DEFAULT_QUESTION)
 		self.question_label.show()
 
 		main_box = make_vbox(elements=[main_title, self.question_label])
@@ -80,7 +79,7 @@ class RacingPiGUI(object):
 	
 	def update_question(self, new_question):
 		gtk.gdk.threads_enter()
-		self.question_label.set_text(new_question)
+		self.question_label.set_markup("<span size='%d'>%s</span>"%(QUESTION_SIZE, new_question))
 		gtk.gdk.threads_leave()
 
 
