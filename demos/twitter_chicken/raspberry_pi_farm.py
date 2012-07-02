@@ -9,6 +9,7 @@ date  : 18/06/2012
 
 import subprocess
 import piface.pfio as pfio
+#import piface.emulator as pfio
 
 
 VERBOSE_MODE = True

@@ -24,7 +24,7 @@ from math import pi
 import time
 import warnings
 
-import emulator_parts
+import piface.emulator_parts as emulator_parts
 from emulator_parts import Item
 from emulator_parts import LED
 from emulator_parts import Relay
