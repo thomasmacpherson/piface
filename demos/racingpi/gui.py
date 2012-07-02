@@ -78,6 +78,8 @@ class RacingPiGUI(object):
 	
 	
 	def update_question(self, new_question):
+		# clean up question
+		new_question = new_question.replace("<", "\<").replace(">", "/>")
 		gtk.gdk.threads_enter()
 		self.question_label.set_markup("<span size='%d'>%s</span>"%(QUESTION_SIZE, new_question))
 		gtk.gdk.threads_leave()
