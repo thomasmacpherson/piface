@@ -22,15 +22,20 @@ import threading
 from gtk import gdk
 from math import pi
 import time
+import warnings
 
 import emulator_parts
 
 
 VERBOSE_MODE = False
 
-PFIO_CONNECT = False
-if PFIO_CONNECT:
-	 import pfio
+import pfio
+try:
+	pfio.init()
+	PFIO_CONNECT = True
+except pfio.spi.error:
+	print "Could not connect to the SPI module (check privileges)."
+	PFIO_CONNECT = False
 
 DEFAULT_SPACING = 10
 
@@ -57,7 +62,6 @@ class Emulator(threading.Thread):
 
 		global emu_screen
 		if PFIO_CONNECT:
-			pfio.init()
 			emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED, pfio)
 		else:
 			emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED)

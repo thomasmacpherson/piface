@@ -21,9 +21,7 @@ VIRT_LED_ON_IMAGE = os.path.join(package_dir, 'images/led_on.png')
 
 EMU_PRINT_PREFIX = "EMU:"
 
-PIN_COLOUR_R = 0
-PIN_COLOUR_G = 1
-PIN_COLOUR_B = 1
+PIN_COLOUR_RGB = (0, 1, 1)
 
 # pin circle locations
 ledsX = [183.0,183.0,239.0,222.0]
@@ -81,7 +79,7 @@ class Item(object):
 		self._value = 0 # hidden value for property stuff
 		self._hold  = False # this value cannot be changed unless forced
 		self._force = False # when true, held values can be changed
-	
+
 	def _get_value(self):
 		# if the pfio is here then cross reference the virtual input
 		# with the physical input
@@ -159,7 +157,8 @@ class Pin(Item):
 		if self.value == 1:
 			#print "drawing pin at %d, %d" % (self.x, self.y)
 			cr.save()
-			cr.set_source_rgb(PIN_COLOUR_R,PIN_COLOUR_G,PIN_COLOUR_B)
+			pin_colour_r, pin_colour_g, pin_colour_b = PIN_COLOUR_RGB
+			cr.set_source_rgb(pin_colour_r, pin_colour_g, pin_colour_b)
 			cr.arc (self.x, self.y, 5, 0, 2*pi);
 			cr.fill()
 			cr.restore()
