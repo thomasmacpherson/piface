@@ -67,6 +67,15 @@ class RacingPiGame(threading.Thread):
 
 	def run(self):
 		"""The main game stuff goes here"""
+		while True:
+			self.ask_questions()
+			if self.stopped():
+				break
+
+		self.stop()
+		pfio.deinit()
+	
+	def ask_questions(self):
 		for question in self.questions:
 			# ask a question
 			correct_answer_index = int(2 * random.random())
@@ -144,9 +153,6 @@ class RacingPiGame(threading.Thread):
 			# should we keep playing?
 			if self.stopped():
 				break
-
-		self.stop()
-		pfio.deinit()
 
 class RacingCar(pfio.Relay):
 	def __init__(self, racing_car_number):
