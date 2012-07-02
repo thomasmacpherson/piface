@@ -1,14 +1,33 @@
-How many bits in a byte?,8,10
-What does RAM stand for?,Random Access Memory, Real Auditing Memory
-What company did Bill Gates start?, Microsoft,Apple
-What is larger a Gigabyte or a Megabyte?,Gigabyte,Megabyte
-What are the two home keys on a keyboard?,F and J,P and Q
-What country owns this WWW suffix  .de ?,Germany,France
-What type of file has this file format .jpg ?,Image,Spreadsheet
-Computers are great?, True, False
-What type of processor does the RaspberryPi use?,ARM,LEG
-What famous computer scientist broke the Enigma codes at Bletchley Park?,Alan Turing,Steve Jobs
-A Cathode Ray Tube is found in what?, Monitor, CPU
+How many bits in a byte?, 8, 10
+What does RAM stand for?, Random Access Memory, Real Auditing Memory
+Which company did Bill Gates start?, Microsoft, Apple
+What is larger a Gigabyte or a Megabyte?, Gigabyte, Megabyte
+What are the two home keys on a keyboard?, F and J, P and Q
+Which country owns this WWW suffix  .de ?, Germany, France
+Which type of file has this file format .jpg ?, Image, Spreadsheet
+Computers are great True or False, True, False
+What type of processor does the RaspberryPi use?, ARM, LEG
+Which famous computer scientist broke the Enigma codes at Bletchley Park?, Alan Turing, Steve Jobs
+What were Cathode Ray Tubes used in?, Monitors, Keyboards
 What does CPU stand for?, Central Processing Unit, Computer Power Unit
 What is the command to list files in Windows?, dir, ls
 What does UNIX stand for?, Nothing, UNIt eXchange
+Which of the following is an operating system?, Linux, Bantex
+What computer language uses these tags <body> and <meta/> ?, HTML, Java
+What does DBMS stand for?, Datbase management system, Database migration statistics
+Who invented the web?, Tim Berners-Lee, Donald Rumsfeld
+What was the forerunner to the Internet called?, ARPANET, SKYNET
+What does LAN stand for?, Local Area Network, Legitimate Access Network
+What was the first stored-program computer called?, The Baby, The Infant
+What is the most suitable input device for inputting a short report?, Keyboard, Mouse
+What is another name for a CPU?, Processor, Disk drive
+What is Magnetic Ink Character Recognition often used on?, Cheques, Barcodes
+Which of these is a mobile operating system?, Android, Windows Vista
+What are the tiny points of colour on your monitor called?, Pixels, Pacsels
+What does CAD stand for?, Computer Aided Design, Computer Assembley Description
+What does WYSIWYG stand for?, What you see is what you get, What you see is where you go
+What application should you use to view web pages?, Web browser, Text editor
+What does HTML stand for?, Hyper Text Mark-up Language, Histogram Tape Mark-up Language
+What is a computer virus?, A program written to cause harm to a computer, A fault with the CPU which loses data
+What law makes it illegal to knowingly spread a computer virus?, Computer Misuse Act, Data Protection Act
+What do we call buying and selling on the Internet?, Electronic Commerce, Internet Trading
