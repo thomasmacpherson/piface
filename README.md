@@ -16,8 +16,9 @@ To get the source and demo programs type:
 
     $ git clone https://github.com/thomasmacpherson/piface.git
 
-Then to install, move into the piface directory and type:
+Then to install, move into the piface directory and run the setup script:
 
+    $ cd piface/
     $ sudo python setup.py install
 
 Now whenever you enter a python shell you can access the piface's
