@@ -2,7 +2,7 @@ About
 =====
 This repository contains code relating to piface projects.
 
-For access to documentation use google docs
+[PFIO Documentation](https://docs.google.com/document/d/1pSfTMevvtkBD4eyeHyry4cFMDAgvq6mMASoTBlw44TU/edit)
 
 Installation and Setup
 ======================
