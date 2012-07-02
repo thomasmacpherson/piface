@@ -12,12 +12,10 @@ acces the SPI module and so running programs as root is often required.
 If you know how to fix this please send us an email (it'll be something
 to do with when the kernel creates the /dev/spiX.Y files).
 
-To get the source and demo programs type:
+To install the piface python package you must first download the source,
+move into the piface directory and then run the setup script as root:
 
     $ git clone https://github.com/thomasmacpherson/piface.git
-
-Then to install, move into the piface directory and run the setup script:
-
     $ cd piface/
     $ sudo python setup.py install
 
