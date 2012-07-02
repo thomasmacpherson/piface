@@ -121,7 +121,7 @@ class Switch(Item):
 	def __init__(self, switch_number):
 		if switch_number == 1:
 			switch_number = PH_PIN_SWITCH_1
-		elif swtich_number == 2:
+		elif switch_number == 2:
 			switch_number = PH_PIN_SWITCH_2
 		elif switch_number == 3:
 			switch_number = PH_PIN_SWITCH_3
