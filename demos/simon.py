@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 simon.py
-Simple simon game for use with piface.pfio and the RaspberryPi interface (piface)
+Simple simon game for use with pfio and the RaspberryPi interface (piface)
 
 Objective of the game: You must remember an ever increasing sequence of flashes and input them correctly*
 
@@ -9,12 +9,12 @@ Objective of the game: You must remember an ever increasing sequence of flashes 
 
 from time import sleep 		# for delays
 import random			# for random sequence generation
-import piface.pfio			# piface library
+import piface.pfio as pfio			# piface library
 
 
 
 
-piface.pfio.init()			# initialise piface.pfio (sets up the spi transfers)
+pfio.init()			# initialise pfio (sets up the spi transfers)
 
 colours = ["Red","Green","Blue","Yellow","White"]		# colour names for printing to screen
 
@@ -46,62 +46,62 @@ while game:						# while game in play
 		
 	for i in array:					# for each colour in current sequence (flash the sequence)
 
-		piface.pfio.digital_write(i+2,1)		# turn the colour on
+		pfio.digital_write(i+2,1)		# turn the colour on
 
 		
 		if screen_output:			# print the colour to the screen
 			print colours[i-1]
 			
 		sleep(0.5)				# wait to keep the colour showing 
-		piface.pfio.digital_write(i+2,0)		# turn the colour off
+		pfio.digital_write(i+2,0)		# turn the colour off
 		sleep(0.2)				# small break between colours
 		
 
 	sleep(0.4)
-	piface.pfio.write_output(0xFF)				# signify it is their turn by turning all the LEDs on then off
+	pfio.write_output(0xFF)				# signify it is their turn by turning all the LEDs on then off
 	sleep(0.3)
-	piface.pfio.write_output(0x0)
+	pfio.write_output(0x0)
 	
 	if screen_output:	
 		print "\nYour turn!"
 
 
 	for i in array:						# for each colour in current sequence (check against inputted sequence)
-		event = piface.pfio.read_input()[2] ^ 0b11111111		# read the button port state
+		event = pfio.read_input()[2] ^ 0b11111111		# read the button port state
 		
 		while event != 0:					# wait till no buttons pressed
-			event = piface.pfio.read_input()[2] ^ 0b11111111	# so a single button press is not read as 2
+			event = pfio.read_input()[2] ^ 0b11111111	# so a single button press is not read as 2
 			
 				
 		while event == 0:					# wait for any input 
-			event = piface.pfio.read_input()[2] ^ 0b11111111
+			event = pfio.read_input()[2] ^ 0b11111111
 			
-		pin_number = piface.pfio.get_pin_number(event)			# calculate the input pin
+		pin_number = pfio.get_pin_number(event)			# calculate the input pin
 		
 		if screen_output:
 			print colours[pin_number -1]			# print the colour in sequence to the screen
 		
-		piface.pfio.digital_write(pin_number+2,1)			# light up the buttons pressed
+		pfio.digital_write(pin_number+2,1)			# light up the buttons pressed
 		
-		if event != piface.pfio.get_pin_bit_mask(i):	
+		if event != pfio.get_pin_bit_mask(i):	
 			game = 0					# if any wrong buttons were pressed end the game
 			break
 
 		else:							# otherwise the correct button was pressed
 			previous = event
-			event = piface.pfio.read_input()[2] ^ 0b11111111
+			event = pfio.read_input()[2] ^ 0b11111111
 			
 			while previous == event:				# while the button is held down, wait
 				previous = event
-				event = piface.pfio.read_input()[2] ^ 0b11111111
+				event = pfio.read_input()[2] ^ 0b11111111
 				
-			piface.pfio.digital_write(i+2,0)				# turn the button's LED off
+			pfio.digital_write(i+2,0)				# turn the button's LED off
 			
 			
 	sleep(0.4)
-	piface.pfio.write_output(0xFF)		# signify their turn is over
+	pfio.write_output(0xFF)		# signify their turn is over
 	sleep(0.3)
-	piface.pfio.write_output(0x0)	
+	pfio.write_output(0x0)	
 
 	if game:
 		next = next_colour()		# set next colour
@@ -114,7 +114,7 @@ while game:						# while game in play
 
 
 
-piface.pfio.write_output(0x00)			# if the game has been lost, set all the button leds off
+pfio.write_output(0x00)			# if the game has been lost, set all the button leds off
 
 print "Your score was %s" %score 	# print the players score
 
@@ -148,4 +148,4 @@ else:
 	print "You haven't beaten the high score, keep trying!"
 
 """
-piface.pfio.deinit()				# close the piface.pfio
+pfio.deinit()				# close the pfio
