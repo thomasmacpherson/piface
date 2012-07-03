@@ -29,3 +29,11 @@ input/output module or the emulator by importing them as such:
     >>> led1.turn_off()
     >>> import piface.emulator
     >>> piface.emulator.init()
+
+If you prefer, you can refer to the pfio and emulator modules directly using the following Python syntax:
+
+    $ sudo python
+    >>> import piface.pfio as pfio
+    >>> import piface.emulator as emulator
+    >>> pfio.digital_write(4, 0)
+    >>> emulator.digital_write(3, 1)
