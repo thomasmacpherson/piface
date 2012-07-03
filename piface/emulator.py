@@ -25,13 +25,6 @@ import time
 import warnings
 
 import piface.emulator_parts as emulator_parts
-from emulator_parts import Item
-from emulator_parts import LED
-from emulator_parts import Relay
-from emulator_parts import Switch
-
-
-VERBOSE_MODE = False
 
 import pfio
 try:
@@ -41,17 +34,95 @@ except pfio.spi.error:
 	print "Could not connect to the SPI module (check privileges)."
 	PFIO_CONNECT = False
 
+
+VERBOSE_MODE = False
 DEFAULT_SPACING = 10
 
 EMU_WIDTH  = 292
 EMU_HEIGHT = 193
 EMU_SPEED  = 20
+WINDOW_TITLE = "PiFace Emulator"
 emulator_parts.emu_print_PREFIX = "EMU:"
 
+# piface peripheral pin numbers
+# each peripheral is connected to an I/O pin
+# some pins are connected to many peripherals
+# outputs
+PH_PIN_LED_1 = 1
+PH_PIN_LED_2 = 2
+PH_PIN_LED_3 = 3
+PH_PIN_LED_4 = 4
+PH_PIN_RELAY_1 = 1
+PH_PIN_RELAY_2 = 2
+# inputs
+PH_PIN_SWITCH_1 = 1
+PH_PIN_SWITCH_2 = 2
+PH_PIN_SWITCH_3 = 3
+PH_PIN_SWITCH_4 = 4
 
 # global variables are bad, AND YOU SHOULD FEEL BAD!
 emu_window = None
 emu_screen = None
+
+
+class Item(object):
+	"""An item connected to a pin on the RaspberryPi"""
+	def __init__(self, pin_number, is_input=False):
+		# an item defaults to an output device
+		self.pin_number = pin_number
+		self.is_input = is_input
+
+	def _get_value(self):
+		return digital_read(self.pin_number)
+
+	def _set_value(self, data):
+		return digital_write(self.pin_number, data)
+
+	value = property(_get_value, _set_value)
+
+	def turn_on(self):
+		self.value = 1;
+
+	def turn_off(self):
+		self.value = 0;
+
+class LED(Item):
+	"""An LED on the RaspberryPi"""
+	def __init__(self, led_number):
+		if led_number == 1:
+			pin_number = PH_PIN_LED_1
+		elif led_number == 2:
+			pin_number = PH_PIN_LED_2
+		elif led_number == 3:
+			pin_number = PH_PIN_LED_3
+		else:
+			pin_number = PH_PIN_LED_4
+
+		Item.__init__(self, pin_number)
+
+class Relay(Item):
+	"""A relay on the RaspberryPi"""
+	def __init__(self, relay_number):
+		if relay_number == 1:
+			pin_number = PH_PIN_RELAY_1
+		else:
+			pin_number = PH_PIN_RELAY_2
+
+		Item.__init__(self, pin_number)
+
+class Switch(Item):
+	"""A switch on the RaspberryPi"""
+	def __init__(self, switch_number):
+		if switch_number == 1:
+			switch_number = PH_PIN_SWITCH_1
+		elif swtich_number == 2:
+			switch_number = PH_PIN_SWITCH_2
+		elif switch_number == 3:
+			switch_number = PH_PIN_SWITCH_3
+		else:
+			switch_number = PH_PIN_SWITCH_4
+
+		Item.__init__(self, switch_number, True)
 
 
 class Emulator(threading.Thread):
@@ -63,6 +134,7 @@ class Emulator(threading.Thread):
 		global emu_window
 		emu_window = gtk.Window()
 		emu_window.connect("delete-event", gtk.main_quit)
+		emu_window.set_title(WINDOW_TITLE)
 
 		global emu_screen
 		if PFIO_CONNECT:

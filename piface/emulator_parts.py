@@ -7,12 +7,12 @@ TESTING = False
 
 # relative directories
 VIRT_PI_IMAGE = "images/pi.png"
-VIRT_LED_ON_IMAGE = "images/led_on.png"
+VIRT_VirtLED_ON_IMAGE = "images/led_on.png"
 if not TESTING:
 	import os.path, sys
 	package_dir = os.path.dirname(sys.modules["piface"].__file__)
 	VIRT_PI_IMAGE = os.path.join(package_dir, VIRT_PI_IMAGE)
-	VIRT_LED_ON_IMAGE = os.path.join(package_dir, VIRT_LED_ON_IMAGE)
+	VIRT_VirtLED_ON_IMAGE = os.path.join(package_dir, VIRT_VirtLED_ON_IMAGE)
 
 EMU_PRINT_PREFIX = "EMU:"
 
@@ -23,20 +23,20 @@ ledsX = [183.0,183.0,239.0,222.0]
 ledsY = [135.0,78.0,27.0,27.0]
 switchesX = [14.3, 39.3, 64.3, 89.3]
 switchesY = [157.5, 157.5, 157.5, 157.5]
-relay1PinsX = [285.0,285.0,285.0]
-relay1PinsY = [124.0,136.0,148.0]
-relay2PinsX = [285.0,285.0,285.0,]
-relay2PinsY = [73.0,86.0,98.0]
-boardInputPinsX = [6.0,19.0,31.0,44.0,56.0,68.0,80.0,92.0,104]
-boardInputPinsY = [186.0,186.0,186.0,186.0,186.0,186.0,186.0,186.0,186.0]
+relay1VirtPinsX = [285.0,285.0,285.0]
+relay1VirtPinsY = [124.0,136.0,148.0]
+relay2VirtPinsX = [285.0,285.0,285.0,]
+relay2VirtPinsY = [73.0,86.0,98.0]
+boardInputVirtPinsX = [6.0,19.0,31.0,44.0,56.0,68.0,80.0,92.0,104]
+boardInputVirtPinsY = [186.0,186.0,186.0,186.0,186.0,186.0,186.0,186.0,186.0]
 """
 # 1 -> 9
-boardOutputPinsX = [181.0,194.0,206.0,218.0,230.0,242.0,254.0,266.0,278.0]
-boardOutputPinsY = [8.0,8.0,8.0,8.0,8.0,8.0,8.0,8.0,8.0]
+boardOutputVirtPinsX = [181.0,194.0,206.0,218.0,230.0,242.0,254.0,266.0,278.0]
+boardOutputVirtPinsY = [8.0,8.0,8.0,8.0,8.0,8.0,8.0,8.0,8.0]
 """
 # 8 <- 1
-boardOutputPinsX = [266.0, 254.0, 242.0, 230.0, 218.0, 206.0, 194.0, 181.0]
-boardOutputPinsY = [8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0]
+boardOutputVirtPinsX = [266.0, 254.0, 242.0, 230.0, 218.0, 206.0, 194.0, 181.0]
+boardOutputVirtPinsY = [8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0]
 
 RELAY_PIN_PATTERN_ON  = (0, 1, 1)
 RELAY_PIN_PATTERN_OFF = (1, 1, 0)
@@ -45,10 +45,10 @@ RELAY_PIN_PATTERN_OFF = (1, 1, 0)
 # each peripheral is connected to an I/O pin
 # some pins are connected to many peripherals
 # outputs
-PH_PIN_LED_1 = 1
-PH_PIN_LED_2 = 2
-PH_PIN_LED_3 = 3
-PH_PIN_LED_4 = 4
+PH_PIN_VirtLED_1 = 1
+PH_PIN_VirtLED_2 = 2
+PH_PIN_VirtLED_3 = 3
+PH_PIN_VirtLED_4 = 4
 PH_PIN_RELAY_1 = 1
 PH_PIN_RELAY_2 = 2
 # inputs
@@ -63,7 +63,7 @@ have_led_image = False
 pfio = None # the pfio module that has been passed in
 
 
-class Item(object):
+class VirtItem(object):
 	"""A virtual item connected to a pin on the RaspberryPi emulator"""
 	def __init__(self, pin_number, is_input=False, is_relay_ext_pin=False):
 		# an item defaults to an output device
@@ -122,28 +122,28 @@ class Item(object):
 				self.attached_pin = emu_screen.output_pins[pin_number-1]
 		else: # guess
 			if is_input:
-				self.attached_pin = Pin(pin_number)
+				self.attached_pin = VirtPin(pin_number)
 			else:
-				self.attached_pin = Pin(pin_number)
+				self.attached_pin = VirtPin(pin_number)
 
-class Pin(Item):
+class VirtPin(VirtItem):
 	def __init__(self, pin_number, is_input=False,
 			is_relay1_pin=False, is_relay2_pin=False,
 			is_relay_ext_pin=False):
 		if is_relay1_pin:
-			self.x = relay1PinsX[pin_number]
-			self.y = relay1PinsY[pin_number]
+			self.x = relay1VirtPinsX[pin_number]
+			self.y = relay1VirtPinsY[pin_number]
 		elif is_relay2_pin:
-			self.x = relay2PinsX[pin_number]
-			self.y = relay2PinsY[pin_number]
+			self.x = relay2VirtPinsX[pin_number]
+			self.y = relay2VirtPinsY[pin_number]
 		elif is_input:
-			self.x = boardInputPinsX[pin_number-1]
-			self.y = boardInputPinsY[pin_number-1]
+			self.x = boardInputVirtPinsX[pin_number-1]
+			self.y = boardInputVirtPinsY[pin_number-1]
 		else:
-			self.x = boardOutputPinsX[pin_number-1]
-			self.y = boardOutputPinsY[pin_number-1]
+			self.x = boardOutputVirtPinsX[pin_number-1]
+			self.y = boardOutputVirtPinsY[pin_number-1]
 
-		Item.__init__(self, pin_number, is_input, is_relay_ext_pin)
+		VirtItem.__init__(self, pin_number, is_input, is_relay_ext_pin)
 
 	def draw_hidden(self, cr):
 		cr.arc(self.x, self.y, 5, 0, 2*pi)
@@ -158,15 +158,15 @@ class Pin(Item):
 			cr.fill()
 			cr.restore()
 
-class LED(Item):
-	"""A virtual LED on the RaspberryPi emulator"""
+class VirtLED(VirtItem):
+	"""A virtual VirtLED on the RaspberryPi emulator"""
 	def __init__(self, led_number, attached_pin=None):
 		self.attach_pin(attached_pin, led_number)
 
 		self.x = ledsX[led_number-1]
 		self.y = ledsY[led_number-1]
 
-		Item.__init__(self, led_number)
+		VirtItem.__init__(self, led_number)
 
 	def _get_value(self):
 		return self.attached_pin.value
@@ -177,7 +177,7 @@ class LED(Item):
 	value = property(_get_value, _set_value)
 
 	def turn_on(self):
-		#print "turning on LED"
+		#print "turning on VirtLED"
 		self.value = 1;
 	
 	def turn_off(self):
@@ -192,9 +192,9 @@ class LED(Item):
 		if self.value == 1:
 			global have_led_image
 			if have_led_image:
-				# draw the illuminated LED
+				# draw the illuminated VirtLED
 				cr.save()
-				led_surface = cairo.ImageSurface.create_from_png(VIRT_LED_ON_IMAGE)
+				led_surface = cairo.ImageSurface.create_from_png(VIRT_VirtLED_ON_IMAGE)
 				cr.set_source_surface(led_surface, self.x-6, self.y-8)
 				cr.paint()
 				cr.restore()
@@ -213,17 +213,17 @@ class LED(Item):
 				cr.fill()
 				cr.restore()
 
-class Relay(Item):
+class VirtRelay(VirtItem):
 	"""A relay on the RaspberryPi"""
 	def __init__(self, relay_number, attached_pin=None):
 		self.attach_pin(attached_pin, relay_number)
 
 		if relay_number == 1:
-			self.pins = [Pin(i, False, True, False, True) for i in range(3)]
+			self.pins = [VirtPin(i, False, True, False, True) for i in range(3)]
 		else:
-			self.pins = [Pin(i, False, False, True, True) for i in range(3)]
+			self.pins = [VirtPin(i, False, False, True, True) for i in range(3)]
 
-		Item.__init__(self, relay_number)
+		VirtItem.__init__(self, relay_number)
 
 		self.value = self.attached_pin.value
 
@@ -258,14 +258,14 @@ class Relay(Item):
 			#print "Drawing from relay %d" % self.pin_number
 			pin.draw(cr)
 
-class Switch(Item):
+class VirtSwitch(VirtItem):
 	"""A virtual switch on the RaspberryPi emulator"""
 	def __init__(self, switch_number, attached_pin=None):
 		self.attach_pin(attached_pin, switch_number, True)
 
 		self.x = switchesX[switch_number-1]
 		self.y = switchesY[switch_number-1]
-		Item.__init__(self, switch_number, True)
+		VirtItem.__init__(self, switch_number, True)
 
 	def _get_value(self):
 		return self.attached_pin.value
@@ -344,22 +344,22 @@ class EmulatorScreen(Screen):
 
 		global have_led_image
 		try:
-			f = open(VIRT_LED_ON_IMAGE)
+			f = open(VIRT_VirtLED_ON_IMAGE)
 			f.close()
 			have_led_image = True
 		except:
-			emu_print("could not find the virtual led image: %s" % VIRT_LED_ON_IMAGE)
+			emu_print("could not find the virtual led image: %s" % VIRT_VirtLED_ON_IMAGE)
 			have_led_image = False
 
 		global pfio
 		pfio = pfio_module
 
-		self.input_pins = [Pin(i, True) for i in range(1,9)]
-		self.switches = [Switch(i+1, self.input_pins[i]) for i in range(4)]
+		self.input_pins = [VirtPin(i, True) for i in range(1,9)]
+		self.switches = [VirtSwitch(i+1, self.input_pins[i]) for i in range(4)]
 
-		self.output_pins = [Pin(i) for i in range(1,9)]
-		self.relays = [Relay(i+1, self.output_pins[i]) for i in range(2)]
-		self.leds = [LED(i+1, self.output_pins[i]) for i in range(4)]
+		self.output_pins = [VirtPin(i) for i in range(1,9)]
+		self.relays = [VirtRelay(i+1, self.output_pins[i]) for i in range(2)]
+		self.leds = [VirtLED(i+1, self.output_pins[i]) for i in range(4)]
 
 	def finished_setting_up(self):
 		global emu_screen
@@ -452,7 +452,7 @@ class OutputOverrideSection(gtk.VBox):
 		# pin override buttons
 		self.override_buttons = list()
 		for i in range(self.number_of_override_buttons):
-			new_button = gtk.ToggleButton("Output Pin %d" % (i+1))
+			new_button = gtk.ToggleButton("Output VirtPin %d" % (i+1))
 			new_button.connect('clicked', self.output_override_clicked, i)
 			new_button.show()
 			new_button.set_sensitive(False)
