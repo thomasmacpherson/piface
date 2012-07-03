@@ -30,10 +30,15 @@ input/output module or the emulator by importing them as such:
     >>> import piface.emulator
     >>> piface.emulator.init()
 
-If you prefer, you can refer to the pfio and emulator modules directly using the following Python syntax:
+If you prefer, you can refer to the pfio and emulator modules directly
+using the following Python syntax:
 
     $ sudo python
     >>> import piface.pfio as pfio
     >>> import piface.emulator as emulator
     >>> pfio.digital_write(4, 0)
     >>> emulator.digital_write(3, 1)
+
+The emulator can be used in the same way as the pfio. Upon initialisation,
+an image of the Pi Face will be drawn to a window and its inputs/outputs
+can be seen.
