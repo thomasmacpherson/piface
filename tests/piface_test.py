@@ -51,27 +51,32 @@ class TestPiFace(unittest.TestCase):
 
 	def get_switch_values(self):
 		'''Returns the on/off states of the switches. 1 is on 0 is off'''
-		return (pfio.read_input()[2] ^ 0xff) & 0x0f
+		return pfio.read_input() & 0x0f
 
 	def test_output_objects(self):
+		OUTPUT_SLEEP_DELAY = 0.01
 		# test there are no outputs
-		self.assertEqual(0, pfio.read_output()[2])
+		self.assertEqual(0, pfio.read_output())
 
 		for led_num in range(1, 5):
 			this_led = pfio.LED(led_num)
 			this_led.turn_on()
+			sleep(OUTPUT_SLEEP_DELAY)
 			expected_output_bpat = 1 << (led_num-1)
-			self.assertEqual(expected_output_bpat, pfio.read_output()[2])
+			self.assertEqual(expected_output_bpat, pfio.read_output())
 			this_led.turn_off()
-			self.assertEqual(0, pfio.read_output()[2])
+			sleep(OUTPUT_SLEEP_DELAY)
+			self.assertEqual(0, pfio.read_output())
 
 		for relay_num in range(1, 3):
 			this_relay = pfio.Relay(relay_num)
 			this_relay.turn_on()
+			sleep(OUTPUT_SLEEP_DELAY)
 			expected_output_bpat = 1 << (relay_num-1)
-			self.assertEqual(expected_output_bpat, pfio.read_output()[2])
+			self.assertEqual(expected_output_bpat, pfio.read_output())
 			this_relay.turn_off()
-			self.assertEqual(0, pfio.read_output()[2])
+			sleep(OUTPUT_SLEEP_DELAY)
+			self.assertEqual(0, pfio.read_output())
 
 if __name__ == '__main__':
 	pfio.init()

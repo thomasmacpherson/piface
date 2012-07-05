@@ -39,7 +39,7 @@ print "Time left is: %s" %time_left		# notify the player how long they have to h
 
 while True:
 
-	in_bit_pattern = pfio.read_input()[2] ^ 0b11111111 # see if any buttons have been hit
+	in_bit_pattern = pfio.read_input() # see if any buttons have been hit
 	
 	if in_bit_pattern != previous_pressed:		# check this is a new button press
 		previous_pressed = in_bit_pattern	# record button press for next time's check

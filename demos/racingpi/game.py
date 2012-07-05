@@ -89,9 +89,9 @@ class RacingPiGame(threading.Thread):
 			self.gui.update_question("%s\nA: %s\nB: %s" % tuple(values))
 
 			# wait for a button press
-			pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
+			pin_bit_pattern = pfio.read_input()
 			while pin_bit_pattern == 0 and not self.stopped():
-				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
+				pin_bit_pattern = pfio.read_input()
 
 			# since we can't have multi-leveled break statements...
 			if self.stopped():
@@ -146,9 +146,9 @@ class RacingPiGame(threading.Thread):
 				raise UnknownButtonError("detected change on pin: %d" % pin_number)
 
 			# wait until nothing is pressed
-			pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
+			pin_bit_pattern = pfio.read_input()
 			while pin_bit_pattern != 0:
-				pin_bit_pattern = pfio.read_input()[2] ^ 0b11111111
+				pin_bit_pattern = pfio.read_input()
 
 			# should we keep playing?
 			if self.stopped():

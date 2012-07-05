@@ -142,13 +142,13 @@ def init():
 	spi_handler = spi.SPI(0,0) # spi.SPI(X,Y) is /dev/spidevX.Y
 
 	# set up the ports
-	write(IOCON,  8)    # enable hardware addressing
-	write(IODIRA, 0)    # set port A as outputs
-	write(IODIRB, 0xFF) # set port B as inputs
-	write(GPIOA,  0xFF) # set port A on
+	__write(IOCON,  8)    # enable hardware addressing
+	__write(IODIRA, 0)    # set port A as outputs
+	__write(IODIRB, 0xFF) # set port B as inputs
+	__write(GPIOA,  0xFF) # set port A on
 	#write(GPIOB,  0xFF) # set port B on
-	write(GPPUA,  0xFF) # set port A pullups on
-	write(GPPUB,  0xFF) # set port B pullups on
+	__write(GPPUA,  0xFF) # set port A pullups on
+	__write(GPPUB,  0xFF) # set port B pullups on
 
 	# initialise all outputs to 0
 	for pin in range(1, 9):
@@ -203,7 +203,7 @@ def digital_write(pin_number, value):
 	if VERBOSE_MODE:
 		__pfio_print("pin bit mask: %s" % bin(pin_bit_mask))
 
-	old_pin_values = read_output()[2]
+	old_pin_values = read_output()
 
 	if VERBOSE_MODE:
 		__pfio_print("old pin values: %s" % bin(old_pin_values))
@@ -217,30 +217,23 @@ def digital_write(pin_number, value):
 	if VERBOSE_MODE:
 		__pfio_print("new pin values: %s" % bin(new_pin_values))
 
-	data_as_hex = build_hex_string((WRITE_CMD, OUTPUT_PORT, new_pin_values))
-
-	# send is expecting a list
-	data = list()
-	data.append(data_as_hex)
-	send(data)
+	write_output(new_pin_values)
 
 	if VERBOSE_MODE:
 		__pfio_print("digital write end")
 
 def digital_read(pin_number):
 	"""Returns the value of the pin specified"""
-	current_pin_values = read_input()[2]
+	current_pin_values = read_input()
 	pin_bit_mask = get_pin_bit_mask(pin_number)
 
 	result = current_pin_values & pin_bit_mask
 
 	# is this correct? -thomas preston
 	if result:
-		pin = 0
+		return 1
 	else:
-		pin = 1
-
-	return pin
+		return 0
 
 """
 Some wrapper functions so the user doesn't have to deal with
@@ -248,34 +241,43 @@ ugly port variables
 """
 def read_output():
 	"""Returns the values of the output pins"""
-	return read(OUTPUT_PORT)
+	port, data = __read(OUTPUT_PORT)
+	return data
 
 def read_input():
 	"""Returns the values of the input pins"""
-	return read(INPUT_PORT)
+	port, data = __read(INPUT_PORT)
+	# inputs are active low, but the user doesn't need to know this...
+	return data ^ 0xff 
 
 def write_output(data):
 	"""Writed the values of the output pins"""
-	return write(OUTPUT_PORT, data)
+	port, data = __write(OUTPUT_PORT, data)
+	return data
 
+"""
 def write_input(data):
-	"""Returns the values of the input pins"""
-	return write(INPUT_PORT, data)
+	" ""Writes the values of the input pins"" "
+	port, data = __write(INPUT_PORT, data)
+	return data
+"""
 
 
-def read(port):
+def __read(port):
 	"""Reads from the port specified"""
 	# data byte is padded with 1's since it isn't going to be used
 	data_as_hex = build_hex_string((READ_CMD, port, 0xff))
-	return send([data_as_hex])[0] # send is expecting and returns a list
+	operation, port, data = __send([data_as_hex])[0] # send is expecting and returns a list
+	return (port, data)
 
-def write(port, data):
+def __write(port, data):
 	"""Writes data to the port specified"""
 	data_as_hex = build_hex_string((WRITE_CMD, port, data))
-	return send([data_as_hex])[0] # send is expecting and returns a list
+	operation, port, data = __send([data_as_hex])[0] # send is expecting and returns a list
+	return (port, data)
 
 
-def send(data):
+def __send(data):
 	"""Sends a list of data to the PiFace"""
 	if spi_handler == None:
 		raise InitialisationError("The pfio module has not yet been initialised. Before send(), call init().")
@@ -300,7 +302,6 @@ def send(data):
 	return returned_values_list
 
 
-"""Boiler plate stuff"""
 def test_method():
 	digital_write(1,1)
 	sleep(2)
@@ -308,17 +309,5 @@ def test_method():
 
 if __name__ == "__main__":
 	init()
-
-	#pin1 = digital_read(1)
-	#pin2 = digital_read(2)
-	#pin3 = digital_read(3)
-	#pin4 = digital_read(2)
-	#print pin4
-	#print "Pin 1= {0}".format(pin1)
-	#print "Pin 2= {0}".format(pin2)
-	#print "Pin 3= {0}".format(pin3)
-	#print "Pin 4= {0}".format(pin4)
-
 	test_method()
-
 	deinit()
