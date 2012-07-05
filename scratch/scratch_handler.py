@@ -15,14 +15,15 @@ HOST = '130.88.194.67'
 #HOST = askstring('Scratch Connector', 'IP:')
 BUFFER_SIZE = 100
 
-SCRATCH_SENSOR_NAME_INPUT_1 = "piface-input1"
-SCRATCH_SENSOR_NAME_INPUT_2 = "piface-input2"
-SCRATCH_SENSOR_NAME_INPUT_3 = "piface-input3"
-SCRATCH_SENSOR_NAME_INPUT_4 = "piface-input4"
-SCRATCH_SENSOR_NAME_INPUT_5 = "piface-input5"
-SCRATCH_SENSOR_NAME_INPUT_6 = "piface-input6"
-SCRATCH_SENSOR_NAME_INPUT_7 = "piface-input7"
-SCRATCH_SENSOR_NAME_INPUT_8 = "piface-input8"
+SCRATCH_SENSOR_NAME_INPUT = (
+	'piface-input1',
+	'piface-input2',
+	'piface-input3',
+	'piface-input4',
+	'piface-input5',
+	'piface-input6',
+	'piface-input7',
+	'piface-input8')
 
 
 class ScratchSender(threading.Thread):
@@ -31,13 +32,28 @@ class ScratchSender(threading.Thread):
 		self.scratch_socket = socket
 
 	def run(self):
-		last_bit_pattern = 0b0
+		last_bit_pattern = 0
 		while True:
-			pin_bit_pattern = pfio.read_input()[2]
-			msg = askstring('Scratch Connector', 'Send Broadcast:')
-			if msg:
-				#self.send_scratch_command('broadcast "' + msg + '"')
-				self.send_scratch_command('sensor-update "slider" 1')
+			pin_bit_pattern = pfio.read_input()
+
+			# if there is a change in the input pins
+			changed_pins = pin_bit_pattern ^ last_bit_pattern
+			if changed_pins:
+				broadcast_pin_update(changed_pins, pin_bit_pattern)
+
+			last_bit_pattern = pin_bit_pattern
+
+	def broadcast_pin_update(self, changed_pin_map, pin_value_map):
+		for i in range(8):
+			# if we care about this pin's value
+			if (changed_pin_map >> i) & 0b1:
+				pin_value = (pin_value_map >> i) & 0b1
+
+				bcast_str = 'sensor-update "%s" %d' % \ 
+					(SCRATCH_SENSOR_NAME_INPUT[i], pin_value)
+
+				print 'sending: %s' % bcast_str
+				self.send_scratch_command(bcast_str)
 
 	def send_scratch_command(self, cmd):
 		n = len(cmd)
