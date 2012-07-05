@@ -67,14 +67,14 @@ while game:						# while game in play
 
 
 	for i in array:						# for each colour in current sequence (check against inputted sequence)
-		event = pfio.read_input()[2] ^ 0b11111111		# read the button port state
+		event = pfio.read_input()		# read the button port state
 		
 		while event != 0:					# wait till no buttons pressed
-			event = pfio.read_input()[2] ^ 0b11111111	# so a single button press is not read as 2
+			event = pfio.read_input()	# so a single button press is not read as 2
 			sleep(0.001)					# delay
 				
 		while event == 0:					# wait for any input 
-			event = pfio.read_input()[2] ^ 0b11111111
+			event = pfio.read_input()
 		
 		sleep(0.001)						# delay
 		pin_number = pfio.get_pin_number(event)			# calculate the input pin
@@ -90,11 +90,11 @@ while game:						# while game in play
 
 		else:							# otherwise the correct button was pressed
 			previous = event
-			event = pfio.read_input()[2] ^ 0b11111111
+			event = pfio.read_input()
 			
 			while previous == event:				# while the button is held down, wait
 				previous = event
-				event = pfio.read_input()[2] ^ 0b11111111
+				event = pfio.read_input()
 				
 			pfio.digital_write(i+2,0)				# turn the button's LED off
 			
