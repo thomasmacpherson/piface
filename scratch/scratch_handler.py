@@ -5,13 +5,17 @@ import time
 import sys
 import struct
 
+import piface.pfio as pfio
+
+'''
 from Tkinter import Tk
 from tkSimpleDialog import askstring
 root = Tk()
 root.withdraw()
+'''
 
 PORT = 42001
-HOST = '130.88.194.67'
+DEFAULT_HOST = '127.0.0.1'
 #HOST = askstring('Scratch Connector', 'IP:')
 BUFFER_SIZE = 100
 
@@ -39,7 +43,7 @@ class ScratchSender(threading.Thread):
 			# if there is a change in the input pins
 			changed_pins = pin_bit_pattern ^ last_bit_pattern
 			if changed_pins:
-				broadcast_pin_update(changed_pins, pin_bit_pattern)
+				self.broadcast_pin_update(changed_pins, pin_bit_pattern)
 
 			last_bit_pattern = pin_bit_pattern
 
@@ -49,8 +53,7 @@ class ScratchSender(threading.Thread):
 			if (changed_pin_map >> i) & 0b1:
 				pin_value = (pin_value_map >> i) & 0b1
 
-				bcast_str = 'sensor-update "%s" %d' % \ 
-					(SCRATCH_SENSOR_NAME_INPUT[i], pin_value)
+				bcast_str = 'sensor-update "%s" %d' % (SCRATCH_SENSOR_NAME_INPUT[i], pin_value)
 
 				print 'sending: %s' % bcast_str
 				self.send_scratch_command(bcast_str)
@@ -91,13 +94,17 @@ def create_socket(host, port):
 	return scratch_sock
 
 if __name__ == '__main__':
-	if not HOST:
-		sys.exit()
+	if len(sys.argv) > 1:
+		host = sys.argv[1]
+	else:
+		host = DEFAULT_HOST
 
 	# open the socket
 	print 'Connecting...' ,
-	socket = create_socket(HOST, PORT)
+	socket = create_socket(host, PORT)
 	print 'Connected!'
+
+	pfio.init()
 
 	listener = ScratchListener(socket)
 	sender = ScratchSender(socket)
