@@ -7,11 +7,10 @@ This repository contains code relating to piface projects.
 
 Installation and Setup
 ======================
-These instructions assume you are on working on a Raspberry Pi. At
-present, only the root user has the appropriate privileges to
-acces the SPI module and so running programs as root is often required.
-If you know how to fix this please send us an email (it'll be something
-to do with when the kernel creates the /dev/spiX.Y files).
+These instructions assume you are on working on a Raspberry Pi with a 
+kernel that supports the SPI devices (we're using [bootc](http://www.bootc.net/)).
+and that the user `pi' has read/write access to /dev/spidev*. This can
+be set up using the spidev_setup.sh script in scripts/.
 
 To install the piface python package you must first download the source,
 move into the piface directory and then run the setup script as root:
@@ -23,7 +22,7 @@ move into the piface directory and then run the setup script as root:
 Now whenever you enter a python shell you can access the piface's
 input/output module or the emulator by importing them as such:
 
-    $ sudo python
+    $ python
     >>> import piface.pfio
     >>> piface.pfio.digital_write(1, 1)
     >>> led1 = piface.pfio.LED(1)
@@ -34,7 +33,7 @@ input/output module or the emulator by importing them as such:
 If you prefer, you can refer to the pfio and emulator modules directly
 using the following Python syntax:
 
-    $ sudo python
+    $ python
     >>> import piface.pfio as pfio
     >>> import piface.emulator as emulator
     >>> pfio.digital_write(4, 0)
