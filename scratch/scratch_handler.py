@@ -25,6 +25,16 @@ SCRATCH_SENSOR_NAME_INPUT = (
 	'piface-input7',
 	'piface-input8')
 
+SCRATCH_SENSOR_NAME_OUTPUT = (
+	'piface-output1',
+	'piface-output2',
+	'piface-output3',
+	'piface-output4',
+	'piface-output5',
+	'piface-output6',
+	'piface-output7',
+	'piface-output8')
+
 
 class ScratchSender(threading.Thread):
 	def __init__(self, socket):
@@ -39,7 +49,10 @@ class ScratchSender(threading.Thread):
 			# if there is a change in the input pins
 			changed_pins = pin_bit_pattern ^ last_bit_pattern
 			if changed_pins:
-				broadcast_pin_update(changed_pins, pin_bit_pattern)
+				try:
+					broadcast_pin_update(changed_pins, pin_bit_pattern)
+				except:
+					break
 
 			last_bit_pattern = pin_bit_pattern
 
@@ -77,12 +90,26 @@ class ScratchListener(threading.Thread):
 						'>i',
 						'%c%c%c%c' % (data[0], data[1], data[2], data[3])
 					)[0]
-				print 'Recieved data from Scratch!'
-				print 'Length: %d, Data: %s' % (length, data[4:])
-				print data[4:].split(" ")
-				print ""
 			except: # TODO: specify and error here
 				break
+
+			#print 'Length: %d, Data: %s' % (length, data[4:])
+			data = data[4:].split(" ")
+			if data[0] == 'sensor-update':
+				#print 'updating %s, new value: %s' % (data[1].strip('"'), data[2])
+				sensor_name = data[1]
+				if sensor_name in SCRATCH_SENSOR_NAME_OUTPUT:
+					pin_index = SCRATCH_SENSOR_NAME_OUTPUT.index(sensor_name)+1
+					if data[2] > 0:
+						pfio.digital_write(pin_index, 1)
+					else:
+						pfio.digital_write(pin_index, 0)
+
+			elif data[0] == 'broadcast':
+				print 'received broadcast: %s' % data[1]
+
+			else:
+				print 'received something: %s' % data
 
 
 def create_socket(host, port):
