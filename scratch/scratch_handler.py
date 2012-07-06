@@ -54,8 +54,9 @@ class ScratchSender(threading.Thread):
 			changed_pins = pin_bit_pattern ^ last_bit_pattern
 			if changed_pins:
 				try:
-					broadcast_pin_update(changed_pins, pin_bit_pattern)
-				except:
+					self.broadcast_pin_update(changed_pins, pin_bit_pattern)
+				except Exception as e:
+					print e
 					break
 
 			last_bit_pattern = pin_bit_pattern
@@ -99,14 +100,18 @@ class ScratchListener(threading.Thread):
 			#print 'Length: %d, Data: %s' % (length, data[4:])
 			data = data[4:].split(" ")
 			if data[0] == 'sensor-update':
-				#print 'updating %s, new value: %s' % (data[1].strip('"'), data[2])
-				sensor_name = data[1]
+				sensor_name = data[1].strip('"')
+				print 'updating %s, new value: %s' % (sensor_name, data[2])
+
 				if sensor_name in SCRATCH_SENSOR_NAME_OUTPUT:
 					pin_index = SCRATCH_SENSOR_NAME_OUTPUT.index(sensor_name)+1
-					if data[2] > 0:
-						pfio.digital_write(pin_index, 1)
-					else:
+					sensor_value = int(data[2])
+					if sensor_value == 0:
+						print 'setting pin %d low' % pin_index
 						pfio.digital_write(pin_index, 0)
+					else:
+						print 'setting pin %d high' % pin_index
+						pfio.digital_write(pin_index, 1)
 
 			elif data[0] == 'broadcast':
 				print 'received broadcast: %s' % data[1]
