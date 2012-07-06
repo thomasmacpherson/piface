@@ -9,7 +9,7 @@ Installation and Setup
 ======================
 These instructions assume you are on working on a Raspberry Pi with a 
 kernel that supports the SPI devices (we're using [bootc](http://www.bootc.net/)).
-and that the user `pi' has read/write access to /dev/spidev*. This can
+and that the user 'pi' has read/write access to /dev/spidev*. This can
 be set up using the spidev_setup.sh script in scripts/.
 
 To install the piface python package you must first download the source,
