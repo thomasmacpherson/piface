@@ -234,7 +234,7 @@ def read_output():
 	global emu_screen
 	output_pin_values = [pin.value for pin in emu_screen.output_pins]
 	output_binary_string = "".join(map(str, output_pin_values))
-	return [None, None, int(output_binary_string, 2), None, None, None]
+	return int(output_binary_string, 2)
 
 def read_input():
 	"""Returns the values of the input pins"""
@@ -243,7 +243,7 @@ def read_input():
 	input_pin_values.reverse() # values are mapped the opposite way
 	input_binary_string = "".join(map(str, input_pin_values))
 	inverted_input = int(input_binary_string, 2) ^ 0b11111111 # input is active low
-	return [None, None, inverted_input, None, None, None]
+	return inverted_input
 
 def write_output(data):
 	"""Writes the values of the output pins"""
