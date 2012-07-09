@@ -1,7 +1,8 @@
-import piface.pfio as pfio
 from time import sleep
 import sys
 import unittest
+
+import piface.emulator as pfio
 
 
 class TestPiFace(unittest.TestCase):

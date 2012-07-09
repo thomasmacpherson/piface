@@ -28,11 +28,11 @@ import piface.emulator_parts as emulator_parts
 
 import pfio
 try:
-	pfio.init()
-	PFIO_CONNECT = True
+    pfio.init()
+    PFIO_CONNECT = True
 except pfio.spi.error:
-	print "Could not connect to the SPI module (check privileges)."
-	PFIO_CONNECT = False
+    print "Could not connect to the SPI module (check privileges)."
+    PFIO_CONNECT = False
 
 
 VERBOSE_MODE = False
@@ -66,194 +66,194 @@ emu_screen = None
 
 
 class Item(object):
-	"""An item connected to a pin on the RaspberryPi"""
-	def __init__(self, pin_number, is_input=False):
-		# an item defaults to an output device
-		self.pin_number = pin_number
-		self.is_input = is_input
+    """An item connected to a pin on the RaspberryPi"""
+    def __init__(self, pin_number, is_input=False):
+        # an item defaults to an output device
+        self.pin_number = pin_number
+        self.is_input = is_input
 
-	def _get_value(self):
-		return digital_read(self.pin_number)
+    def _get_value(self):
+        return digital_read(self.pin_number)
 
-	def _set_value(self, data):
-		return digital_write(self.pin_number, data)
+    def _set_value(self, data):
+        return digital_write(self.pin_number, data)
 
-	value = property(_get_value, _set_value)
+    value = property(_get_value, _set_value)
 
-	def turn_on(self):
-		self.value = 1;
+    def turn_on(self):
+        self.value = 1;
 
-	def turn_off(self):
-		self.value = 0;
+    def turn_off(self):
+        self.value = 0;
 
 class LED(Item):
-	"""An LED on the RaspberryPi"""
-	def __init__(self, led_number):
-		if led_number == 1:
-			pin_number = PH_PIN_LED_1
-		elif led_number == 2:
-			pin_number = PH_PIN_LED_2
-		elif led_number == 3:
-			pin_number = PH_PIN_LED_3
-		else:
-			pin_number = PH_PIN_LED_4
+    """An LED on the RaspberryPi"""
+    def __init__(self, led_number):
+        if led_number == 1:
+            pin_number = PH_PIN_LED_1
+        elif led_number == 2:
+            pin_number = PH_PIN_LED_2
+        elif led_number == 3:
+            pin_number = PH_PIN_LED_3
+        else:
+            pin_number = PH_PIN_LED_4
 
-		Item.__init__(self, pin_number)
+        Item.__init__(self, pin_number)
 
 class Relay(Item):
-	"""A relay on the RaspberryPi"""
-	def __init__(self, relay_number):
-		if relay_number == 1:
-			pin_number = PH_PIN_RELAY_1
-		else:
-			pin_number = PH_PIN_RELAY_2
+    """A relay on the RaspberryPi"""
+    def __init__(self, relay_number):
+        if relay_number == 1:
+            pin_number = PH_PIN_RELAY_1
+        else:
+            pin_number = PH_PIN_RELAY_2
 
-		Item.__init__(self, pin_number)
+        Item.__init__(self, pin_number)
 
 class Switch(Item):
-	"""A switch on the RaspberryPi"""
-	def __init__(self, switch_number):
-		if switch_number == 1:
-			switch_number = PH_PIN_SWITCH_1
-		elif swtich_number == 2:
-			switch_number = PH_PIN_SWITCH_2
-		elif switch_number == 3:
-			switch_number = PH_PIN_SWITCH_3
-		else:
-			switch_number = PH_PIN_SWITCH_4
+    """A switch on the RaspberryPi"""
+    def __init__(self, switch_number):
+        if switch_number == 1:
+            switch_number = PH_PIN_SWITCH_1
+        elif swtich_number == 2:
+            switch_number = PH_PIN_SWITCH_2
+        elif switch_number == 3:
+            switch_number = PH_PIN_SWITCH_3
+        else:
+            switch_number = PH_PIN_SWITCH_4
 
-		Item.__init__(self, switch_number, True)
+        Item.__init__(self, switch_number, True)
 
 
 class Emulator(threading.Thread):
-	def __init__(self):
-		gtk.gdk.threads_init() # init the gdk threads
-		threading.Thread.__init__(self)
+    def __init__(self):
+        gtk.gdk.threads_init() # init the gdk threads
+        threading.Thread.__init__(self)
 
-	def run(self):
-		global emu_window
-		emu_window = gtk.Window()
-		emu_window.connect("delete-event", gtk.main_quit)
-		emu_window.set_title(WINDOW_TITLE)
+    def run(self):
+        global emu_window
+        emu_window = gtk.Window()
+        emu_window.connect("delete-event", gtk.main_quit)
+        emu_window.set_title(WINDOW_TITLE)
 
-		global emu_screen
-		if PFIO_CONNECT:
-			emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED, pfio)
-		else:
-			emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED)
+        global emu_screen
+        if PFIO_CONNECT:
+            emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED, pfio)
+        else:
+            emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED)
 
-		emu_screen.finished_setting_up()
-		emu_screen.show()
+        emu_screen.finished_setting_up()
+        emu_screen.show()
 
-		output_override_section = \
-				emulator_parts.OutputOverrideSection(emu_screen.output_pins)
-		output_override_section.show()
+        output_override_section = \
+                emulator_parts.OutputOverrideSection(emu_screen.output_pins)
+        output_override_section.show()
 
-		container = gtk.HBox(homogeneous=True, spacing=DEFAULT_SPACING)
-		container.pack_start(emu_screen)
-		container.pack_start(output_override_section)
-		container.show()
+        container = gtk.HBox(homogeneous=True, spacing=DEFAULT_SPACING)
+        container.pack_start(emu_screen)
+        container.pack_start(output_override_section)
+        container.show()
 
-		emu_window.add(container)
-		emu_window.present()
-		gtk.main()
+        emu_window.add(container)
+        emu_window.present()
+        gtk.main()
 
 """Input/Output functions mimicing the pfio module"""
 def init():
-	"""Initialises the RaspberryPi emulator"""
-	rpi_emulator = Emulator()
-	rpi_emulator.start()
-	time.sleep(0.1)
+    """Initialises the RaspberryPi emulator"""
+    rpi_emulator = Emulator()
+    rpi_emulator.start()
+    time.sleep(0.1)
 
 def deinit():
-	"""Deinitialises the PiFace"""
-	global emu_window
-	emu_window.destroy()
+    """Deinitialises the PiFace"""
+    global emu_window
+    emu_window.destroy()
 
-	gtk.main_quit()
+    gtk.main_quit()
 
-	global emu_screen
-	emu_screen = None
+    global emu_screen
+    emu_screen = None
 
 def get_pin_bit_mask(pin_number):
-	"""Translates a pin number to pin bit mask. First pin is pin1 (not pin0).
-	pin3 = 0b00000100
-	pin4 = 0b00001000
+    """Translates a pin number to pin bit mask. First pin is pin1 (not pin0).
+    pin3 = 0b00000100
+    pin4 = 0b00001000
 
-	TODO: throw and exception if the pin number is out of range
-	"""
-	#return 2**(pin_number-1)
-	return 1 << (pin_number - 1) # shifting makes more sense
+    TODO: throw and exception if the pin number is out of range
+    """
+    #return 2**(pin_number-1)
+    return 1 << (pin_number - 1) # shifting makes more sense
 
 def get_pin_number(bit_pattern):
-	"""Returns the lowest pin number from a given bit pattern"""
-	pin_number = 1 # assume pin 1
-	while (bit_pattern & 1) == 0:
-		bit_pattern = bit_pattern >> 1
-		pin_number += 1
-		if pin_number > 8:
-			pin_number = 0
-			break
-	
-	return pin_number
+    """Returns the lowest pin number from a given bit pattern"""
+    pin_number = 1 # assume pin 1
+    while (bit_pattern & 1) == 0:
+        bit_pattern = bit_pattern >> 1
+        pin_number += 1
+        if pin_number > 8:
+            pin_number = 0
+            break
+    
+    return pin_number
 
 def build_hex_string(items):
-	"""Builds a hexidecimal string comprised of the given items"""
-	hex_string = ""
-	for item in items:
-		hex_string += "%02x" % item # 10 = 0a
-	return hex_string
+    """Builds a hexidecimal string comprised of the given items"""
+    hex_string = ""
+    for item in items:
+        hex_string += "%02x" % item # 10 = 0a
+    return hex_string
 
 def digital_write(pin_number, value):
-	"""Writes the value given to the pin specified"""
-	if VERBOSE_MODE:
-		emulator_parts.emu_print("digital write start")
+    """Writes the value given to the pin specified"""
+    if VERBOSE_MODE:
+        emulator_parts.emu_print("digital write start")
 
-	global emu_screen
-	if value >= 1:
-		emu_screen.output_pins[pin_number-1].turn_on()
-	else:
-		emu_screen.output_pins[pin_number-1].turn_off()
-	
-	#emu_screen.qdraw()
+    global emu_screen
+    if value >= 1:
+        emu_screen.output_pins[pin_number-1].turn_on()
+    else:
+        emu_screen.output_pins[pin_number-1].turn_off()
+    
+    #emu_screen.qdraw()
 
-	if VERBOSE_MODE:
-		emulator_parts.emu_print("digital write end")
+    if VERBOSE_MODE:
+        emulator_parts.emu_print("digital write end")
 
 def digital_read(pin_number):
-	"""Returns the value of the pin specified"""
-	global emu_screen
-	return emu_screen.input_pins[pin_number-1].value
+    """Returns the value of the pin specified"""
+    global emu_screen
+    return emu_screen.input_pins[pin_number-1].value
 
 """
 Some wrapper functions so the user doesn't have to deal with
 ugly port variables
 """
 def read_output():
-	"""Returns the values of the output pins"""
-	global emu_screen
-	output_pin_values = [pin.value for pin in emu_screen.output_pins]
-	output_binary_string = "".join(map(str, output_pin_values))
-	return int(output_binary_string, 2)
+    """Returns the values of the output pins"""
+    global emu_screen
+    output_pin_values = [pin.value for pin in emu_screen.output_pins]
+    output_pin_values.reverse()
+    output_binary_string = "".join(map(str, output_pin_values))
+    return int(output_binary_string, 2)
 
 def read_input():
-	"""Returns the values of the input pins"""
-	global emu_screen
-	input_pin_values = [pin.value for pin in emu_screen.input_pins]
-	input_pin_values.reverse() # values are mapped the opposite way
-	input_binary_string = "".join(map(str, input_pin_values))
-	return int(input_binary_string, 2) ^ 0b11111111 # input is active low
+    """Returns the values of the input pins"""
+    global emu_screen
+    input_pin_values = [pin.value for pin in emu_screen.input_pins]
+    input_pin_values.reverse() # values are mapped the opposite way
+    input_binary_string = "".join(map(str, input_pin_values))
+    return int(input_binary_string, 2) #^ 0b11111111 # input is active low
 
 def write_output(data):
-	"""Writes the values of the output pins"""
-	output_binary_string = bin(data)[2:].zfill(8) # get an 8 char binary string
-	global emu_screen
-	for i in range(8):
-		if output_binary_string[i] >= 1:
-			emu_screen.output_pins[i].turn_on()
-		else:
-			emu_screen.output_pins[i].turn_off()
+    """Writes the values of the output pins"""
+    global emu_screen
+    for i in range(8):
+        if ((data >> i) & 1) == 1:
+            emu_screen.output_pins[i].turn_on()
+        else:
+            emu_screen.output_pins[i].turn_off()
 
 
 if __name__ == "__main__":
-	init()
+    init()

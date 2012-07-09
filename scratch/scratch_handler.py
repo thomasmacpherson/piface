@@ -5,7 +5,7 @@ import time
 import sys
 import struct
 
-import piface.pfio as pfio
+import piface.emulator as pfio
 
 '''
 from Tkinter import Tk
