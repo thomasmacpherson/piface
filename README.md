@@ -2,7 +2,9 @@ About
 =====
 This repository contains code relating to piface projects.
 
-[PFIO Documentation](https://docs.google.com/document/d/1pSfTMevvtkBD4eyeHyry4cFMDAgvq6mMASoTBlw44TU/edit)
+[Python PFIO Documentation](https://docs.google.com/document/d/1pSfTMevvtkBD4eyeHyry4cFMDAgvq6mMASoTBlw44TU/edit)
+[C PFIO
+Documentation](https://docs.google.com/document/d/1M-Rb1Ox-C8oBIhDCE_e0yn1KvbEykMnJZ4aUwCc8Aec/edit)
 
 
 Installation and Setup
@@ -12,11 +14,13 @@ kernel that supports the SPI devices (we're using [bootc](http://www.bootc.net/)
 and that the user 'pi' has read/write access to /dev/spidev*. This can
 be set up using the spidev_setup.sh script in scripts/.
 
+Python
+------
 To install the piface python package you must first download the source,
 move into the piface directory and then run the setup script as root:
 
     $ git clone https://github.com/thomasmacpherson/piface.git
-    $ cd piface/
+    $ cd piface/python/
     $ sudo python setup.py install
 
 Now whenever you enter a python shell you can access the piface's
@@ -43,6 +47,16 @@ The emulator can be used in the same way as the pfio. Upon initialisation,
 an image of the Pi Face will be drawn to a window and its inputs/outputs
 can be seen.
 
+C
+-
+To install the C pfio library download the source, move into the C directory,
+call the setup scripts and then (as root) run the install command:
+
+    $ git clone https://github.com/thomasmacpherson/piface.git
+    $ cd piface/c/
+    $ ./autogen.sh && ./configure && make
+    $ su
+    # make install
 
 Testing
 =======
