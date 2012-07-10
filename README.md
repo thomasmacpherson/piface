@@ -4,7 +4,7 @@ This repository contains code relating to piface projects.
 
 [Getting Started](https://docs.google.com/document/d/145TkSMwnPAJaqKMLxdvD8aGULQ8UgIIU3hg-JAKwAa0/edit)
 
-[Documentation](https://drive.google.com/#folders/0B-UAZ9CyJCLGQjJ3RDlqa2pqaDg)
+[Documentation](https://docs.google.com/folder/d/0B-UAZ9CyJCLGQjJ3RDlqa2pqaDg/edit)
 
 [Downloads](http://pi.cs.man.ac.uk/download)
 
