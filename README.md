@@ -2,29 +2,34 @@ About
 =====
 This repository contains code relating to piface projects.
 
-[PiFace Downloads](http://pi.cs.man.ac.uk/download)
+[Getting Started](https://docs.google.com/document/d/145TkSMwnPAJaqKMLxdvD8aGULQ8UgIIU3hg-JAKwAa0/edit)
 
-[Setting up the Raspberry Pi for use with PiFace](https://docs.google.com/document/d/145TkSMwnPAJaqKMLxdvD8aGULQ8UgIIU3hg-JAKwAa0/edit)
+[Documentation](https://drive.google.com/#folders/0B-UAZ9CyJCLGQjJ3RDlqa2pqaDg)
 
-[Python PFIO Documentation](https://docs.google.com/document/d/1pSfTMevvtkBD4eyeHyry4cFMDAgvq6mMASoTBlw44TU/edit)
-
-[C PFIO Documentation](https://docs.google.com/document/d/1M-Rb1Ox-C8oBIhDCE_e0yn1KvbEykMnJZ4aUwCc8Aec/edit)
+[Downloads](http://pi.cs.man.ac.uk/download)
 
 Installation and Setup
 ======================
+**Ignore the following steps if you have installed the custom
+Raspberry Pi SDCard image (see [Getting Started](https://docs.google.com/document/d/145TkSMwnPAJaqKMLxdvD8aGULQ8UgIIU3hg-JAKwAa0/edit))**
+
 These instructions assume you are on working on a Raspberry Pi with a 
 kernel that supports the SPI devices (we're using [bootc](http://www.bootc.net/)).
 and that the user 'pi' has read/write access to /dev/spidev*. This can
 be set up using the spidev_setup.sh script in scripts/.
 
-A more comprehensive walkthrough can be found in the links at the top of
-this README file.
+### Getting the source
+To download all of the source files simply run the following command:
+
+    $ git clone https://github.com/thomasmacpherson/piface.git
+
+This will create a directory called *piface*, which contains the entire
+project tree stored in this Git repository.
 
 ### Python
 To install the piface python package you must first download the source,
 move into the piface directory and then run the setup script as root:
 
-    $ git clone https://github.com/thomasmacpherson/piface.git
     $ cd piface/python/
     $ sudo python setup.py install
 
@@ -56,7 +61,6 @@ can be seen.
 To install the C pfio library download the source, move into the C directory,
 call the setup scripts and then (as root) run the install command:
 
-    $ git clone https://github.com/thomasmacpherson/piface.git
     $ cd piface/c/
     $ ./autogen.sh && ./configure && make
     $ su
