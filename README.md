@@ -2,6 +2,10 @@ About
 =====
 This repository contains code relating to piface projects.
 
+[PiFace Downloads](http://pi.cs.man.ac.uk/download)
+
+[Setting up the Raspberry Pi for use with PiFace](https://docs.google.com/document/d/145TkSMwnPAJaqKMLxdvD8aGULQ8UgIIU3hg-JAKwAa0/edit)
+
 [Python PFIO Documentation](https://docs.google.com/document/d/1pSfTMevvtkBD4eyeHyry4cFMDAgvq6mMASoTBlw44TU/edit)
 
 [C PFIO Documentation](https://docs.google.com/document/d/1M-Rb1Ox-C8oBIhDCE_e0yn1KvbEykMnJZ4aUwCc8Aec/edit)
@@ -12,6 +16,9 @@ These instructions assume you are on working on a Raspberry Pi with a
 kernel that supports the SPI devices (we're using [bootc](http://www.bootc.net/)).
 and that the user 'pi' has read/write access to /dev/spidev*. This can
 be set up using the spidev_setup.sh script in scripts/.
+
+A more comprehensive walkthrough can be found in the links at the top of
+this README file.
 
 ### Python
 To install the piface python package you must first download the source,
