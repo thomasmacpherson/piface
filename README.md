@@ -3,9 +3,8 @@ About
 This repository contains code relating to piface projects.
 
 [Python PFIO Documentation](https://docs.google.com/document/d/1pSfTMevvtkBD4eyeHyry4cFMDAgvq6mMASoTBlw44TU/edit)
-[C PFIO
-Documentation](https://docs.google.com/document/d/1M-Rb1Ox-C8oBIhDCE_e0yn1KvbEykMnJZ4aUwCc8Aec/edit)
 
+[C PFIO Documentation](https://docs.google.com/document/d/1M-Rb1Ox-C8oBIhDCE_e0yn1KvbEykMnJZ4aUwCc8Aec/edit)
 
 Installation and Setup
 ======================
