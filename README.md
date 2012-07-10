@@ -14,8 +14,7 @@ kernel that supports the SPI devices (we're using [bootc](http://www.bootc.net/)
 and that the user 'pi' has read/write access to /dev/spidev*. This can
 be set up using the spidev_setup.sh script in scripts/.
 
-Python
-------
+### Python
 To install the piface python package you must first download the source,
 move into the piface directory and then run the setup script as root:
 
@@ -47,8 +46,7 @@ The emulator can be used in the same way as the pfio. Upon initialisation,
 an image of the Pi Face will be drawn to a window and its inputs/outputs
 can be seen.
 
-C
--
+### C
 To install the C pfio library download the source, move into the C directory,
 call the setup scripts and then (as root) run the install command:
 
@@ -60,7 +58,8 @@ call the setup scripts and then (as root) run the install command:
 
 Testing
 =======
+### Python
 To test the installed piface package run the tests in the tests/ directory.
 
-    $ cd tests/
+    $ cd python/tests/
     $ python piface_test.py
