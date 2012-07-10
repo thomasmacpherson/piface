@@ -242,8 +242,7 @@ def read_input():
 	input_pin_values = [pin.value for pin in emu_screen.input_pins]
 	input_pin_values.reverse() # values are mapped the opposite way
 	input_binary_string = "".join(map(str, input_pin_values))
-	inverted_input = int(input_binary_string, 2) ^ 0b11111111 # input is active low
-	return inverted_input
+	return int(input_binary_string, 2) ^ 0b11111111 # input is active low
 
 def write_output(data):
 	"""Writes the values of the output pins"""
@@ -255,19 +254,6 @@ def write_output(data):
 		else:
 			emu_screen.output_pins[i].turn_off()
 
-	#emu_screen.qdraw()
-
-def write_input(data):
-	"""Writes the values of the input pins"""
-	input_binary_string = bin(data)[2:].zfill(8) # get an 8 char binary string
-	global emu_screen
-	for i in range(8):
-		if input_binary_string[i] >= 1:
-			emu_screen.input_pins[i].turn_on()
-		else:
-			emu_screen.input_pins[i].turn_off()
-
-	#emu_screen.qdraw()
 
 if __name__ == "__main__":
 	init()
