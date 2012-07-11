@@ -62,9 +62,22 @@ To install the C pfio library download the source, move into the C directory,
 call the setup scripts and then (as root) run the install command:
 
     $ cd piface/c/
-    $ ./autogen.sh && ./configure && make
-    $ su
-    # make install
+    $ ./autogen.sh && ./configure && make && sudo make install
+    
+To use the C libraries you will need to include the pfio header file from 
+the piface library and then compile with the correct flags:
+
+    $ cat piface_program.c
+    #include <libpiface-1.0/pfio.h>
+
+    int main(void)
+    {
+       pfio_init();
+       pfio_digital_write(1, 1);
+       pfio_deinit();
+    }
+    $ gcc -L/usr/local/lib/ -lpiface-1.0 -o piface_program piface_program.c
+    $ ./piface_program
 
 Testing
 =======
