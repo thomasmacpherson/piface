@@ -1,5 +1,5 @@
 #include <unistd.h>
-#include "../piface/pfio.h"
+#include <libpiface-1.0/pfio.h>
 
 int main(void)
 {
