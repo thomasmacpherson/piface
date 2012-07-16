@@ -7,16 +7,18 @@ TESTING = True
 
 # relative directories
 VIRT_PI_IMAGE = "images/pi.png"
-VIRT_VirtLED_ON_IMAGE = "images/led_on.png"
+VIRT_LED_ON_IMAGE = "images/led_on.png"
 if not TESTING:
     import os.path, sys
     package_dir = os.path.dirname(sys.modules["piface"].__file__)
     VIRT_PI_IMAGE = os.path.join(package_dir, VIRT_PI_IMAGE)
-    VIRT_VirtLED_ON_IMAGE = os.path.join(package_dir, VIRT_VirtLED_ON_IMAGE)
+    VIRT_LED_ON_IMAGE = os.path.join(package_dir, VIRT_LED_ON_IMAGE)
 
 EMU_PRINT_PREFIX = "EMU:"
 
 PIN_COLOUR_RGB = (0, 1, 1)
+
+MAX_SPI_LOGS = 50
 
 # pin circle locations
 ledsX = [180.7, 180.7, 236.7, 219.1]
@@ -89,7 +91,7 @@ class VirtItem(object):
         if pfio and self.is_input and request_digtial_read:
             real_pin_value = pfio.digital_read(self.pin_number)
             if real_pin_value == 1:
-                self._value = real_pin_value
+                return real_pin_value
 
         return self._value
 
@@ -99,9 +101,12 @@ class VirtItem(object):
             self._hold  = False
             self._force = False
 
+            """
             global emu_screen
             if emu_screen:
-                emu_screen.qdraw()
+                pass
+                emu_screen.queue_draw()
+            """
 
             global pfio
             if pfio and not self.is_input and not self.is_relay_ext_pin:
@@ -203,7 +208,7 @@ class VirtLED(VirtItem):
             if have_led_image:
                 # draw the illuminated VirtLED
                 cr.save()
-                led_surface = cairo.ImageSurface.create_from_png(VIRT_VirtLED_ON_IMAGE)
+                led_surface = cairo.ImageSurface.create_from_png(VIRT_LED_ON_IMAGE)
                 cr.set_source_surface(led_surface, self.x-6, self.y-8)
                 cr.paint()
                 cr.restore()
@@ -332,17 +337,13 @@ class Screen(gtk.DrawingArea):
         self.x = event.x
         self.y = event.y
         self.button_pressed = False
-        self.queue_draw_area(0, 0, 350, 350)
+        self.queue_draw()
 
     def _button_press(self, widget, event):
         self.x = event.x
         self.y = event.y
         self.button_pressed = True
-        self.queue_draw_area(0, 0, 350, 350)
-    
-    def qdraw(self):
-        """Register a draw to be made"""
-        self.queue_draw_area(0, 0, 350, 350)
+        self.queue_draw()
 
 class EmulatorScreen(Screen):
     """This class is also a Drawing Area, coming from Screen."""
@@ -351,11 +352,11 @@ class EmulatorScreen(Screen):
 
         global have_led_image
         try:
-            f = open(VIRT_VirtLED_ON_IMAGE)
+            f = open(VIRT_LED_ON_IMAGE)
             f.close()
             have_led_image = True
         except:
-            emu_print("could not find the virtual led image: %s" % VIRT_VirtLED_ON_IMAGE)
+            emu_print("could not find the virtual led image: %s" % VIRT_LED_ON_IMAGE)
             have_led_image = False
 
         global pfio
@@ -559,9 +560,15 @@ class SpiVisualiserSection(gtk.ScrolledWindow):
 
         # create a liststore with three string columns to use as the model
         self.liststore = gtk.ListStore(str, str, str)
+        self.liststoresize = 0
+        
+        global pfio
+        if pfio:
+            pfio.spi_visualiser_section = self
 
         # create the TreeView using liststore
         self.treeview = gtk.TreeView(self.liststore)
+        self.treeview.connect('size-allocate', self.treeview_changed)
 
         # create the TreeViewColumns to display the data
         self.tvcolumn = gtk.TreeViewColumn('Time')
@@ -570,9 +577,9 @@ class SpiVisualiserSection(gtk.ScrolledWindow):
 
         # add a row with text and a stock item - color strings for
         # the background
-        self.liststore.append(['1', '4100FF', 'FFFFFF'])
-        self.liststore.append(['2', '42FFFF', 'FEFEFE'])
-        self.liststore.append(['3', '4100FF', 'ABABAB'])
+        #self.liststore.append(['1', '4100FF', 'FFFFFF'])
+        #self.liststore.append(['2', '42FFFF', 'FEFEFE'])
+        #self.liststore.append(['3', '4100FF', 'ABABAB'])
 
         # add columns to treeview
         self.treeview.append_column(self.tvcolumn)
@@ -610,6 +617,19 @@ class SpiVisualiserSection(gtk.ScrolledWindow):
         self.add(self.treeview)
         self.treeview.show()
 
+    def treeview_changed(self, widget, event, data=None):
+        adjustment = self.get_vadjustment()
+        adjustment.set_value(adjustment.upper - adjustment.page_size)
+
+    def add_spi_log(self, time, data_tx, data_rx):
+        if self.liststoresize >= MAX_SPI_LOGS:
+            #remove the first item
+            first_row_iter = self.treeview.get_model()[0].iter
+            self.liststore.remove(first_row_iter)
+        else:
+            self.liststoresize += 1
+
+        self.liststore.append((time, data_tx, data_rx))
 
 def emu_print(text):
     """Prints a string with the pfio print prefix"""
