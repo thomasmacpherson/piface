@@ -3,7 +3,7 @@ pygtk.require("2.0")
 import gtk, gobject, cairo
 from math import pi
 
-TESTING = False
+TESTING = True
 
 # relative directories
 VIRT_PI_IMAGE = "images/pi.png"
@@ -19,8 +19,8 @@ EMU_PRINT_PREFIX = "EMU:"
 PIN_COLOUR_RGB = (0, 1, 1)
 
 # pin circle locations
-ledsX = [183.0,183.0,239.0,222.0]
-ledsY = [135.0,78.0,27.0,27.0]
+ledsX = [180.7, 180.7, 236.7, 219.1]
+ledsY = [131.3, 72.3, 22.2, 22.2]
 switchesX = [14.3, 39.3, 64.3, 89.3]
 switchesY = [157.5, 157.5, 157.5, 157.5]
 relay1VirtPinsX = [285.0,285.0,285.0]
@@ -62,6 +62,12 @@ have_led_image = False
 
 pfio = None # the pfio module that has been passed in
 
+# don't update the input pins unless the user makes a digital read
+# this is because an update is requested on every single mouse move
+# which creates a TON of SPI traffic. Turn this to True if you want
+# a full emulator mimic of the board (including inputs).
+request_digtial_read = False
+
 
 class VirtItem(object):
     """A virtual item connected to a pin on the RaspberryPi emulator"""
@@ -79,9 +85,10 @@ class VirtItem(object):
         # if the pfio is here then cross reference the virtual input
         # with the physical input
         global pfio
-        if pfio and self.is_input:
+        global request_digtial_read
+        if pfio and self.is_input and request_digtial_read:
             real_pin_value = pfio.digital_read(self.pin_number)
-            if real_pin_value != 0:
+            if real_pin_value == 1:
                 self._value = real_pin_value
 
         return self._value
@@ -421,7 +428,7 @@ class EmulatorScreen(Screen):
     def input_pin_detect(self, cr):
         # detect clicks on the input input_pins
         for pin in self.input_pins:
-            pin.draw_hidden(cr) 
+            pin.draw_hidden(cr) # perhaps this is where the heavy traffic is
             if self.mouse_hit(cr):
                 if pin.value == 1:
                     pin.turn_off(True) # force/hold
@@ -544,6 +551,64 @@ class OutputOverrideSection(gtk.VBox):
         self.flip_btn.set_sensitive(False)
         for button in self.override_buttons:
             button.set_sensitive(False)
+
+class SpiVisualiserSection(gtk.ScrolledWindow):
+    def __init__(self):
+        gtk.ScrolledWindow.__init__(self)
+        self.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
+
+        # create a liststore with three string columns to use as the model
+        self.liststore = gtk.ListStore(str, str, str)
+
+        # create the TreeView using liststore
+        self.treeview = gtk.TreeView(self.liststore)
+
+        # create the TreeViewColumns to display the data
+        self.tvcolumn = gtk.TreeViewColumn('Time')
+        self.tvcolumn1 = gtk.TreeViewColumn('In')
+        self.tvcolumn2 = gtk.TreeViewColumn('Out')
+
+        # add a row with text and a stock item - color strings for
+        # the background
+        self.liststore.append(['1', '4100FF', 'FFFFFF'])
+        self.liststore.append(['2', '42FFFF', 'FEFEFE'])
+        self.liststore.append(['3', '4100FF', 'ABABAB'])
+
+        # add columns to treeview
+        self.treeview.append_column(self.tvcolumn)
+        self.treeview.append_column(self.tvcolumn1)
+        self.treeview.append_column(self.tvcolumn2)
+
+        # create a CellRenderers to render the data
+        self.cell = gtk.CellRendererText()
+        self.cell1 = gtk.CellRendererText()
+        self.cell2 = gtk.CellRendererText()
+
+        # set background color property
+        self.cell.set_property('cell-background', 'cyan')
+        self.cell1.set_property('cell-background', 'pink')
+        self.cell2.set_property('cell-background', 'lightgreen')
+
+        # add the cells to the columns
+        self.tvcolumn.pack_start(self.cell, True)
+        self.tvcolumn1.pack_start(self.cell1, True)
+        self.tvcolumn2.pack_start(self.cell2, True)
+
+        self.tvcolumn.set_attributes(self.cell, text=0)
+        self.tvcolumn1.set_attributes(self.cell1, text=1)
+        self.tvcolumn2.set_attributes(self.cell2, text=2)
+
+        # make treeview searchable
+        self.treeview.set_search_column(0)
+
+        # Allow sorting on the column
+        self.tvcolumn.set_sort_column_id(0)
+
+        # Allow drag and drop reordering of rows
+        self.treeview.set_reorderable(True)
+
+        self.add(self.treeview)
+        self.treeview.show()
 
 
 def emu_print(text):

@@ -24,7 +24,8 @@ from math import pi
 import time
 import warnings
 
-import piface.emulator_parts as emulator_parts
+#import piface.emulator_parts as emulator_parts
+import emulator_parts
 
 import pfio
 try:
@@ -61,8 +62,9 @@ PH_PIN_SWITCH_3 = 3
 PH_PIN_SWITCH_4 = 4
 
 # global variables are bad, AND YOU SHOULD FEEL BAD!
-emu_window = None
-emu_screen = None
+rpi_emulator = None
+emu_window   = None
+emu_screen   = None
 
 
 class Item(object):
@@ -136,6 +138,7 @@ class Emulator(threading.Thread):
         emu_window.connect("delete-event", gtk.main_quit)
         emu_window.set_title(WINDOW_TITLE)
 
+        # emu screen
         global emu_screen
         if PFIO_CONNECT:
             emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED, pfio)
@@ -145,22 +148,55 @@ class Emulator(threading.Thread):
         emu_screen.finished_setting_up()
         emu_screen.show()
 
+        # board connected msg
+        if PFIO_CONNECT:
+            msg = "Pi Face detected!"
+        else:
+            msg = "Pi Face not detected"
+        board_con_msg = gtk.Label(msg)
+        board_con_msg.show()
+
+        # output override section
         output_override_section = \
                 emulator_parts.OutputOverrideSection(emu_screen.output_pins)
         output_override_section.show()
 
-        container = gtk.HBox(homogeneous=True, spacing=DEFAULT_SPACING)
-        container.pack_start(emu_screen)
-        container.pack_start(output_override_section)
-        container.show()
+        # spi visualiser
+        if PFIO_CONNECT:
+            spi_visualiser_section = \
+                    emulator_parts.SpiVisualiserSection()
+            spi_visualiser_section.set_size_request(10, 120)
+            spi_visualiser_section.show()
 
-        emu_window.add(container)
+        # vertically pack together the emu_screen and the board connected msg
+        container0 = gtk.VBox(homogeneous=False, spacing=DEFAULT_SPACING)
+        container0.pack_start(emu_screen)
+        container0.pack_start(child=board_con_msg, expand=False)
+        container0.show()
+
+        # horizontally pack together the emu screen+msg and the button overide
+        container1 = gtk.HBox(homogeneous=True, spacing=DEFAULT_SPACING)
+        container1.pack_start(container0)
+        container1.pack_start(output_override_section)
+        container1.show()
+        top_containter = container1
+
+        if PFIO_CONNECT:
+            # now, verticaly pack that container and the spi visualiser
+            container2 = gtk.VBox(homogeneous=False, spacing=DEFAULT_SPACING)
+            container2.pack_start(child=container1, expand=False, fill=False, padding=0)
+            container2.pack_start(spi_visualiser_section)
+            container2.show()
+            top_containter = container2
+
+        emu_window.add(top_containter)
         emu_window.present()
         gtk.main()
 
 """Input/Output functions mimicing the pfio module"""
 def init():
     """Initialises the RaspberryPi emulator"""
+    global rpi_emulator
     rpi_emulator = Emulator()
     rpi_emulator.start()
     time.sleep(0.1)
@@ -181,12 +217,14 @@ def get_pin_bit_mask(pin_number):
     pin4 = 0b00001000
 
     TODO: throw and exception if the pin number is out of range
-    """
     #return 2**(pin_number-1)
     return 1 << (pin_number - 1) # shifting makes more sense
+    """
+    return pfio.get_pin_bit_mask(pin_number)
 
 def get_pin_number(bit_pattern):
     """Returns the lowest pin number from a given bit pattern"""
+    """
     pin_number = 1 # assume pin 1
     while (bit_pattern & 1) == 0:
         bit_pattern = bit_pattern >> 1
@@ -196,13 +234,18 @@ def get_pin_number(bit_pattern):
             break
     
     return pin_number
+    """
+    return pfio.get_pin_number(bit_pattern)
 
 def build_hex_string(items):
     """Builds a hexidecimal string comprised of the given items"""
+    """
     hex_string = ""
     for item in items:
         hex_string += "%02x" % item # 10 = 0a
     return hex_string
+    """
+    return pfio.build_hex_string(items)
 
 def digital_write(pin_number, value):
     """Writes the value given to the pin specified"""
@@ -222,8 +265,11 @@ def digital_write(pin_number, value):
 
 def digital_read(pin_number):
     """Returns the value of the pin specified"""
+    emulator_parts.request_digtial_read = True
     global emu_screen
-    return emu_screen.input_pins[pin_number-1].value
+    value = emu_screen.input_pins[pin_number-1].value
+    emulator_parts.request_digtial_read = False
+    return value
 
 """
 Some wrapper functions so the user doesn't have to deal with
@@ -232,19 +278,18 @@ ugly port variables
 def read_output():
     """Returns the values of the output pins"""
     global emu_screen
-    output_pin_values = [pin.value for pin in emu_screen.output_pins]
-    data = 0
-    for i in range(len(output_pin_values)):
-        data ^= (output_pin_values[i] & 1) << i
-    return data
+    return __read_pins(emu_screen.output_pins)
 
 def read_input():
     """Returns the values of the input pins"""
     global emu_screen
-    input_pin_values = [pin.value for pin in emu_screen.input_pins]
+    return __read_pins(emu_screen.input_pins)
+
+def __read_pins(pins):
+    pin_values = [pin.value for pin in pins]
     data = 0
-    for i in range(len(input_pin_values)):
-        data ^= (input_pin_values[i] & 1) << i
+    for i in range(len(pin_values)):
+        data ^= (pin_values[i] & 1) << i
     return data
 
 def write_output(data):
