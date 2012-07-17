@@ -286,10 +286,12 @@ def read_input():
     return __read_pins(emu_screen.input_pins)
 
 def __read_pins(pins):
+    emulator_parts.request_digtial_read = True
     pin_values = [pin.value for pin in pins]
     data = 0
     for i in range(len(pin_values)):
         data ^= (pin_values[i] & 1) << i
+    emulator_parts.request_digtial_read = False
     return data
 
 def write_output(data):
