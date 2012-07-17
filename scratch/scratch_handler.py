@@ -144,8 +144,14 @@ class ScratchListener(threading.Thread):
 
 
 def create_socket(host, port):
-    scratch_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    scratch_sock.connect((host, port))
+    try:
+        scratch_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        scratch_sock.connect((host, port))
+    except socket.error:
+        print "There was an error connecting to Scratch!"
+        print "I couldn't find a Mesh session at host: %s, port: %s" % (host, port) 
+        sys.exit(1)
+
     return scratch_sock
 
 def cleanup_threads(threads):

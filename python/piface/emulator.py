@@ -31,7 +31,7 @@ try:
     pfio.init()
     PFIO_CONNECT = True
 except pfio.spi.error:
-    print "Could not connect to the SPI module (check privileges)."
+    print "Could not connect to the SPI module (check privileges). Running emulator under the assumption that there is no PiFace."
     PFIO_CONNECT = False
 
 
