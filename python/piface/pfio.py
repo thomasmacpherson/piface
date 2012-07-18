@@ -5,18 +5,11 @@ Provides I/O methods for interfacing with the RaspberryPi interface (piface)
 
 piface has two ports (input/output) each with eight pins with several
 peripherals connected for interacting with the raspberry pi
-
-Notes
-20/06/2012 - Thomas Preston (prestotx)
-tidied up the code, reordered methods and fixed one or two bugs
-now using underscores for function names since this is closer to the PEP-8
-(http://www.python.org/dev/peps/pep-0008/#function-names).
-Method 'send': We are passing this a list of data and then only handling the
-first one. I have changed this to handle every item in the list.
 """
-import spi
 from time import sleep
 from datetime import datetime
+
+import spi
 
 
 VERBOSE_MODE = False # toggle verbosity
@@ -145,13 +138,13 @@ def init():
     spi_handler = spi.SPI(0,0) # spi.SPI(X,Y) is /dev/spidevX.Y
 
     # set up the ports
-    __write(IOCON,  8)    # enable hardware addressing
-    __write(IODIRA, 0)    # set port A as outputs
-    __write(IODIRB, 0xFF) # set port B as inputs
-    __write(GPIOA,  0xFF) # set port A on
+    write(IOCON,  8)    # enable hardware addressing
+    write(IODIRA, 0)    # set port A as outputs
+    write(IODIRB, 0xFF) # set port B as inputs
+    write(GPIOA,  0xFF) # set port A on
     #write(GPIOB,  0xFF) # set port B on
-    __write(GPPUA,  0xFF) # set port A pullups on
-    __write(GPPUB,  0xFF) # set port B pullups on
+    write(GPPUA,  0xFF) # set port A pullups on
+    write(GPPUB,  0xFF) # set port B pullups on
 
     # initialise all outputs to 0
     for pin in range(1, 9):
@@ -189,12 +182,17 @@ def get_pin_number(bit_pattern):
     
     return pin_number
 
-def build_hex_string(items):
-    """Builds a hexidecimal string comprised of the given items"""
-    hex_string = ""
-    for item in items:
-        hex_string += "%02x" % item # 10 = 0a
-    return hex_string
+def hex_cat(items):
+    """
+    Returns a value comprised of the concatenation of the given items
+    Example: (0x41, 0x16, 0x01) -> 0x411601
+    """
+    items = list(items)
+    items.reverse()
+    cauldron = 0
+    for i in range(len(items)):
+        cauldron ^= items[i] << (i * 8)
+    return cauldron
 
 def digital_write(pin_number, value):
     """Writes the value given to the pin specified"""
@@ -244,56 +242,58 @@ ugly port variables
 """
 def read_output():
     """Returns the values of the output pins"""
-    port, data = __read(OUTPUT_PORT)
+    port, data = read(OUTPUT_PORT)
     return data
 
 def read_input():
     """Returns the values of the input pins"""
-    port, data = __read(INPUT_PORT)
+    port, data = read(INPUT_PORT)
     # inputs are active low, but the user doesn't need to know this...
     return data ^ 0xff 
 
 def write_output(data):
     """Writed the values of the output pins"""
-    port, data = __write(OUTPUT_PORT, data)
+    port, data = write(OUTPUT_PORT, data)
     return data
 
 """
 def write_input(data):
     " ""Writes the values of the input pins"" "
-    port, data = __write(INPUT_PORT, data)
+    port, data = write(INPUT_PORT, data)
     return data
 """
 
 
-def __read(port):
+def read(port):
     """Reads from the port specified"""
     # data byte is padded with 1's since it isn't going to be used
-    operation, port, data = __send([(READ_CMD, port, 0xff)])[0] # send is expecting and returns a list
+    operation, port, data = send([hex_cat((READ_CMD, port, 0xff))])[0] # send is expecting and returns a list
     return (port, data)
 
-def __write(port, data):
+def write(port, data):
     """Writes data to the port specified"""
     #print "writing"
-    operation, port, data = __send([(WRITE_CMD, port, data)])[0] # send is expecting and returns a list
+    operation, port, data = send([hex_cat((WRITE_CMD, port, data))])[0] # send is expecting and returns a list
     return (port, data)
 
 
-def __send(data):
+def send(data):
     """Sends a list of data to the PiFace"""
     if spi_handler == None:
         raise InitialisationError("The pfio module has not yet been initialised. Before send(), call init().")
     # a place to store the returned values for each transfer
     returned_values_list = list() 
 
+    # datum is an array of three bytes
     for datum in data:
-        hex_datum_tx = build_hex_string(datum)
+        #datum_tx = hex_cat(datum)
+        datum_tx = datum
         if VERBOSE_MODE:
-            __pfio_print("transfering data: %s" % hex_datum_tx)
+            __pfio_print("transfering data: %s" % hex(datum_tx))
 
         # transfer the data string
-        returned_values = spi_handler.transfer(hex_datum_tx, len(datum))
-        hex_datum_rx = build_hex_string(returned_values)
+        returned_values = spi_handler.transfer(hex(datum_tx)[2:], len(hex(datum)[2:]))
+        datum_rx = hex_cat(returned_values)
 
         returned_values_list.append(returned_values)
 
@@ -302,11 +302,12 @@ def __send(data):
         if spi_visualiser_section:
             time = datetime.now()
             timestr = "%d:%d:%d.%d" % (time.hour, time.minute, time.second, time.microsecond)
-            spi_visualiser_section.add_spi_log(timestr, hex_datum_tx, hex_datum_rx)
+            #datum_tx = hex_cat(datum) # recalculate since the transfer changes it
             #print "writing to spi_liststore: %s" % str((timestr, hex_datum_tx, hex_datum_rx))
+            spi_visualiser_section.add_spi_log(timestr, datum_tx, datum_rx)
 
         if VERBOSE_MODE:
-            __pfio_print("SPI module returned: %s" % hex_datum_rx)
+            __pfio_print("SPI module returned: %s" % hex(datum_rx))
 
     return returned_values_list
 

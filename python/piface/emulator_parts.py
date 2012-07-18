@@ -3,7 +3,7 @@ pygtk.require("2.0")
 import gtk, gobject, cairo
 from math import pi
 
-TESTING = True
+TESTING = False
 
 # relative directories
 VIRT_PI_IMAGE = "images/pi.png"
@@ -19,6 +19,8 @@ EMU_PRINT_PREFIX = "EMU:"
 PIN_COLOUR_RGB = (0, 1, 1)
 
 MAX_SPI_LOGS = 50
+
+DEFAULT_SPACING = 10
 
 # pin circle locations
 ledsX = [180.7, 180.7, 236.7, 219.1]
@@ -347,7 +349,7 @@ class Screen(gtk.DrawingArea):
 
 class EmulatorScreen(Screen):
     """This class is also a Drawing Area, coming from Screen."""
-    def __init__ (self, w, h, speed, pfio_module=None):
+    def __init__ (self, w, h, speed):
         Screen.__init__(self, w, h, speed)
 
         global have_led_image
@@ -358,9 +360,6 @@ class EmulatorScreen(Screen):
         except:
             emu_print("could not find the virtual led image: %s" % VIRT_LED_ON_IMAGE)
             have_led_image = False
-
-        global pfio
-        pfio = pfio_module
 
         self.input_pins = [VirtPin(i, True) for i in range(1,9)]
         self.switches = [VirtSwitch(i+1, self.input_pins[i]) for i in range(4)]
@@ -502,15 +501,24 @@ class OutputOverrideSection(gtk.VBox):
         else:
             self.disable_override_buttons()
 
+        global emu_screen
+        emu_screen.queue_draw()
+
     def all_on_button_clicked(self, all_on_btn, data=None):
         for i in range(self.number_of_override_buttons):
             self.override_buttons[i].set_active(True)
             self.output_pins[i].turn_on()
 
+        global emu_screen
+        emu_screen.queue_draw()
+
     def all_off_button_clicked(self, all_on_btn, data=None):
         for i in range(self.number_of_override_buttons):
             self.override_buttons[i].set_active(False)
             self.output_pins[i].turn_off()
+
+        global emu_screen
+        emu_screen.queue_draw()
 
     def flip_button_clicked(self, flip_btn, data=None):
         for i in range(self.number_of_override_buttons):
@@ -521,10 +529,16 @@ class OutputOverrideSection(gtk.VBox):
                 self.override_buttons[i].set_active(True)
                 self.output_pins[i].turn_on()
 
+        global emu_screen
+        emu_screen.queue_draw()
+
 
     def output_override_clicked(self, toggle_button, data=None):
         button_index = data
         self.set_pin(button_index, toggle_button.get_active())
+
+        global emu_screen
+        emu_screen.queue_draw()
 
 
     def set_pin(self, pin_index, pin_value):
@@ -541,6 +555,9 @@ class OutputOverrideSection(gtk.VBox):
             self.set_pin(i, self.override_buttons[i].get_active())
             self.override_buttons[i].set_sensitive(True)
 
+        global emu_screen
+        emu_screen.queue_draw()
+
     def disable_override_buttons(self):
         # turn off all the pins
         for pin in self.output_pins:
@@ -553,13 +570,35 @@ class OutputOverrideSection(gtk.VBox):
         for button in self.override_buttons:
             button.set_sensitive(False)
 
+        global emu_screen
+        emu_screen.queue_draw()
+
+class SpiVisualiserFrame(gtk.Frame):
+    def __init__(self):
+        gtk.Frame.__init__(self, "SPI Visualiser")
+        container = gtk.VBox(False)
+
+        spi_visualiser_section = SpiVisualiserSection()
+        spi_visualiser_section.show()
+        container.pack_start(child=spi_visualiser_section, expand=True, fill=True)
+
+        spi_sender_section = SpiSenderSection()
+        spi_sender_section.show()
+        container.pack_end(child=spi_sender_section, expand=False)
+
+        container.show()
+        container.set_border_width(DEFAULT_SPACING)
+        self.add(container)
+        self.set_border_width(DEFAULT_SPACING)
+        self.show()
+
 class SpiVisualiserSection(gtk.ScrolledWindow):
     def __init__(self):
         gtk.ScrolledWindow.__init__(self)
         self.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
 
         # create a liststore with three string columns to use as the model
-        self.liststore = gtk.ListStore(str, str, str)
+        self.liststore = gtk.ListStore(str, str, str, str, str)
         self.liststoresize = 0
         
         global pfio
@@ -571,45 +610,38 @@ class SpiVisualiserSection(gtk.ScrolledWindow):
         self.treeview.connect('size-allocate', self.treeview_changed)
 
         # create the TreeViewColumns to display the data
-        self.tvcolumn = gtk.TreeViewColumn('Time')
-        self.tvcolumn1 = gtk.TreeViewColumn('In')
-        self.tvcolumn2 = gtk.TreeViewColumn('Out')
-
-        # add a row with text and a stock item - color strings for
-        # the background
-        #self.liststore.append(['1', '4100FF', 'FFFFFF'])
-        #self.liststore.append(['2', '42FFFF', 'FEFEFE'])
-        #self.liststore.append(['3', '4100FF', 'ABABAB'])
+        self.tvcolumn = (gtk.TreeViewColumn('Time'),
+                gtk.TreeViewColumn('In'),
+                gtk.TreeViewColumn('In Breakdown'),
+                gtk.TreeViewColumn('Out'),
+                gtk.TreeViewColumn('Out Breakdown'))
 
         # add columns to treeview
-        self.treeview.append_column(self.tvcolumn)
-        self.treeview.append_column(self.tvcolumn1)
-        self.treeview.append_column(self.tvcolumn2)
+        for column in self.tvcolumn:
+            self.treeview.append_column(column)
 
         # create a CellRenderers to render the data
-        self.cell = gtk.CellRendererText()
-        self.cell1 = gtk.CellRendererText()
-        self.cell2 = gtk.CellRendererText()
+        self.cell = [gtk.CellRendererText() for i in range(5)]
 
         # set background color property
-        self.cell.set_property('cell-background', 'cyan')
-        self.cell1.set_property('cell-background', 'pink')
-        self.cell2.set_property('cell-background', 'lightgreen')
+        self.cell[0].set_property('cell-background', 'cyan')
+        self.cell[1].set_property('cell-background', '#87ea87')
+        self.cell[2].set_property('cell-background', '#98fb98')
+        self.cell[3].set_property('cell-background', '#ffccbb')
+        self.cell[4].set_property('cell-background', '#ffddcc')
 
         # add the cells to the columns
-        self.tvcolumn.pack_start(self.cell, True)
-        self.tvcolumn1.pack_start(self.cell1, True)
-        self.tvcolumn2.pack_start(self.cell2, True)
+        for i in range(len(self.tvcolumn)):
+            self.tvcolumn[i].pack_start(self.cell[i], True)
 
-        self.tvcolumn.set_attributes(self.cell, text=0)
-        self.tvcolumn1.set_attributes(self.cell1, text=1)
-        self.tvcolumn2.set_attributes(self.cell2, text=2)
+        for i in range(len(self.tvcolumn)):
+            self.tvcolumn[i].set_attributes(self.cell[i], text=i)
 
         # make treeview searchable
         self.treeview.set_search_column(0)
 
         # Allow sorting on the column
-        self.tvcolumn.set_sort_column_id(0)
+        self.tvcolumn[0].set_sort_column_id(0)
 
         # Allow drag and drop reordering of rows
         self.treeview.set_reorderable(True)
@@ -629,7 +661,102 @@ class SpiVisualiserSection(gtk.ScrolledWindow):
         else:
             self.liststoresize += 1
 
-        self.liststore.append((time, data_tx, data_rx))
+        data_tx_breakdown = self.get_data_breakdown(data_tx)
+        data_rx_breakdown = self.get_data_breakdown(data_rx)
+        self.liststore.append((time, "0x%06x" % data_tx, data_tx_breakdown, "0x%06x" % data_rx, data_rx_breakdown))
+        
+    def get_data_breakdown(self, raw_data):
+        cmd = (raw_data >> 16) & 0xff
+        if cmd == pfio.WRITE_CMD:
+            cmd = "WRITE"
+        elif cmd == pfio.READ_CMD:
+            cmd = "READ"
+        else:
+            cmd = hex(cmd)
+
+        port = (raw_data >> 8) & 0xff
+        if port == pfio.IODIRA:
+            port = "IODIRA"
+        elif port == pfio.IODIRB:
+            port = "IODIRB"
+        elif port == pfio.IOCON:
+            port = "IOCON"
+        elif port == pfio.GPIOA:
+            port = "GPIOA"
+        elif port == pfio.GPIOB:
+            port = "GPIOB"
+        elif port == pfio.GPPUA:
+            port = "GPPUA"
+        elif port == pfio.GPPUB:
+            port = "GPPUB"
+        else:
+            port = hex(port)
+
+        data = hex(raw_data & 0xff)
+
+        data_breakdown = "cmd: %s, port: %s, data: %s" % (cmd, port, data)
+        return data_breakdown
+
+class SpiSenderSection(gtk.HBox):
+    def __init__(self):
+        gtk.HBox.__init__(self, False)
+
+        label = gtk.Label("SPI Input: ")
+        label.show()
+
+        self.spi_input = gtk.Entry()
+        self.spi_input.set_text("0x0")
+        self.spi_input.show()
+
+        button = gtk.Button("Send")
+        button.connect("clicked", self.send_spi_message)
+        button.show()
+
+        self.error_label = gtk.Label()
+        self.error_label.show()
+
+        self.pack_start(child=label, expand=False)
+        self.pack_start(child=self.spi_input, expand=False)
+        self.pack_start(child=button, expand=False)
+        self.pack_start(child=self.error_label, expand=False)
+
+    def __set_error_label_text(self, text):
+        self.__error_text = text
+        self.error_label.set_markup("<span foreground='#ff0000'> %s</span>" % self.__error_text)
+
+    def __get_error_label_text(self):
+        return self.__error_text
+    
+    error_text = property(__get_error_label_text, __set_error_label_text)
+
+    def send_spi_message(self, widget, data=None):
+        self.error_text = ""
+        spi_message = 0
+        user_input = self.spi_input.get_text()
+        try:
+            if "0x" == user_input[:2]:
+                spi_message = int(user_input, 16)
+            elif "0b"== user_input[:2]:
+                spi_message = int(user_input, 2)
+            else:
+                spi_message = int(user_input)
+
+            # check we are three bytes long
+            if len(hex(spi_message)[2:]) > 6:
+                raise ValueError()
+
+        except ValueError:
+            msg = "Invalid SPI message"
+            self.error_text = msg
+            self.error_label.set_focus()
+            print msg
+            return
+
+
+        cmd  = (spi_message >> 16) & 0xff
+        port = (spi_message >> 8) & 0xff
+        data = (spi_message) & 0xff
+        pfio.send([pfio.hex_cat((cmd, port, data))])
 
 def emu_print(text):
     """Prints a string with the pfio print prefix"""

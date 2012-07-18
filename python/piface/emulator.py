@@ -28,12 +28,7 @@ import warnings
 import emulator_parts
 
 import pfio
-try:
-    pfio.init()
-    PFIO_CONNECT = True
-except pfio.spi.error:
-    print "Could not connect to the SPI module (check privileges)."
-    PFIO_CONNECT = False
+PFIO_CONNECT = False
 
 
 VERBOSE_MODE = False
@@ -133,6 +128,16 @@ class Emulator(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
+        # a bit of spaghetti set up
+        emulator_parts.pfio = pfio
+        spi_visualiser_section = emulator_parts.SpiVisualiserFrame()
+        try:
+            pfio.init()
+            PFIO_CONNECT = True
+        except pfio.spi.error:
+            print "Could not connect to the SPI module (check privileges). Starting emulator assuming that the PiFace is not connected."
+            PFIO_CONNECT = False
+
         global emu_window
         emu_window = gtk.Window()
         emu_window.connect("delete-event", gtk.main_quit)
@@ -140,10 +145,7 @@ class Emulator(threading.Thread):
 
         # emu screen
         global emu_screen
-        if PFIO_CONNECT:
-            emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED, pfio)
-        else:
-            emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED)
+        emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED)
 
         emu_screen.finished_setting_up()
         emu_screen.show()
@@ -163,21 +165,22 @@ class Emulator(threading.Thread):
 
         # spi visualiser
         if PFIO_CONNECT:
-            spi_visualiser_section = \
-                    emulator_parts.SpiVisualiserSection()
-            spi_visualiser_section.set_size_request(10, 120)
+            #spi_visualiser_section = emulator_parts.SpiVisualiserFrame()
+            spi_visualiser_section.set_size_request(50, 200)
+            spi_visualiser_section.set_border_width(DEFAULT_SPACING)
             spi_visualiser_section.show()
 
         # vertically pack together the emu_screen and the board connected msg
         container0 = gtk.VBox(homogeneous=False, spacing=DEFAULT_SPACING)
         container0.pack_start(emu_screen)
-        container0.pack_start(child=board_con_msg, expand=False)
+        container0.pack_start(child=board_con_msg)
         container0.show()
 
         # horizontally pack together the emu screen+msg and the button overide
         container1 = gtk.HBox(homogeneous=True, spacing=DEFAULT_SPACING)
         container1.pack_start(container0)
         container1.pack_start(output_override_section)
+        container1.set_border_width(DEFAULT_SPACING)
         container1.show()
         top_containter = container1
 
@@ -237,15 +240,8 @@ def get_pin_number(bit_pattern):
     """
     return pfio.get_pin_number(bit_pattern)
 
-def build_hex_string(items):
-    """Builds a hexidecimal string comprised of the given items"""
-    """
-    hex_string = ""
-    for item in items:
-        hex_string += "%02x" % item # 10 = 0a
-    return hex_string
-    """
-    return pfio.build_hex_string(items)
+def hex_cat(items):
+    return pfio.hex_cat(items)
 
 def digital_write(pin_number, value):
     """Writes the value given to the pin specified"""
@@ -257,8 +253,8 @@ def digital_write(pin_number, value):
         emu_screen.output_pins[pin_number-1].turn_on()
     else:
         emu_screen.output_pins[pin_number-1].turn_off()
-    
-    #emu_screen.qdraw()
+
+    emu_screen.queue_draw()
 
     if VERBOSE_MODE:
         emulator_parts.emu_print("digital write end")
@@ -269,6 +265,8 @@ def digital_read(pin_number):
     global emu_screen
     value = emu_screen.input_pins[pin_number-1].value
     emulator_parts.request_digtial_read = False
+
+    emu_screen.queue_draw()
     return value
 
 """
@@ -292,6 +290,8 @@ def __read_pins(pins):
     for i in range(len(pin_values)):
         data ^= (pin_values[i] & 1) << i
     emulator_parts.request_digtial_read = False
+
+    emu_screen.queue_draw()
     return data
 
 def write_output(data):
@@ -302,6 +302,8 @@ def write_output(data):
             emu_screen.output_pins[i].turn_on()
         else:
             emu_screen.output_pins[i].turn_off()
+
+    emu_screen.queue_draw()
 
 
 if __name__ == "__main__":
