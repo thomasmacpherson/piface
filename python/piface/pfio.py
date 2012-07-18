@@ -147,8 +147,7 @@ def init():
     write(GPPUB,  0xFF) # set port B pullups on
 
     # initialise all outputs to 0
-    for pin in range(1, 9):
-        digital_write(pin, 0)
+    write_output(0x12)
 
 def deinit():
     """Deinitialises the PiFace"""
@@ -182,7 +181,7 @@ def get_pin_number(bit_pattern):
     
     return pin_number
 
-def hex_cat(items):
+def byte_cat(items):
     """
     Returns a value comprised of the concatenation of the given items
     Example: (0x41, 0x16, 0x01) -> 0x411601
@@ -267,47 +266,46 @@ def write_input(data):
 def read(port):
     """Reads from the port specified"""
     # data byte is padded with 1's since it isn't going to be used
-    operation, port, data = send([hex_cat((READ_CMD, port, 0xff))])[0] # send is expecting and returns a list
+    operation, port, data = send([(READ_CMD, port, 0xff)])[0] # send is expecting and returns a list
     return (port, data)
 
 def write(port, data):
     """Writes data to the port specified"""
     #print "writing"
-    operation, port, data = send([hex_cat((WRITE_CMD, port, data))])[0] # send is expecting and returns a list
+    operation, port, data = send([(WRITE_CMD, port, data)])[0] # send is expecting and returns a list
     return (port, data)
 
 
-def send(data):
-    """Sends a list of data to the PiFace"""
+def send(spi_commands):
+    """Sends a list of spi commands to the PiFace"""
     if spi_handler == None:
         raise InitialisationError("The pfio module has not yet been initialised. Before send(), call init().")
     # a place to store the returned values for each transfer
     returned_values_list = list() 
 
     # datum is an array of three bytes
-    for datum in data:
-        #datum_tx = hex_cat(datum)
-        datum_tx = datum
+    for cmd, port, data in spi_commands:
+        datum_tx = byte_cat((cmd, port, data))
         if VERBOSE_MODE:
-            __pfio_print("transfering data: %s" % hex(datum_tx))
+            __pfio_print("transfering data: 0x%06x" % datum_tx)
 
         # transfer the data string
-        returned_values = spi_handler.transfer(hex(datum_tx)[2:], len(hex(datum)[2:]))
-        datum_rx = hex_cat(returned_values)
+        returned_values = spi_handler.transfer("%06x" % datum_tx, 3)
+        datum_rx = byte_cat(returned_values)
 
         returned_values_list.append(returned_values)
+
+        if VERBOSE_MODE:
+            __pfio_print("SPI module returned: 0x%06x" % datum_rx)
 
         # if we are visualising, add the data to the emulator visualiser
         global spi_visualiser_section
         if spi_visualiser_section:
             time = datetime.now()
             timestr = "%d:%d:%d.%d" % (time.hour, time.minute, time.second, time.microsecond)
-            #datum_tx = hex_cat(datum) # recalculate since the transfer changes it
-            #print "writing to spi_liststore: %s" % str((timestr, hex_datum_tx, hex_datum_rx))
+            datum_tx = byte_cat((cmd, port, data)) # recalculate since the transfer changes it
+            #print "writing to spi_liststore: %s" % str((timestr, hex(datum_tx), hex(datum_rx)))
             spi_visualiser_section.add_spi_log(timestr, datum_tx, datum_rx)
-
-        if VERBOSE_MODE:
-            __pfio_print("SPI module returned: %s" % hex(datum_rx))
 
     return returned_values_list
 
