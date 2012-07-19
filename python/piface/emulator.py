@@ -58,8 +58,6 @@ PH_PIN_SWITCH_4 = 4
 
 # global variables are bad, AND YOU SHOULD FEEL BAD!
 rpi_emulator = None
-emu_window   = None
-emu_screen   = None
 
 
 class Item(object):
@@ -130,6 +128,7 @@ class Emulator(threading.Thread):
     def run(self):
         # a bit of spaghetti set up
         emulator_parts.pfio = pfio
+        emulator_parts.rpi_emulator = self
         self.spi_visualiser_section = emulator_parts.SpiVisualiserFrame()
         try:
             pfio.init()
@@ -138,17 +137,14 @@ class Emulator(threading.Thread):
             print "Could not connect to the SPI module (check privileges). Starting emulator assuming that the PiFace is not connected."
             PFIO_CONNECT = False
 
-        global emu_window
-        emu_window = gtk.Window()
-        emu_window.connect("delete-event", gtk.main_quit)
-        emu_window.set_title(WINDOW_TITLE)
+        self.emu_window = gtk.Window()
+        self.emu_window.connect("delete-event", gtk.main_quit)
+        self.emu_window.set_title(WINDOW_TITLE)
 
         # emu screen
-        global emu_screen
-        emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED)
+        self.emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED)
 
-        emu_screen.finished_setting_up()
-        emu_screen.show()
+        self.emu_screen.show()
 
         # board connected msg
         if PFIO_CONNECT:
@@ -165,9 +161,9 @@ class Emulator(threading.Thread):
             spi_vis_check.show()
 
         # output override section
-        output_override_section = \
-                emulator_parts.OutputOverrideSection(emu_screen.output_pins)
-        output_override_section.show()
+        self.output_override_section = \
+                emulator_parts.OutputOverrideSection(self.emu_screen.output_pins)
+        self.output_override_section.show()
 
         # spi visualiser
         if PFIO_CONNECT:
@@ -179,7 +175,7 @@ class Emulator(threading.Thread):
 
         # vertically pack together the emu_screen and the board connected msg
         container0 = gtk.VBox(homogeneous=False, spacing=DEFAULT_SPACING)
-        container0.pack_start(emu_screen)
+        container0.pack_start(self.emu_screen)
         container0.pack_start(board_con_msg)
         container0.pack_start(spi_vis_check)
         container0.show()
@@ -187,7 +183,7 @@ class Emulator(threading.Thread):
         # horizontally pack together the emu screen+msg and the button overide
         container1 = gtk.HBox(homogeneous=True, spacing=DEFAULT_SPACING)
         container1.pack_start(container0)
-        container1.pack_start(output_override_section)
+        container1.pack_start(self.output_override_section)
         container1.set_border_width(DEFAULT_SPACING)
         container1.show()
         top_containter = container1
@@ -200,17 +196,16 @@ class Emulator(threading.Thread):
             container2.show()
             top_containter = container2
 
-        emu_window.add(top_containter)
-        emu_window.present()
+        self.emu_window.add(top_containter)
+        self.emu_window.present()
         gtk.main()
     
     def toggle_spi_visualiser(self, widget, data=None):
-        global emu_window
         if widget.get_active():
             self.spi_visualiser_section.show()
         else:
             self.spi_visualiser_section.hide()
-            emu_window.resize(10, 10)
+            self.emu_window.resize(10, 10)
 
 """Input/Output functions mimicing the pfio module"""
 def init():
@@ -222,13 +217,12 @@ def init():
 
 def deinit():
     """Deinitialises the PiFace"""
-    global emu_window
-    emu_window.destroy()
+    global rpi_emulator
+    rpi_emulator.emu_window.destroy()
 
     gtk.main_quit()
 
-    global emu_screen
-    emu_screen = None
+    rpi_emulator.emu_screen = None
 
 def get_pin_bit_mask(pin_number):
     """Translates a pin number to pin bit mask. First pin is pin1 (not pin0).
@@ -264,13 +258,13 @@ def digital_write(pin_number, value):
     if VERBOSE_MODE:
         emulator_parts.emu_print("digital write start")
 
-    global emu_screen
+    global rpi_emulator
     if value >= 1:
-        emu_screen.output_pins[pin_number-1].turn_on()
+        rpi_emulator.emu_screen.output_pins[pin_number-1].turn_on()
     else:
-        emu_screen.output_pins[pin_number-1].turn_off()
+        rpi_emulator.emu_screen.output_pins[pin_number-1].turn_off()
 
-    emu_screen.queue_draw()
+    rpi_emulator.emu_screen.queue_draw()
 
     if VERBOSE_MODE:
         emulator_parts.emu_print("digital write end")
@@ -278,8 +272,8 @@ def digital_write(pin_number, value):
 def digital_read(pin_number):
     """Returns the value of the pin specified"""
     emulator_parts.request_digtial_read = True
-    global emu_screen
-    value = emu_screen.input_pins[pin_number-1].value
+    global rpi_emulator
+    value = rpi_emulator.emu_screen.input_pins[pin_number-1].value
     emulator_parts.request_digtial_read = False
 
     emu_screen.queue_draw()
@@ -291,13 +285,13 @@ ugly port variables
 """
 def read_output():
     """Returns the values of the output pins"""
-    global emu_screen
-    return __read_pins(emu_screen.output_pins)
+    global rpi_emulator
+    return __read_pins(rpi_emulator.emu_screen.output_pins)
 
 def read_input():
     """Returns the values of the input pins"""
-    global emu_screen
-    return __read_pins(emu_screen.input_pins)
+    global rpi_emulator
+    return __read_pins(rpi_emulator.emu_screen.input_pins)
 
 def __read_pins(pins):
     emulator_parts.request_digtial_read = True
@@ -312,14 +306,14 @@ def __read_pins(pins):
 
 def write_output(data):
     """Writes the values of the output pins"""
-    global emu_screen
+    global rpi_emulator
     for i in range(8):
         if ((data >> i) & 1) == 1:
-            emu_screen.output_pins[i].turn_on()
+            rpi_emulator.emu_screen.output_pins[i].turn_on()
         else:
-            emu_screen.output_pins[i].turn_off()
+            rpi_emulator.emu_screen.output_pins[i].turn_off()
 
-    emu_screen.queue_draw()
+    rpi_emulator.emu_screen.queue_draw()
 
 
 if __name__ == "__main__":

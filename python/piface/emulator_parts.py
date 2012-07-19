@@ -61,8 +61,9 @@ PH_PIN_SWITCH_2 = 2
 PH_PIN_SWITCH_3 = 3
 PH_PIN_SWITCH_4 = 4
 
-emu_screen = None
+rpi_emulator = None
 have_led_image = False
+output_override_section = None
 
 pfio = None # the pfio module that has been passed in
 
@@ -104,13 +105,6 @@ class VirtItem(object):
             self._hold  = False
             self._force = False
 
-            """
-            global emu_screen
-            if emu_screen:
-                pass
-                emu_screen.queue_draw()
-            """
-
             global pfio
             if pfio and not self.is_input and not self.is_relay_ext_pin:
                 # update the state of the actual output devices
@@ -132,11 +126,11 @@ class VirtItem(object):
     def attach_pin(self, pin, pin_number=1, is_input=False):
         if pin:
             self.attached_pin = pin
-        elif emu_screen:
+        elif rpi_emulator.emu_screen:
             if is_input:
-                self.attached_pin = emu_screen.input_pins[pin_number-1]
+                self.attached_pin = rpi_emulator.emu_screen.input_pins[pin_number-1]
             else:
-                self.attached_pin = emu_screen.output_pins[pin_number-1]
+                self.attached_pin = rpi_emulator.emu_screen.output_pins[pin_number-1]
         else: # guess
             if is_input:
                 self.attached_pin = VirtPin(pin_number)
@@ -369,10 +363,6 @@ class EmulatorScreen(Screen):
         self.relays = [VirtRelay(i+1, self.output_pins[i]) for i in range(2)]
         self.leds = [VirtLED(i+1, self.output_pins[i]) for i in range(4)]
 
-    def finished_setting_up(self):
-        global emu_screen
-        emu_screen = self
-
     def draw(self):
         cr = self.cr # Shabby shortcut.
         #---------TOP LEVEL - THE "PAGE"
@@ -471,10 +461,10 @@ class OutputOverrideSection(gtk.VBox):
         widgets = list()
 
         # main override button
-        main_override_btn = gtk.ToggleButton("Override Enable")
-        main_override_btn.connect('clicked', self.main_override_clicked)
-        main_override_btn.show()
-        widgets.append(main_override_btn)
+        self.main_override_btn = gtk.ToggleButton("Override Enable")
+        self.main_override_btn.connect('clicked', self.main_override_clicked)
+        self.main_override_btn.show()
+        widgets.append(self.main_override_btn)
 
         # pin override buttons
         self.override_buttons = list()
@@ -514,6 +504,17 @@ class OutputOverrideSection(gtk.VBox):
             self.pack_start(widget)
 
         self.batch_button = False
+        self.reseting = False
+
+    def reset_buttons(self):
+        self.batch_button = True
+        self.reseting = True
+        for button in self.override_buttons:
+            button.set_active(False)
+        self.main_override_btn.set_active(False)
+
+        self.batch_button = False
+        self.reseting = False
 
     """Callbacks"""
     def main_override_clicked(self, main_override_btn, data=None):
@@ -521,20 +522,28 @@ class OutputOverrideSection(gtk.VBox):
             self.enable_override_buttons()
         else:
             self.disable_override_buttons()
+            if not self.reseting:
+                # turn off all the pins
+                for pin in self.output_pins:
+                    pin._value = 0
+                global pfio
+                if pfio:
+                    pfio.write_output(0)
 
-        global emu_screen
-        emu_screen.queue_draw()
+
+        global rpi_emulator
+        rpi_emulator.emu_screen.queue_draw()
 
     def all_on_button_clicked(self, all_on_btn, data=None):
         self.batch_button = True
         for i in range(self.number_of_override_buttons):
             self.override_buttons[i].set_active(True)
-            self.output_pins[i]._value = 1
+            #self.output_pins[i]._value = 1
 
         self.set_pins()
 
-        global emu_screen
-        emu_screen.queue_draw()
+        global rpi_emulator
+        rpi_emulator.emu_screen.queue_draw()
 
         self.batch_button = False
 
@@ -543,12 +552,12 @@ class OutputOverrideSection(gtk.VBox):
 
         for i in range(self.number_of_override_buttons):
             self.override_buttons[i].set_active(False)
-            self.output_pins[i]._value = 0
+            #self.output_pins[i]._value = 0
 
         self.set_pins()
 
-        global emu_screen
-        emu_screen.queue_draw()
+        global rpi_emulator
+        rpi_emulator.emu_screen.queue_draw()
 
         self.batch_button = False
 
@@ -557,14 +566,14 @@ class OutputOverrideSection(gtk.VBox):
         for i in range(self.number_of_override_buttons):
             if self.override_buttons[i].get_active():
                 self.override_buttons[i].set_active(False)
-                self.output_pins[i]._value = 0
+                #self.output_pins[i]._value = 0
             else:
                 self.override_buttons[i].set_active(True)
-                self.output_pins[i]._value = 1
+                #self.output_pins[i]._value = 1
 
         self.set_pins()
-        global emu_screen
-        emu_screen.queue_draw()
+        global rpi_emulator
+        rpi_emulator.emu_screen.queue_draw()
 
         self.batch_button = False
 
@@ -573,21 +582,21 @@ class OutputOverrideSection(gtk.VBox):
             self.set_pins()
 
     def set_pins(self):
-        global emu_screen
+        global rpi_emulator
         pin_bit_mask = 0 # for the pfio
         for i in range(len(self.override_buttons)):
             if self.override_buttons[i].get_active():
                 pin_bit_mask ^= 1 << i
-                emu_screen.output_pins[i]._value = 1
+                rpi_emulator.emu_screen.output_pins[i]._value = 1
             else:
                 pin_bit_mask ^= 0 << i
-                emu_screen.output_pins[i]._value = 0
+                rpi_emulator.emu_screen.output_pins[i]._value = 0
 
         global pfio
         if pfio:
             pfio.write_output(pin_bit_mask)
 
-        emu_screen.queue_draw()
+        rpi_emulator.emu_screen.queue_draw()
 
     def enable_override_buttons(self):
         self.all_on_btn.set_sensitive(True)
@@ -598,17 +607,10 @@ class OutputOverrideSection(gtk.VBox):
 
         self.set_pins()
 
-        global emu_screen
-        emu_screen.queue_draw()
+        global rpi_emulator
+        rpi_emulator.emu_screen.queue_draw()
 
     def disable_override_buttons(self):
-        # turn off all the pins
-        for pin in self.output_pins:
-            pin._value = 0
-        global pfio
-        if pfio:
-            pfio.write_output(0)
-
         # disable all of the buttons
         self.all_on_btn.set_sensitive(False)
         self.all_off_btn.set_sensitive(False)
@@ -616,8 +618,8 @@ class OutputOverrideSection(gtk.VBox):
         for button in self.override_buttons:
             button.set_sensitive(False)
 
-        global emu_screen
-        emu_screen.queue_draw()
+        global rpi_emulator
+        rpi_emulator.emu_screen.queue_draw()
 
 class SpiVisualiserFrame(gtk.Frame):
     def __init__(self):
@@ -772,10 +774,15 @@ class SpiSenderSection(gtk.HBox):
         self.error_label = gtk.Label()
         self.error_label.show()
 
+        self.sync_button = gtk.Button("Sync")
+        self.sync_button.connect("clicked", self.sync_button_pressed)
+        self.sync_button.show()
+
         self.pack_start(child=label, expand=False)
         self.pack_start(child=self.spi_input, expand=False)
         self.pack_start(child=button, expand=False)
         self.pack_start(child=self.error_label, expand=False)
+        self.pack_end(child=self.sync_button, expand=False)
 
     def __set_error_label_text(self, text):
         self.__error_text = text
@@ -814,7 +821,10 @@ class SpiSenderSection(gtk.HBox):
         data = (spi_message) & 0xff
         pfio.send([(cmd, port, data)], True)
 
-        emu_screen.update_voutput_pins()
+    def sync_button_pressed(self, widget, data=None):
+        global rpi_emulator
+        rpi_emulator.output_override_section.reset_buttons()
+        rpi_emulator.emu_screen.update_voutput_pins()
 
 
 def emu_print(text):
