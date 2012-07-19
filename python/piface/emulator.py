@@ -1,21 +1,3 @@
-##    cairo demos Copyright  (C)  2007 Donn.C.Ingle
-##
-##    Contact: donn.ingle@gmail.com - I hope this email lasts.
-##
-##    This program is free software; you can redistribute it and/or modify
-##    it under the terms of the GNU General Public License as published by
-##    the Free Software Foundation; either version 2 of the License, or
-##     ( at your option )  any later version.
-##
-##    This program is distributed in the hope that it will be useful,
-##    but WITHOUT ANY WARRANTY; without even the implied warranty of
-##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##    GNU General Public License for more details.
-##
-##    You should have received a copy of the GNU General Public License
-##    along with this program; if not, write to the Free Software
-##    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
 import pygtk
 import gtk, gobject, cairo
 import threading
@@ -24,11 +6,9 @@ from math import pi
 import time
 import warnings
 
-#import piface.emulator_parts as emulator_parts
 import emulator_parts
 
 import pfio
-PFIO_CONNECT = False
 
 
 VERBOSE_MODE = False
@@ -38,7 +18,6 @@ EMU_WIDTH  = 292
 EMU_HEIGHT = 193
 EMU_SPEED  = 20
 WINDOW_TITLE = "PiFace Emulator"
-emulator_parts.emu_print_PREFIX = "EMU:"
 
 # piface peripheral pin numbers
 # each peripheral is connected to an I/O pin
@@ -58,6 +37,7 @@ PH_PIN_SWITCH_4 = 4
 
 # global variables are bad, AND YOU SHOULD FEEL BAD!
 rpi_emulator = None
+pfio_connect = False
 
 
 class Item(object):
@@ -121,21 +101,21 @@ class Switch(Item):
 
 
 class Emulator(threading.Thread):
-    def __init__(self):
+    def __init__(self, spi_liststore_lock):
         gtk.gdk.threads_init() # init the gdk threads
         threading.Thread.__init__(self)
 
-    def run(self):
         # a bit of spaghetti set up
         emulator_parts.pfio = pfio
         emulator_parts.rpi_emulator = self
-        self.spi_visualiser_section = emulator_parts.SpiVisualiserFrame()
+        self.spi_visualiser_section = emulator_parts.SpiVisualiserFrame(spi_liststore_lock)
+        global pfio_connect
         try:
             pfio.init()
-            PFIO_CONNECT = True
+            pfio_connect = True
         except pfio.spi.error:
             print "Could not connect to the SPI module (check privileges). Starting emulator assuming that the PiFace is not connected."
-            PFIO_CONNECT = False
+            pfio_connect = False
 
         self.emu_window = gtk.Window()
         self.emu_window.connect("delete-event", gtk.main_quit)
@@ -147,18 +127,18 @@ class Emulator(threading.Thread):
         self.emu_screen.show()
 
         # board connected msg
-        if PFIO_CONNECT:
+        if pfio_connect:
             msg = "Pi Face detected!"
         else:
             msg = "Pi Face not detected"
-        board_con_msg = gtk.Label(msg)
-        board_con_msg.show()
+        self.board_con_msg = gtk.Label(msg)
+        self.board_con_msg.show()
 
         # spi visualiser checkbox
-        if PFIO_CONNECT:
-            spi_vis_check = gtk.CheckButton("SPI Visualiser")
-            spi_vis_check.connect("clicked", self.toggle_spi_visualiser)
-            spi_vis_check.show()
+        if pfio_connect:
+            self.spi_vis_check = gtk.CheckButton("SPI Visualiser")
+            self.spi_vis_check.connect("clicked", self.toggle_spi_visualiser)
+            self.spi_vis_check.show()
 
         # output override section
         self.output_override_section = \
@@ -166,7 +146,7 @@ class Emulator(threading.Thread):
         self.output_override_section.show()
 
         # spi visualiser
-        if PFIO_CONNECT:
+        if pfio_connect:
             #spi_visualiser_section = emulator_parts.SpiVisualiserFrame()
             self.spi_visualiser_section.set_size_request(50, 200)
             self.spi_visualiser_section.set_border_width(DEFAULT_SPACING)
@@ -176,8 +156,8 @@ class Emulator(threading.Thread):
         # vertically pack together the emu_screen and the board connected msg
         container0 = gtk.VBox(homogeneous=False, spacing=DEFAULT_SPACING)
         container0.pack_start(self.emu_screen)
-        container0.pack_start(board_con_msg)
-        container0.pack_start(spi_vis_check)
+        container0.pack_start(self.board_con_msg)
+        container0.pack_start(self.spi_vis_check)
         container0.show()
 
         # horizontally pack together the emu screen+msg and the button overide
@@ -188,7 +168,7 @@ class Emulator(threading.Thread):
         container1.show()
         top_containter = container1
 
-        if PFIO_CONNECT:
+        if pfio_connect:
             # now, verticaly pack that container and the spi visualiser
             container2 = gtk.VBox(homogeneous=True, spacing=DEFAULT_SPACING)
             container2.pack_start(child=container1, expand=False, fill=False, padding=0)
@@ -198,6 +178,8 @@ class Emulator(threading.Thread):
 
         self.emu_window.add(top_containter)
         self.emu_window.present()
+
+    def run(self):
         gtk.main()
     
     def toggle_spi_visualiser(self, widget, data=None):
@@ -210,10 +192,11 @@ class Emulator(threading.Thread):
 """Input/Output functions mimicing the pfio module"""
 def init():
     """Initialises the RaspberryPi emulator"""
+    spi_liststore_lock = threading.Semaphore()
+
     global rpi_emulator
-    rpi_emulator = Emulator()
+    rpi_emulator = Emulator(spi_liststore_lock)
     rpi_emulator.start()
-    time.sleep(0.1)
 
 def deinit():
     """Deinitialises the PiFace"""
@@ -286,22 +269,33 @@ ugly port variables
 def read_output():
     """Returns the values of the output pins"""
     global rpi_emulator
-    return __read_pins(rpi_emulator.emu_screen.output_pins)
+    data = __read_pins(rpi_emulator.emu_screen.output_pins)
+
+    global pfio_connect
+    if pfio_connect:
+        data |= pfio.read_output()
+
+    return data
 
 def read_input():
     """Returns the values of the input pins"""
     global rpi_emulator
-    return __read_pins(rpi_emulator.emu_screen.input_pins)
+    data = __read_pins(rpi_emulator.emu_screen.input_pins)
+
+    global pfio_connect
+    if pfio_connect:
+        data |= pfio.read_input()
+    return data
 
 def __read_pins(pins):
-    emulator_parts.request_digtial_read = True
-    pin_values = [pin.value for pin in pins]
+    vpin_values = [pin._value for pin in pins]
     data = 0
-    for i in range(len(pin_values)):
-        data ^= (pin_values[i] & 1) << i
-    emulator_parts.request_digtial_read = False
+    for i in range(len(vpin_values)):
+        data ^= (vpin_values[i] & 1) << i
+    
+    #global rpi_emulator
+    #rpi_emulator.emu_screen.queue_draw()
 
-    emu_screen.queue_draw()
     return data
 
 def write_output(data):

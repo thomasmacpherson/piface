@@ -33,11 +33,6 @@ relay2VirtPinsX = [285.0,285.0,285.0,]
 relay2VirtPinsY = [73.0,86.0,98.0]
 boardInputVirtPinsX = [6.0,19.0,31.0,44.0,56.0,68.0,80.0,92.0,104]
 boardInputVirtPinsY = [186.0,186.0,186.0,186.0,186.0,186.0,186.0,186.0,186.0]
-"""
-# 1 -> 9
-boardOutputVirtPinsX = [181.0,194.0,206.0,218.0,230.0,242.0,254.0,266.0,278.0]
-boardOutputVirtPinsY = [8.0,8.0,8.0,8.0,8.0,8.0,8.0,8.0,8.0]
-"""
 # 8 <- 1
 boardOutputVirtPinsX = [266.0, 254.0, 242.0, 230.0, 218.0, 206.0, 194.0, 181.0]
 boardOutputVirtPinsY = [8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0]
@@ -63,7 +58,6 @@ PH_PIN_SWITCH_4 = 4
 
 rpi_emulator = None
 have_led_image = False
-output_override_section = None
 
 pfio = None # the pfio module that has been passed in
 
@@ -622,11 +616,11 @@ class OutputOverrideSection(gtk.VBox):
         rpi_emulator.emu_screen.queue_draw()
 
 class SpiVisualiserFrame(gtk.Frame):
-    def __init__(self):
+    def __init__(self, spi_liststore_lock):
         gtk.Frame.__init__(self, "SPI Visualiser")
         container = gtk.VBox(False)
 
-        spi_visualiser_section = SpiVisualiserSection()
+        spi_visualiser_section = SpiVisualiserSection(spi_liststore_lock)
         spi_visualiser_section.show()
         container.pack_start(child=spi_visualiser_section, expand=True, fill=True)
 
@@ -641,9 +635,11 @@ class SpiVisualiserFrame(gtk.Frame):
         self.show()
 
 class SpiVisualiserSection(gtk.ScrolledWindow):
-    def __init__(self):
+    def __init__(self, liststore_lock):
         gtk.ScrolledWindow.__init__(self)
         self.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
+
+        self.liststore_lock = liststore_lock
 
         # create a liststore with three string columns to use as the model
         self.liststore = gtk.ListStore(str, str, str, str, str)
@@ -722,7 +718,9 @@ class SpiVisualiserSection(gtk.ScrolledWindow):
         data_tx_str = in_fmt  % data_tx
         data_rx_str = out_fmt % data_rx
 
+        self.liststore_lock.acquire()
         self.liststore.append((time, data_tx_str, data_tx_breakdown, data_rx_str, data_rx_breakdown))
+        self.liststore_lock.release()
         
     def get_data_breakdown(self, raw_data):
         cmd = (raw_data >> 16) & 0xff
