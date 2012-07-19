@@ -130,7 +130,7 @@ class Emulator(threading.Thread):
     def run(self):
         # a bit of spaghetti set up
         emulator_parts.pfio = pfio
-        spi_visualiser_section = emulator_parts.SpiVisualiserFrame()
+        self.spi_visualiser_section = emulator_parts.SpiVisualiserFrame()
         try:
             pfio.init()
             PFIO_CONNECT = True
@@ -158,6 +158,12 @@ class Emulator(threading.Thread):
         board_con_msg = gtk.Label(msg)
         board_con_msg.show()
 
+        # spi visualiser checkbox
+        if PFIO_CONNECT:
+            spi_vis_check = gtk.CheckButton("SPI Visualiser")
+            spi_vis_check.connect("clicked", self.toggle_spi_visualiser)
+            spi_vis_check.show()
+
         # output override section
         output_override_section = \
                 emulator_parts.OutputOverrideSection(emu_screen.output_pins)
@@ -166,14 +172,16 @@ class Emulator(threading.Thread):
         # spi visualiser
         if PFIO_CONNECT:
             #spi_visualiser_section = emulator_parts.SpiVisualiserFrame()
-            spi_visualiser_section.set_size_request(50, 200)
-            spi_visualiser_section.set_border_width(DEFAULT_SPACING)
-            spi_visualiser_section.show()
+            self.spi_visualiser_section.set_size_request(50, 200)
+            self.spi_visualiser_section.set_border_width(DEFAULT_SPACING)
+            #self.spi_visualiser_section.show()
+            self.spi_visualiser_section.hide()
 
         # vertically pack together the emu_screen and the board connected msg
         container0 = gtk.VBox(homogeneous=False, spacing=DEFAULT_SPACING)
         container0.pack_start(emu_screen)
-        container0.pack_start(child=board_con_msg)
+        container0.pack_start(board_con_msg)
+        container0.pack_start(spi_vis_check)
         container0.show()
 
         # horizontally pack together the emu screen+msg and the button overide
@@ -186,15 +194,23 @@ class Emulator(threading.Thread):
 
         if PFIO_CONNECT:
             # now, verticaly pack that container and the spi visualiser
-            container2 = gtk.VBox(homogeneous=False, spacing=DEFAULT_SPACING)
+            container2 = gtk.VBox(homogeneous=True, spacing=DEFAULT_SPACING)
             container2.pack_start(child=container1, expand=False, fill=False, padding=0)
-            container2.pack_start(spi_visualiser_section)
+            container2.pack_start(self.spi_visualiser_section)
             container2.show()
             top_containter = container2
 
         emu_window.add(top_containter)
         emu_window.present()
         gtk.main()
+    
+    def toggle_spi_visualiser(self, widget, data=None):
+        global emu_window
+        if widget.get_active():
+            self.spi_visualiser_section.show()
+        else:
+            self.spi_visualiser_section.hide()
+            emu_window.resize(10, 10)
 
 """Input/Output functions mimicing the pfio module"""
 def init():

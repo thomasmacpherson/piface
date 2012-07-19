@@ -699,7 +699,7 @@ class SpiVisualiserSection(gtk.ScrolledWindow):
         adjustment = self.get_vadjustment()
         adjustment.set_value(adjustment.upper - adjustment.page_size)
 
-    def add_spi_log(self, time, data_tx, data_rx):
+    def add_spi_log(self, time, data_tx, data_rx, custom_spi=False):
         if self.liststoresize >= MAX_SPI_LOGS:
             #remove the first item
             first_row_iter = self.treeview.get_model()[0].iter
@@ -709,7 +709,18 @@ class SpiVisualiserSection(gtk.ScrolledWindow):
 
         data_tx_breakdown = self.get_data_breakdown(data_tx)
         data_rx_breakdown = self.get_data_breakdown(data_rx)
-        self.liststore.append((time, "0x%06x" % data_tx, data_tx_breakdown, "0x%06x" % data_rx, data_rx_breakdown))
+
+        if custom_spi:
+            in_fmt = "[0x%06x]" # use a special format
+        else:
+            in_fmt = "0x%06x"
+
+        out_fmt = "0x%06x"
+
+        data_tx_str = in_fmt  % data_tx
+        data_rx_str = out_fmt % data_rx
+
+        self.liststore.append((time, data_tx_str, data_tx_breakdown, data_rx_str, data_rx_breakdown))
         
     def get_data_breakdown(self, raw_data):
         cmd = (raw_data >> 16) & 0xff
@@ -801,7 +812,7 @@ class SpiSenderSection(gtk.HBox):
         cmd  = (spi_message >> 16) & 0xff
         port = (spi_message >> 8) & 0xff
         data = (spi_message) & 0xff
-        pfio.send([(cmd, port, data)])
+        pfio.send([(cmd, port, data)], True)
 
         emu_screen.update_voutput_pins()
 

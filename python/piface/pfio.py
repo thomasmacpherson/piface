@@ -147,7 +147,7 @@ def init():
     write(GPPUB,  0xFF) # set port B pullups on
 
     # initialise all outputs to 0
-    write_output(0x12)
+    write_output(0)
 
 def deinit():
     """Deinitialises the PiFace"""
@@ -276,7 +276,7 @@ def write(port, data):
     return (port, data)
 
 
-def send(spi_commands):
+def send(spi_commands, custom_spi=False):
     """Sends a list of spi commands to the PiFace"""
     if spi_handler == None:
         raise InitialisationError("The pfio module has not yet been initialised. Before send(), call init().")
@@ -305,7 +305,7 @@ def send(spi_commands):
             timestr = "%d:%d:%d.%d" % (time.hour, time.minute, time.second, time.microsecond)
             datum_tx = byte_cat((cmd, port, data)) # recalculate since the transfer changes it
             #print "writing to spi_liststore: %s" % str((timestr, hex(datum_tx), hex(datum_rx)))
-            spi_visualiser_section.add_spi_log(timestr, datum_tx, datum_rx)
+            spi_visualiser_section.add_spi_log(timestr, datum_tx, datum_rx, custom_spi)
 
     return returned_values_list
 
