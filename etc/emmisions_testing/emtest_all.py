@@ -1,7 +1,7 @@
 from time import sleep
 
-import piface.emulator as pfio
-#import piface.pfio as pfio
+#import piface.emulator as pfio
+import piface.pfio as pfio
 
 
 if __name__ == "__main__":

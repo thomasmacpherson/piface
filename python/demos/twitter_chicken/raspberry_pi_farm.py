@@ -43,6 +43,7 @@ class Chicken(pfio.Relay):
 
     def say(self, text_to_say):
         """Makes the chicken say something"""
+
         if VERBOSE_MODE:
             print "Chicken says: %s" % text_to_say
 

@@ -5,18 +5,14 @@ import time
 import sys
 import struct
 
-import piface.emulator as pfio
-
-'''
-from Tkinter import Tk
-from tkSimpleDialog import askstring
-root = Tk()
-root.withdraw()
-'''
+if "-e" in sys.argv:
+    import piface.emulator as pfio
+    sys.argv.remove("-e")
+else:
+    import piface.pfio as pfio
 
 PORT = 42001
 DEFAULT_HOST = '127.0.0.1'
-#HOST = askstring('Scratch Connector', 'IP:')
 BUFFER_SIZE = 100
 SOCKET_TIMEOUT = 1
 

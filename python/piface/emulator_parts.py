@@ -7,20 +7,24 @@ TESTING = False
 
 # relative directories
 VIRT_PI_IMAGE = "images/pi.png"
-VIRT_VirtLED_ON_IMAGE = "images/led_on.png"
+VIRT_LED_ON_IMAGE = "images/led_on.png"
 if not TESTING:
     import os.path, sys
     package_dir = os.path.dirname(sys.modules["piface"].__file__)
     VIRT_PI_IMAGE = os.path.join(package_dir, VIRT_PI_IMAGE)
-    VIRT_VirtLED_ON_IMAGE = os.path.join(package_dir, VIRT_VirtLED_ON_IMAGE)
+    VIRT_LED_ON_IMAGE = os.path.join(package_dir, VIRT_LED_ON_IMAGE)
 
 EMU_PRINT_PREFIX = "EMU:"
 
 PIN_COLOUR_RGB = (0, 1, 1)
 
+MAX_SPI_LOGS = 50
+
+DEFAULT_SPACING = 10
+
 # pin circle locations
-ledsX = [183.0,183.0,239.0,222.0]
-ledsY = [135.0,78.0,27.0,27.0]
+ledsX = [180.7, 180.7, 236.7, 219.1]
+ledsY = [131.3, 72.3, 22.2, 22.2]
 switchesX = [14.3, 39.3, 64.3, 89.3]
 switchesY = [157.5, 157.5, 157.5, 157.5]
 relay1VirtPinsX = [285.0,285.0,285.0]
@@ -29,11 +33,6 @@ relay2VirtPinsX = [285.0,285.0,285.0,]
 relay2VirtPinsY = [73.0,86.0,98.0]
 boardInputVirtPinsX = [6.0,19.0,31.0,44.0,56.0,68.0,80.0,92.0,104]
 boardInputVirtPinsY = [186.0,186.0,186.0,186.0,186.0,186.0,186.0,186.0,186.0]
-"""
-# 1 -> 9
-boardOutputVirtPinsX = [181.0,194.0,206.0,218.0,230.0,242.0,254.0,266.0,278.0]
-boardOutputVirtPinsY = [8.0,8.0,8.0,8.0,8.0,8.0,8.0,8.0,8.0]
-"""
 # 8 <- 1
 boardOutputVirtPinsX = [266.0, 254.0, 242.0, 230.0, 218.0, 206.0, 194.0, 181.0]
 boardOutputVirtPinsY = [8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0]
@@ -57,10 +56,16 @@ PH_PIN_SWITCH_2 = 2
 PH_PIN_SWITCH_3 = 3
 PH_PIN_SWITCH_4 = 4
 
-emu_screen = None
+rpi_emulator = None
 have_led_image = False
 
 pfio = None # the pfio module that has been passed in
+
+# don't update the input pins unless the user makes a digital read
+# this is because an update is requested on every single mouse move
+# which creates a TON of SPI traffic. Turn this to True if you want
+# a full emulator mimic of the board (including inputs).
+request_digtial_read = False
 
 
 class VirtItem(object):
@@ -79,10 +84,12 @@ class VirtItem(object):
         # if the pfio is here then cross reference the virtual input
         # with the physical input
         global pfio
-        if pfio and self.is_input:
+        global request_digtial_read
+        if pfio and self.is_input and request_digtial_read:
             real_pin_value = pfio.digital_read(self.pin_number)
-            if real_pin_value != 0:
-                self._value = real_pin_value
+            print "readign"
+            if real_pin_value == 1:
+                return real_pin_value
 
         return self._value
 
@@ -91,10 +98,6 @@ class VirtItem(object):
             self._value = new_value
             self._hold  = False
             self._force = False
-
-            global emu_screen
-            if emu_screen:
-                emu_screen.qdraw()
 
             global pfio
             if pfio and not self.is_input and not self.is_relay_ext_pin:
@@ -117,11 +120,11 @@ class VirtItem(object):
     def attach_pin(self, pin, pin_number=1, is_input=False):
         if pin:
             self.attached_pin = pin
-        elif emu_screen:
+        elif rpi_emulator.emu_screen:
             if is_input:
-                self.attached_pin = emu_screen.input_pins[pin_number-1]
+                self.attached_pin = rpi_emulator.emu_screen.input_pins[pin_number-1]
             else:
-                self.attached_pin = emu_screen.output_pins[pin_number-1]
+                self.attached_pin = rpi_emulator.emu_screen.output_pins[pin_number-1]
         else: # guess
             if is_input:
                 self.attached_pin = VirtPin(pin_number)
@@ -196,7 +199,7 @@ class VirtLED(VirtItem):
             if have_led_image:
                 # draw the illuminated VirtLED
                 cr.save()
-                led_surface = cairo.ImageSurface.create_from_png(VIRT_VirtLED_ON_IMAGE)
+                led_surface = cairo.ImageSurface.create_from_png(VIRT_LED_ON_IMAGE)
                 cr.set_source_surface(led_surface, self.x-6, self.y-8)
                 cr.paint()
                 cr.restore()
@@ -227,7 +230,7 @@ class VirtRelay(VirtItem):
 
         VirtItem.__init__(self, relay_number)
 
-        self.value = self.attached_pin.value
+        #self.value = self.attached_pin.value
 
     def _get_value(self):
         return self.attached_pin.value
@@ -325,34 +328,27 @@ class Screen(gtk.DrawingArea):
         self.x = event.x
         self.y = event.y
         self.button_pressed = False
-        self.queue_draw_area(0, 0, 350, 350)
+        self.queue_draw()
 
     def _button_press(self, widget, event):
         self.x = event.x
         self.y = event.y
         self.button_pressed = True
-        self.queue_draw_area(0, 0, 350, 350)
-    
-    def qdraw(self):
-        """Register a draw to be made"""
-        self.queue_draw_area(0, 0, 350, 350)
+        self.queue_draw()
 
 class EmulatorScreen(Screen):
     """This class is also a Drawing Area, coming from Screen."""
-    def __init__ (self, w, h, speed, pfio_module=None):
+    def __init__ (self, w, h, speed):
         Screen.__init__(self, w, h, speed)
 
         global have_led_image
         try:
-            f = open(VIRT_VirtLED_ON_IMAGE)
+            f = open(VIRT_LED_ON_IMAGE)
             f.close()
             have_led_image = True
         except:
-            emu_print("could not find the virtual led image: %s" % VIRT_VirtLED_ON_IMAGE)
+            emu_print("could not find the virtual led image: %s" % VIRT_LED_ON_IMAGE)
             have_led_image = False
-
-        global pfio
-        pfio = pfio_module
 
         self.input_pins = [VirtPin(i, True) for i in range(1,9)]
         self.switches = [VirtSwitch(i+1, self.input_pins[i]) for i in range(4)]
@@ -360,10 +356,6 @@ class EmulatorScreen(Screen):
         self.output_pins = [VirtPin(i) for i in range(1,9)]
         self.relays = [VirtRelay(i+1, self.output_pins[i]) for i in range(2)]
         self.leds = [VirtLED(i+1, self.output_pins[i]) for i in range(4)]
-
-    def finished_setting_up(self):
-        global emu_screen
-        emu_screen = self
 
     def draw(self):
         cr = self.cr # Shabby shortcut.
@@ -421,7 +413,7 @@ class EmulatorScreen(Screen):
     def input_pin_detect(self, cr):
         # detect clicks on the input input_pins
         for pin in self.input_pins:
-            pin.draw_hidden(cr) 
+            pin.draw_hidden(cr) # perhaps this is where the heavy traffic is
             if self.mouse_hit(cr):
                 if pin.value == 1:
                     pin.turn_off(True) # force/hold
@@ -436,6 +428,25 @@ class EmulatorScreen(Screen):
         cr.restore ( ) # Close the bubble like this never happened.
         return hit
 
+    def update_voutput_pins(self):
+        """
+        Updates the state of each virtual output pin to match
+        that of the real pins
+        """
+        if not pfio:
+            raise Exception(
+                    "Looks like some sloppy programmer (probably Tom Preston...) " \
+                    "is trying to update the virtual output pins when the PiFace " \
+                    "isn't connected. Make sure you check for the pfio before calling " \
+                    "the update_voutput_pins method. kthxbai.")
+
+        output_bit_map = pfio.read_output()
+        for i in range(len(self.output_pins)):
+            # updating inner value so that we don't do more SPI reads
+            self.output_pins[i]._value = (output_bit_map >> i) & 1 
+
+        self.queue_draw()
+
 class OutputOverrideSection(gtk.VBox):
     def __init__(self, output_pins):
         gtk.VBox.__init__(self)
@@ -444,10 +455,10 @@ class OutputOverrideSection(gtk.VBox):
         widgets = list()
 
         # main override button
-        main_override_btn = gtk.ToggleButton("Override Enable")
-        main_override_btn.connect('clicked', self.main_override_clicked)
-        main_override_btn.show()
-        widgets.append(main_override_btn)
+        self.main_override_btn = gtk.ToggleButton("Override Enable")
+        self.main_override_btn.connect('clicked', self.main_override_clicked)
+        self.main_override_btn.show()
+        widgets.append(self.main_override_btn)
 
         # pin override buttons
         self.override_buttons = list()
@@ -486,6 +497,18 @@ class OutputOverrideSection(gtk.VBox):
         for widget in widgets:
             self.pack_start(widget)
 
+        self.batch_button = False
+        self.reseting = False
+
+    def reset_buttons(self):
+        self.batch_button = True
+        self.reseting = True
+        for button in self.override_buttons:
+            button.set_active(False)
+        self.main_override_btn.set_active(False)
+
+        self.batch_button = False
+        self.reseting = False
 
     """Callbacks"""
     def main_override_clicked(self, main_override_btn, data=None):
@@ -493,57 +516,313 @@ class OutputOverrideSection(gtk.VBox):
             self.enable_override_buttons()
         else:
             self.disable_override_buttons()
+            if not self.reseting:
+                # turn off all the pins
+                for pin in self.output_pins:
+                    pin._value = 0
+                global pfio
+                if pfio:
+                    pfio.write_output(0)
+
+
+        global rpi_emulator
+        rpi_emulator.emu_screen.queue_draw()
 
     def all_on_button_clicked(self, all_on_btn, data=None):
+        self.batch_button = True
         for i in range(self.number_of_override_buttons):
             self.override_buttons[i].set_active(True)
-            self.output_pins[i].turn_on()
+            #self.output_pins[i]._value = 1
+
+        self.set_pins()
+
+        global rpi_emulator
+        rpi_emulator.emu_screen.queue_draw()
+
+        self.batch_button = False
 
     def all_off_button_clicked(self, all_on_btn, data=None):
+        self.batch_button = True
+
         for i in range(self.number_of_override_buttons):
             self.override_buttons[i].set_active(False)
-            self.output_pins[i].turn_off()
+            #self.output_pins[i]._value = 0
+
+        self.set_pins()
+
+        global rpi_emulator
+        rpi_emulator.emu_screen.queue_draw()
+
+        self.batch_button = False
 
     def flip_button_clicked(self, flip_btn, data=None):
+        self.batch_button = True
         for i in range(self.number_of_override_buttons):
             if self.override_buttons[i].get_active():
                 self.override_buttons[i].set_active(False)
-                self.output_pins[i].turn_off()
+                #self.output_pins[i]._value = 0
             else:
                 self.override_buttons[i].set_active(True)
-                self.output_pins[i].turn_on()
+                #self.output_pins[i]._value = 1
 
+        self.set_pins()
+        global rpi_emulator
+        rpi_emulator.emu_screen.queue_draw()
+
+        self.batch_button = False
 
     def output_override_clicked(self, toggle_button, data=None):
-        button_index = data
-        self.set_pin(button_index, toggle_button.get_active())
+        if not self.batch_button:
+            self.set_pins()
 
+    def set_pins(self):
+        global rpi_emulator
+        pin_bit_mask = 0 # for the pfio
+        for i in range(len(self.override_buttons)):
+            if self.override_buttons[i].get_active():
+                pin_bit_mask ^= 1 << i
+                rpi_emulator.emu_screen.output_pins[i]._value = 1
+            else:
+                pin_bit_mask ^= 0 << i
+                rpi_emulator.emu_screen.output_pins[i]._value = 0
 
-    def set_pin(self, pin_index, pin_value):
-        if pin_value:
-            self.output_pins[pin_index].turn_on(True)
-        else:
-            self.output_pins[pin_index].turn_off(True)
+        global pfio
+        if pfio:
+            pfio.write_output(pin_bit_mask)
+
+        rpi_emulator.emu_screen.queue_draw()
 
     def enable_override_buttons(self):
         self.all_on_btn.set_sensitive(True)
         self.all_off_btn.set_sensitive(True)
         self.flip_btn.set_sensitive(True)
         for i in range(self.number_of_override_buttons):
-            self.set_pin(i, self.override_buttons[i].get_active())
             self.override_buttons[i].set_sensitive(True)
 
-    def disable_override_buttons(self):
-        # turn off all the pins
-        for pin in self.output_pins:
-            pin.turn_off(True)
+        self.set_pins()
 
+        global rpi_emulator
+        rpi_emulator.emu_screen.queue_draw()
+
+    def disable_override_buttons(self):
         # disable all of the buttons
         self.all_on_btn.set_sensitive(False)
         self.all_off_btn.set_sensitive(False)
         self.flip_btn.set_sensitive(False)
         for button in self.override_buttons:
             button.set_sensitive(False)
+
+        global rpi_emulator
+        rpi_emulator.emu_screen.queue_draw()
+
+class SpiVisualiserFrame(gtk.Frame):
+    def __init__(self, spi_liststore_lock):
+        gtk.Frame.__init__(self, "SPI Visualiser")
+        container = gtk.VBox(False)
+
+        spi_visualiser_section = SpiVisualiserSection(spi_liststore_lock)
+        spi_visualiser_section.show()
+        container.pack_start(child=spi_visualiser_section, expand=True, fill=True)
+
+        spi_sender_section = SpiSenderSection()
+        spi_sender_section.show()
+        container.pack_end(child=spi_sender_section, expand=False)
+
+        container.show()
+        container.set_border_width(DEFAULT_SPACING)
+        self.add(container)
+        self.set_border_width(DEFAULT_SPACING)
+        self.show()
+
+class SpiVisualiserSection(gtk.ScrolledWindow):
+    def __init__(self, liststore_lock):
+        gtk.ScrolledWindow.__init__(self)
+        self.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
+
+        self.liststore_lock = liststore_lock
+
+        # create a liststore with three string columns to use as the model
+        self.liststore = gtk.ListStore(str, str, str, str, str)
+        self.liststoresize = 0
+        
+        global pfio
+        if pfio:
+            pfio.spi_visualiser_section = self
+
+        # create the TreeView using liststore
+        self.treeview = gtk.TreeView(self.liststore)
+        self.treeview.connect('size-allocate', self.treeview_changed)
+
+        # create the TreeViewColumns to display the data
+        self.tvcolumn = (gtk.TreeViewColumn('Time'),
+                gtk.TreeViewColumn('In'),
+                gtk.TreeViewColumn('In Breakdown'),
+                gtk.TreeViewColumn('Out'),
+                gtk.TreeViewColumn('Out Breakdown'))
+
+        # add columns to treeview
+        for column in self.tvcolumn:
+            self.treeview.append_column(column)
+
+        # create a CellRenderers to render the data
+        self.cell = [gtk.CellRendererText() for i in range(5)]
+
+        # set background color property
+        self.cell[0].set_property('cell-background', 'cyan')
+        self.cell[1].set_property('cell-background', '#87ea87')
+        self.cell[2].set_property('cell-background', '#98fb98')
+        self.cell[3].set_property('cell-background', '#ffccbb')
+        self.cell[4].set_property('cell-background', '#ffddcc')
+
+        # add the cells to the columns
+        for i in range(len(self.tvcolumn)):
+            self.tvcolumn[i].pack_start(self.cell[i], True)
+
+        for i in range(len(self.tvcolumn)):
+            self.tvcolumn[i].set_attributes(self.cell[i], text=i)
+
+        # make treeview searchable
+        self.treeview.set_search_column(0)
+
+        # Allow sorting on the column
+        self.tvcolumn[0].set_sort_column_id(0)
+
+        # Allow drag and drop reordering of rows
+        self.treeview.set_reorderable(True)
+
+        self.add(self.treeview)
+        self.treeview.show()
+
+    def treeview_changed(self, widget, event, data=None):
+        adjustment = self.get_vadjustment()
+        adjustment.set_value(adjustment.upper - adjustment.page_size)
+
+    def add_spi_log(self, time, data_tx, data_rx, custom_spi=False):
+        if self.liststoresize >= MAX_SPI_LOGS:
+            #remove the first item
+            first_row_iter = self.treeview.get_model()[0].iter
+            self.liststore.remove(first_row_iter)
+        else:
+            self.liststoresize += 1
+
+        data_tx_breakdown = self.get_data_breakdown(data_tx)
+        data_rx_breakdown = self.get_data_breakdown(data_rx)
+
+        if custom_spi:
+            in_fmt = "[0x%06x]" # use a special format
+        else:
+            in_fmt = "0x%06x"
+
+        out_fmt = "0x%06x"
+
+        data_tx_str = in_fmt  % data_tx
+        data_rx_str = out_fmt % data_rx
+
+        self.liststore_lock.acquire()
+        self.liststore.append((time, data_tx_str, data_tx_breakdown, data_rx_str, data_rx_breakdown))
+        self.liststore_lock.release()
+        
+    def get_data_breakdown(self, raw_data):
+        cmd = (raw_data >> 16) & 0xff
+        if cmd == pfio.WRITE_CMD:
+            cmd = "WRITE"
+        elif cmd == pfio.READ_CMD:
+            cmd = "READ"
+        else:
+            cmd = hex(cmd)
+
+        port = (raw_data >> 8) & 0xff
+        if port == pfio.IODIRA:
+            port = "IODIRA"
+        elif port == pfio.IODIRB:
+            port = "IODIRB"
+        elif port == pfio.IOCON:
+            port = "IOCON"
+        elif port == pfio.GPIOA:
+            port = "GPIOA"
+        elif port == pfio.GPIOB:
+            port = "GPIOB"
+        elif port == pfio.GPPUA:
+            port = "GPPUA"
+        elif port == pfio.GPPUB:
+            port = "GPPUB"
+        else:
+            port = hex(port)
+
+        data = hex(raw_data & 0xff)
+
+        data_breakdown = "cmd: %s, port: %s, data: %s" % (cmd, port, data)
+        return data_breakdown
+
+class SpiSenderSection(gtk.HBox):
+    def __init__(self):
+        gtk.HBox.__init__(self, False)
+
+        label = gtk.Label("SPI Input: ")
+        label.show()
+
+        self.spi_input = gtk.Entry()
+        self.spi_input.set_text("0x0")
+        self.spi_input.show()
+
+        button = gtk.Button("Send")
+        button.connect("clicked", self.send_spi_message)
+        button.show()
+
+        self.error_label = gtk.Label()
+        self.error_label.show()
+
+        self.update_emu_button = gtk.Button("Update Emulator")
+        self.update_emu_button.connect("clicked", self.update_emu_button_pressed)
+        self.update_emu_button.show()
+
+        self.pack_start(child=label, expand=False)
+        self.pack_start(child=self.spi_input, expand=False)
+        self.pack_start(child=button, expand=False)
+        self.pack_start(child=self.error_label, expand=False)
+        self.pack_end(child=self.update_emu_button, expand=False)
+
+    def __set_error_label_text(self, text):
+        self.__error_text = text
+        self.error_label.set_markup("<span foreground='#ff0000'> %s</span>" % self.__error_text)
+
+    def __get_error_label_text(self):
+        return self.__error_text
+    
+    error_text = property(__get_error_label_text, __set_error_label_text)
+
+    def send_spi_message(self, widget, data=None):
+        self.error_text = ""
+        spi_message = 0
+        user_input = self.spi_input.get_text()
+        try:
+            if "0x" == user_input[:2]:
+                spi_message = int(user_input, 16)
+            elif "0b"== user_input[:2]:
+                spi_message = int(user_input, 2)
+            else:
+                spi_message = int(user_input)
+
+            # check we are three bytes long
+            if len(hex(spi_message)[2:]) > 6:
+                raise ValueError()
+
+        except ValueError:
+            msg = "Invalid SPI message"
+            self.error_text = msg
+            print msg
+            return
+
+
+        cmd  = (spi_message >> 16) & 0xff
+        port = (spi_message >> 8) & 0xff
+        data = (spi_message) & 0xff
+        pfio.send([(cmd, port, data)], True)
+
+    def update_emu_button_pressed(self, widget, data=None):
+        global rpi_emulator
+        rpi_emulator.output_override_section.reset_buttons()
+        rpi_emulator.emu_screen.update_voutput_pins()
 
 
 def emu_print(text):
