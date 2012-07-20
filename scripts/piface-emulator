@@ -1,0 +1,5 @@
+#!/bin/bash
+#: Description: Starts the PiFace emulator
+#:      Author: Thomas Preston
+
+python -c "import piface.emulator as e; e.init()"
