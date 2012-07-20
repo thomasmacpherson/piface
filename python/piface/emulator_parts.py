@@ -772,15 +772,15 @@ class SpiSenderSection(gtk.HBox):
         self.error_label = gtk.Label()
         self.error_label.show()
 
-        self.sync_button = gtk.Button("Sync")
-        self.sync_button.connect("clicked", self.sync_button_pressed)
-        self.sync_button.show()
+        self.update_emu_button = gtk.Button("Update Emulator")
+        self.update_emu_button.connect("clicked", self.update_emu_button_pressed)
+        self.update_emu_button.show()
 
         self.pack_start(child=label, expand=False)
         self.pack_start(child=self.spi_input, expand=False)
         self.pack_start(child=button, expand=False)
         self.pack_start(child=self.error_label, expand=False)
-        self.pack_end(child=self.sync_button, expand=False)
+        self.pack_end(child=self.update_emu_button, expand=False)
 
     def __set_error_label_text(self, text):
         self.__error_text = text
@@ -819,7 +819,7 @@ class SpiSenderSection(gtk.HBox):
         data = (spi_message) & 0xff
         pfio.send([(cmd, port, data)], True)
 
-    def sync_button_pressed(self, widget, data=None):
+    def update_emu_button_pressed(self, widget, data=None):
         global rpi_emulator
         rpi_emulator.output_override_section.reset_buttons()
         rpi_emulator.emu_screen.update_voutput_pins()

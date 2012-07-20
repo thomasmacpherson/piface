@@ -3,7 +3,7 @@ import gtk, gobject, cairo
 import threading
 from gtk import gdk
 from math import pi
-import time
+from time import sleep
 import warnings
 
 import emulator_parts
@@ -123,7 +123,6 @@ class Emulator(threading.Thread):
 
         # emu screen
         self.emu_screen = emulator_parts.EmulatorScreen(EMU_WIDTH, EMU_HEIGHT, EMU_SPEED)
-
         self.emu_screen.show()
 
         # board connected msg
@@ -134,8 +133,26 @@ class Emulator(threading.Thread):
         self.board_con_msg = gtk.Label(msg)
         self.board_con_msg.show()
 
-        # spi visualiser checkbox
         if pfio_connect:
+            # keep inputs updated
+            self.update_input_check = gtk.CheckButton("Keep inputs updated")
+            self.update_input_check.show()
+            self.update_interval = gtk.Entry(5)
+            self.update_interval.set_width_chars(5)
+            self.update_interval.set_text("500")
+            self.update_interval.show()
+            update_interval_label = gtk.Label("ms interval")
+            update_interval_label.show()
+
+            self.update_input_check.connect("clicked", self.update_inputs)
+
+            update_inputs_containter = gtk.HBox(False)
+            update_inputs_containter.pack_start(self.update_input_check)
+            update_inputs_containter.pack_start(self.update_interval, False, False)
+            update_inputs_containter.pack_start(update_interval_label, False, False)
+            update_inputs_containter.show()
+
+            # spi visualiser checkbox
             self.spi_vis_check = gtk.CheckButton("SPI Visualiser")
             self.spi_vis_check.connect("clicked", self.toggle_spi_visualiser)
             self.spi_vis_check.show()
@@ -157,7 +174,11 @@ class Emulator(threading.Thread):
         container0 = gtk.VBox(homogeneous=False, spacing=DEFAULT_SPACING)
         container0.pack_start(self.emu_screen)
         container0.pack_start(self.board_con_msg)
-        container0.pack_start(self.spi_vis_check)
+
+        if pfio_connect:
+            container0.pack_start(update_inputs_containter)
+            container0.pack_start(self.spi_vis_check)
+
         container0.show()
 
         # horizontally pack together the emu screen+msg and the button overide
@@ -179,15 +200,63 @@ class Emulator(threading.Thread):
         self.emu_window.add(top_containter)
         self.emu_window.present()
 
+        self.input_updater = None
+
     def run(self):
         gtk.main()
     
+    def update_inputs(self, widget, data=None):
+        """
+        If the checkbox has been pressed then schedule the virtual inputs
+        to be updated, live
+        """
+        if widget.get_active():
+            self.input_updater = InputUpdater(self.update_interval, self)
+            self.input_updater.start()
+        else:
+            if self.input_updater:
+                self.input_updater.stop()
+                self.input_updater.join()
+
     def toggle_spi_visualiser(self, widget, data=None):
         if widget.get_active():
             self.spi_visualiser_section.show()
         else:
             self.spi_visualiser_section.hide()
             self.emu_window.resize(10, 10)
+
+class InputUpdater(threading.Thread):
+    def __init__(self, update_interval_entry, rpi_emulator):
+        threading.Thread.__init__(self)
+        self.update_interval_entry = update_interval_entry
+        self.emu = rpi_emulator
+        self._stop = threading.Event()
+
+    def stop(self):
+        self._stop.set()
+
+    def stopped(self):
+        return self._stop.isSet()
+
+    def run(self):
+        while not self.stopped():
+            # get the input pin values
+            input_pin_pattern = pfio.read_input()
+
+            # set the virt input pin values
+            for i in range(len(self.emu.emu_screen.input_pins)):
+                if (input_pin_pattern >> i) & 1 == 1:
+                    self.emu.emu_screen.input_pins[i].turn_on(True)
+                else:
+                    self.emu.emu_screen.input_pins[i].turn_off(True)
+
+
+            self.emu.emu_screen.queue_draw()
+
+            # sleep
+            update_interval = int(self.update_interval_entry.get_text()) / 1000.0
+            sleep(update_interval)
+
 
 """Input/Output functions mimicing the pfio module"""
 def init():
@@ -285,6 +354,7 @@ def read_input():
     global pfio_connect
     if pfio_connect:
         data |= pfio.read_input()
+    print "data: %s" % data
     return data
 
 def __read_pins(pins):
