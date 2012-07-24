@@ -9,18 +9,22 @@ Essentially this is just a wrapper around espeak
 import subprocess
 
 
-pitch = 50  # 0-99
-speed = 160 # words per min
+DEFAULT_PITCH = 50  # 0-99
+DEFAULT_SPEED = 160 # words per min
 
 
 class PiFaceTalkerError(Exception):
     pass
 
 
-def say(words):
+def say(words, pitch=None, speed=None):
     """Says words through the audio jack on the Raspberry Pi"""
-    global pitch
-    global speed
+    if not pitch:
+        pitch = DEFAULT_PITCH
+
+    if not speed:
+        speed = DEFAULT_SPEED
+ 
     try:
         subprocess.call([
             "espeak",
