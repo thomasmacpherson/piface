@@ -125,6 +125,7 @@ class Emulator(threading.Thread):
         except pfio.spi.error:
             print "Could not connect to the SPI module (check privileges). Starting emulator assuming that the PiFace is not connected."
             pfio_connect = False
+            emulator_parts.pfio = None
 
         self.emu_window = gtk.Window()
         self.emu_window.connect("delete-event", gtk.main_quit)
