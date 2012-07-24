@@ -9,16 +9,6 @@ import warnings
 import emulator_parts
 
 import pfio
-<<<<<<< HEAD
-try:
-    pfio.init()
-    PFIO_CONNECT = True
-except pfio.spi.error:
-    print "Could not connect to the SPI module (check privileges). Running emulator under the assumption that there is no PiFace."
-    PFIO_CONNECT = False
-=======
->>>>>>> 17b2bbd88a35a38cbc4447acce3b3196a4762692
-
 
 VERBOSE_MODE = False
 DEFAULT_SPACING = 10
