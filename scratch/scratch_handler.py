@@ -111,32 +111,58 @@ class ScratchListener(threading.Thread):
                         '>i',
                         '%c%c%c%c' % (data[0], data[1], data[2], data[3])
                     )[0]
-            except socket.timeout:
+                data = data[4:] # get rid of the length info
+
+            except socket.timeout: # if we timeout, re-loop
                 continue
-            except:
+            except: # exit on any other errrors
                 break
 
-            #print 'Length: %d, Data: %s' % (length, data[4:])
-            data = data[4:].split(" ")
+            #print 'Length: %d, Data: %s' % (length, data)
+            data = data.split(" ")
+            
             if data[0] == 'sensor-update':
-                sensor_name = data[1].strip('"')
-                print 'updating %s, new value: %s' % (sensor_name, data[2])
-
-                if sensor_name in SCRATCH_SENSOR_NAME_OUTPUT:
-                    pin_index = SCRATCH_SENSOR_NAME_OUTPUT.index(sensor_name)+1
-                    sensor_value = int(data[2])
-                    if sensor_value == 0:
-                        print 'setting pin %d low' % pin_index
-                        pfio.digital_write(pin_index, 0)
-                    else:
-                        print 'setting pin %d high' % pin_index
-                        pfio.digital_write(pin_index, 1)
-
+                data = data[1:]
+                print 'received sensor-update:', data
+                self.sensor_update(data)
+                    
             elif data[0] == 'broadcast':
-                print 'received broadcast: %s' % data[1]
+                data = data[1:]
+                print 'received broadcast:', data
 
             else:
-                print 'received something: %s' % data
+                print 'received something:', data
+                
+
+    def sensor_update(self, data):
+        index_is_data = False # ignore the loop contents if not sensor
+
+        # go through all of the sensors that have been updated
+        for i in range(len(data)):
+
+            if index_is_data:
+            index_is_data = False
+                continue
+
+            sensor_name = data[i].strip('"')
+            
+            # if this sensor is a piface output then reflect
+            # that update on the board
+            if sensor_name in SCRATCH_SENSOR_NAME_OUTPUT:
+                print 'updating %s, new value: %s' % (sensor_name, data[2])
+
+                pin_index = SCRATCH_SENSOR_NAME_OUTPUT.index(sensor_name)+1
+                sensor_value = int(data[i+1])
+                index_is_data = True
+
+                # could this be made more efficient by sending a single write
+                if sensor_value == 0:
+                    print 'setting pin %d low' % pin_index
+                    pfio.digital_write(pin_index, 0)
+
+                else:
+                    print 'setting pin %d high' % pin_index
+                    pfio.digital_write(pin_index, 1)
 
 
 def create_socket(host, port):
