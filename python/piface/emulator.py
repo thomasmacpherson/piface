@@ -104,10 +104,12 @@ class Emulator(threading.Thread):
         gtk.gdk.threads_init() # init the gdk threads
         threading.Thread.__init__(self)
 
+        self.spi_liststore_lock = spi_liststore_lock
+
         # a bit of spaghetti set up
         emulator_parts.pfio = pfio
         emulator_parts.rpi_emulator = self
-        self.spi_visualiser_section = emulator_parts.SpiVisualiserFrame(spi_liststore_lock)
+        self.spi_visualiser_section = emulator_parts.SpiVisualiserFrame(self)
         global pfio_connect
         try:
             pfio.init()

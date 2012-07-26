@@ -20,8 +20,6 @@ EMU_PRINT_PREFIX = "EMU:"
 
 PIN_COLOUR_RGB = (0, 1, 1)
 
-MAX_SPI_LOGS = 50
-
 DEFAULT_SPACING = 10
 
 # pin circle locations
@@ -618,15 +616,19 @@ class OutputOverrideSection(gtk.VBox):
         rpi_emulator.emu_screen.queue_draw()
 
 class SpiVisualiserFrame(gtk.Frame):
-    def __init__(self, spi_liststore_lock):
+    def __init__(self, rpi_emulator):
         gtk.Frame.__init__(self, "SPI Visualiser")
         container = gtk.VBox(False)
 
-        spi_visualiser_section = spivisualiser.SpiVisualiserSection(spi_liststore_lock)
+        spi_visualiser_section = spivisualiser.SpiVisualiserSection(rpi_emulator)
         spi_visualiser_section.show()
         container.pack_start(child=spi_visualiser_section, expand=True, fill=True)
 
-        spi_sender_section = spivisualiser.SpiSenderSection()
+        global pfio
+        if pfio:
+            pfio.spi_visualiser_section = spi_visualiser_section
+
+        spi_sender_section = spivisualiser.SpiSenderSection(rpi_emulator)
         spi_sender_section.show()
         container.pack_end(child=spi_sender_section, expand=False)
 

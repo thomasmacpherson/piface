@@ -128,6 +128,9 @@ class Switch(Item):
 
 
 # functions
+def get_spi_handler():
+    return spi.SPI(0,0) # spi.SPI(X,Y) is /dev/spidevX.Y
+
 def init():
     """Initialises the PiFace"""
     if VERBOSE_MODE:
@@ -135,7 +138,7 @@ def init():
          __pfio_print("initialising SPI")
 
     global spi_handler
-    spi_handler = spi.SPI(0,0) # spi.SPI(X,Y) is /dev/spidevX.Y
+    spi_handler = get_spi_handler()
 
     # set up the ports
     write(IOCON,  8)    # enable hardware addressing
@@ -150,6 +153,7 @@ def init():
     test_value = 0b10101010
     write_output(test_value)
     if read_output() != test_value:
+        spi_handler = None
         raise InitError("The PiFace board could not be detected")
 
     # initialise all outputs to 0
