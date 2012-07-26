@@ -10,7 +10,7 @@ date  : 18/06/2012
 import subprocess
 import piface.pfio as pfio
 #import piface.emulator as pfio
-import piface.talker talker
+import easyteach.talker as talker
 
 
 VERBOSE_MODE = True
