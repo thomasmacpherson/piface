@@ -53,7 +53,7 @@ spi_visualiser_section = None # for the emulator spi visualiser
 
 
 # custom exceptions
-class InitialisationError(Exception):
+class InitError(Exception):
     pass
 
 class InputDeviceError(Exception):
@@ -146,14 +146,21 @@ def init():
     write(GPPUA,  0xFF) # set port A pullups on
     write(GPPUB,  0xFF) # set port B pullups on
 
+    # check the outputs are being set (primitive board detection)
+    test_value = 0b10101010
+    write_output(test_value)
+    if read_output() != test_value:
+        raise InitError("The PiFace board could not be detected")
+
     # initialise all outputs to 0
     write_output(0)
 
 def deinit():
     """Deinitialises the PiFace"""
     global spi_handler
-    spi_handler.close()
-    spi_handler = None
+    if spi_handler:
+        spi_handler.close()
+        spi_handler = None
 
 def __pfio_print(text):
     """Prints a string with the pfio print prefix"""
@@ -279,7 +286,7 @@ def write(port, data):
 def send(spi_commands, custom_spi=False):
     """Sends a list of spi commands to the PiFace"""
     if spi_handler == None:
-        raise InitialisationError("The pfio module has not yet been initialised. Before send(), call init().")
+        raise InitError("The pfio module has not yet been initialised. Before send(), call init().")
     # a place to store the returned values for each transfer
     returned_values_list = list() 
 

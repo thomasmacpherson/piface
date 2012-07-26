@@ -208,7 +208,9 @@ static PyObject *SPI_open(SPI *self, PyObject *args, PyObject *kwds)
 		printf("can't open device");
 		abort();
 		*/
-		PyErr_SetString(SpiError, "can't open device");
+        char err_str[20+MAXPATH];
+        sprintf(err_str, "can't open device: %s", path);
+		PyErr_SetString(SpiError, err_str);
 		return 0; // trigger exception
 	}
 	if (ioctl(self->fd, SPI_IOC_RD_MODE, &tmp8) == -1) {
