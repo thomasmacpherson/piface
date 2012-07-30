@@ -25,13 +25,15 @@ def say(words, pitch=None, speed=None):
     if not speed:
         speed = DEFAULT_SPEED
  
+    devnull = open("/dev/null", "w")
     try:
         subprocess.call([
             "espeak",
             "-v", "en-rp", # english received pronounciation
             "-p", str(pitch),
             "-s", str(speed),
-            words])
+            words],
+            stderr=devnull)
 
     except OSError:
         raise PiFaceTalkerError(

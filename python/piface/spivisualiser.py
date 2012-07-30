@@ -6,20 +6,22 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
+import pfio
+
+
+MAX_SPI_LOGS = 50
+
+
 class SpiVisualiserSection(gtk.ScrolledWindow):
-    def __init__(self, liststore_lock):
+    def __init__(self, rpi_emulator=None):
         gtk.ScrolledWindow.__init__(self)
         self.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
 
-        self.liststore_lock = liststore_lock
+        self.rpi_emulator = rpi_emulator
 
         # create a liststore with three string columns to use as the model
         self.liststore = gtk.ListStore(str, str, str, str, str)
         self.liststoresize = 0
-        
-        global pfio
-        if pfio:
-            pfio.spi_visualiser_section = self
 
         # create the TreeView using liststore
         self.treeview = gtk.TreeView(self.liststore)
@@ -90,10 +92,14 @@ class SpiVisualiserSection(gtk.ScrolledWindow):
         data_tx_str = in_fmt  % data_tx
         data_rx_str = out_fmt % data_rx
 
-        self.liststore_lock.acquire()
+        if self.rpi_emulator:
+            self.rpi_emulator.spi_liststore_lock.acquire()
+
         self.liststore.append((time, data_tx_str, data_tx_breakdown, data_rx_str, data_rx_breakdown))
-        self.liststore_lock.release()
-        
+
+        if self.rpi_emulator:
+            self.rpi_emulator.spi_liststore_lock.release()
+
     def get_data_breakdown(self, raw_data):
         cmd = (raw_data >> 16) & 0xff
         if cmd == pfio.WRITE_CMD:
@@ -127,8 +133,10 @@ class SpiVisualiserSection(gtk.ScrolledWindow):
         return data_breakdown
 
 class SpiSenderSection(gtk.HBox):
-    def __init__(self):
+    def __init__(self, rpi_emulator=None):
         gtk.HBox.__init__(self, False)
+        
+        self.rpi_emulator = rpi_emulator
 
         label = gtk.Label("SPI Input: ")
         label.show()
@@ -144,15 +152,24 @@ class SpiSenderSection(gtk.HBox):
         self.error_label = gtk.Label()
         self.error_label.show()
 
-        self.update_emu_button = gtk.Button("Update Emulator")
-        self.update_emu_button.connect("clicked", self.update_emu_button_pressed)
-        self.update_emu_button.show()
+        if self.rpi_emulator:
+            self.update_emu_button = gtk.Button("Update Emulator")
+            self.update_emu_button.connect("clicked", self.update_emu_button_pressed)
+            self.update_emu_button.show()
+        else:
+            self.pfio_init_button = gtk.Button("Initialise PFIO")
+            self.pfio_init_button.connect("clicked", self.init_pfio)
+            self.pfio_init_button.show()
 
         self.pack_start(child=label, expand=False)
         self.pack_start(child=self.spi_input, expand=False)
         self.pack_start(child=button, expand=False)
         self.pack_start(child=self.error_label, expand=False)
-        self.pack_end(child=self.update_emu_button, expand=False)
+
+        if self.rpi_emulator:
+            self.pack_end(child=self.update_emu_button, expand=False)
+        else:
+            self.pack_end(child=self.pfio_init_button, expand=False)
 
     def __set_error_label_text(self, text):
         self.__error_text = text
@@ -192,6 +209,32 @@ class SpiSenderSection(gtk.HBox):
         pfio.send([(cmd, port, data)], True)
 
     def update_emu_button_pressed(self, widget, data=None):
-        global rpi_emulator
-        rpi_emulator.output_override_section.reset_buttons()
-        rpi_emulator.emu_screen.update_voutput_pins()
+        self.rpi_emulator.output_override_section.reset_buttons()
+        self.rpi_emulator.emu_screen.update_voutput_pins()
+
+    def init_pfio(self, widget, data=None):
+        pfio.init()
+
+
+def init():
+    window = gtk.Window()
+    window.connect("delete-event", gtk.main_quit)
+    window.set_title("SPI Visualiser")
+    window.set_size_request(500, 200)
+
+    visualiser = SpiVisualiserSection()
+    sender     = SpiSenderSection()
+
+    pfio.spi_handler = pfio.get_spi_handler()
+    pfio.spi_visualiser_section = visualiser
+
+    visualiser.show()
+    sender.show()
+
+    container = gtk.VBox()
+    container.pack_start(child=visualiser, expand=True, fill=True)
+    container.pack_start(child=sender, expand=False)
+    container.show()
+    window.add(container)
+    window.show()
+    gtk.main()

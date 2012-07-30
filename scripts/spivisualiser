@@ -1,0 +1,5 @@
+#!/bin/bash
+#: Description: Starts the stand alone spivisualiser
+#:      Author: Thomas Preston
+
+python -c "import piface.spivisualiser as s; s.init()"
