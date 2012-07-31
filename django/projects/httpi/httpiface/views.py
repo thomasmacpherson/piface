@@ -3,10 +3,10 @@ from django.http import HttpResponse, QueryDict
 from django.template import RequestContext
 
 import piface.pfio as pfio
-pfio.init()
 
 
 def index(request):
+    pfio.init()
     return render_to_response(
             "httpiface/index.html",
             {'button_range' : range(1, 9)},
@@ -14,6 +14,18 @@ def index(request):
 
 def ajax(request):
     data = request.GET.dict()
+    returnstr = ""
     if 'write_output' in data:
-        pfio.write_output(data['write_output'])
-        return HttpResponse("")
+        output_bitp = int(data['write_output'])
+        __write_output(output_bitp)
+    
+    if 'read_input' in data:
+        returnstr += "input_bitp=%d" %__read_input()
+
+    return HttpResponse(returnstr)
+
+def __write_output(output_bitp):
+    pfio.write_output(output_bitp)
+
+def __read_input():
+    return pfio.read_input()
