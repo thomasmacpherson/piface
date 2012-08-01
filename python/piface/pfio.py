@@ -138,7 +138,10 @@ def init():
          __pfio_print("initialising SPI")
 
     global spi_handler
-    spi_handler = get_spi_handler()
+    try:
+        spi_handler = get_spi_handler()
+    except spi.error as error:
+        raise InitError(error)
 
     # set up the ports
     write(IOCON,  8)    # enable hardware addressing
