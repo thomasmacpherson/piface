@@ -1,6 +1,6 @@
 # Django settings for httpi project.
-#dir_prefix = "/home/X09/prestotx/raspberry_pi/django/"
-dir_prefix = "/home/pi/piface/django/"
+dir_prefix = "/home/X09/prestotx/raspberry_pi/piface/django/"
+#dir_prefix = "/home/pi/piface/django/"
 
 DEBUG = True
 
@@ -75,6 +75,7 @@ STATICFILES_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     dir_prefix + 'projects/httpi/httpi/static',
+    dir_prefix + 'projects/httpi/httpiface/static',
 )
 
 # List of finder classes that know how to find static files in
