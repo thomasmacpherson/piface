@@ -7,6 +7,7 @@ PIN_R     = 5;
 var error_handler = function(jqXHR, text_status, error_thrown)
 {
     alert(text_status + ": " + error_thrown + "\n" + jqXHR.responseText);
+    window.setInterval(0);
 };
 
 var send_ajax = function(datatosend, success_func)
@@ -24,6 +25,7 @@ var write_completed = function(data, output_status, jqXHR)
 var output_checkbox_clicked = function(the_event)
 {
     // generate binary
+    alert("test")
     var output_bitp = 0;
     for (var i=8; i >= 1; i--) // first output is on rhs
     {
@@ -59,11 +61,16 @@ var set_out_pin = function(context, pin_number, set_pin)
         draw_circle(context, PIN_OUT_X[pin_number], PIN_OUT_Y[pin_number], PIN_R);
 };
 
-var update_piface_io = function(data, output_status, jqXHR)
+/* actuall updates the piface image ONLY CALL AFTER pre_update_piface */
+var update_piface = function(data, output_status, jqXHR)
 {
+    var data = eval("("+data+")"); // convert text to a json object
+
+    // once we have the I/O stuff, then draw everything
     var canvas  = document.getElementById("pifacecanvas");
     var context = canvas.getContext("2d");
-    var data    = eval("("+data+")"); // convert text to a json object
+
+    context.drawImage(self.piface_img, 0, 0);
 
     for (var i = 0; i <= 7; i++)
     {
@@ -72,39 +79,33 @@ var update_piface_io = function(data, output_status, jqXHR)
     }
 };
 
-var update_piface = function()
+var pre_update_piface = function()
 {
-    // get and reset the canvas, get the context
-    var canvas = document.getElementById("pifacecanvas");
-    canvas.width = canvas.width;
-    var context = canvas.getContext("2d");
-
     // get the piface image
     var piface = new Image();
     piface.src = "/static/images/pi.png";
+    update_piface.piface_img = piface;
 
-    // only after the image has loaded, update the inputs/outputs
+    // only after the image has loaded, grab the I/O
     piface.onload = function() {
         // we have to regrab the context for some reason
-        var context = canvas.getContext("2d");
-        context.drawImage(piface, 0, 0);
 
         // update the I/O
-        send_ajax("read_input&read_output", update_piface_io);
+        send_ajax("read_input&read_output", update_piface);
     };
 };
 
 /* sets up the page */
 var setup = function()
 {
-    update_piface();
+    pre_update_piface();
 
     // set some event listeners
     for (var i=1; i <= 8; i++)
         $("#pifaceoutputcheckbox"+i).click(output_checkbox_clicked);
 
     // update the board every second
-    window.setInterval(update_piface, 1000);
+    window.setInterval(pre_update_piface, 1000);
 };
 
 $(document).ready(setup);
