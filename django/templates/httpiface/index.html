@@ -6,20 +6,23 @@
     <!-- Mobile viewport optimized: h5bp.com/viewport -->
     <meta name="viewport" content="width=device-width">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/main.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/piface.css">
 </head>
 <body>
     <h1>Pi Face Control</h1>
     {% if not piface_detected %}
     <p>Error: {{ piface_error_msg }}</p>
     {% else %}
-    <!--<img src="{{ STATIC_URL }}images/pi.png" alt="A picture of the Pi Face board" />-->
-    <canvas id="pifacecanvas" width=292 height=193></canvas>
+    <div id="piface_canvas_holder">
+        <img id="pifaceimage" src="{{ STATIC_URL }}images/pi.png" />
+        <canvas id="pifacecanvas" width=292 height=193></canvas>
+    </div>
 
-    <h3>Outputs</h3>
-    {% for i in button_range %}
-    <input type=checkbox id=pifaceoutputcheckbox{{ i }}>Output {{ i }}</input><br />
-    {% endfor %}
-
+    <div id="output_controller_holder">
+        {% for i in button_range %}
+        <input type=checkbox id=pifaceoutputcheckbox{{ i }}>Output {{ i }}</input><br />
+        {% endfor %}
+    </div>
     {% endif %}
 
     {% if piface_detected %}

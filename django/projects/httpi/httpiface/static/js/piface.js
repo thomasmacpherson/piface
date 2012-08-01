@@ -25,7 +25,6 @@ var write_completed = function(data, output_status, jqXHR)
 var output_checkbox_clicked = function(the_event)
 {
     // generate binary
-    alert("test")
     var output_bitp = 0;
     for (var i=8; i >= 1; i--) // first output is on rhs
     {
@@ -61,51 +60,38 @@ var set_out_pin = function(context, pin_number, set_pin)
         draw_circle(context, PIN_OUT_X[pin_number], PIN_OUT_Y[pin_number], PIN_R);
 };
 
-/* actuall updates the piface image ONLY CALL AFTER pre_update_piface */
 var update_piface = function(data, output_status, jqXHR)
 {
-    var data = eval("("+data+")"); // convert text to a json object
-
-    // once we have the I/O stuff, then draw everything
-    var canvas  = document.getElementById("pifacecanvas");
-    var context = canvas.getContext("2d");
-
-    context.drawImage(self.piface_img, 0, 0);
-
-    for (var i = 0; i <= 7; i++)
+    send_ajax("read_input&read_output", function(data, output_status, jqXHR)
     {
-        set_in_pin(context,  i, (data.input_bitp  >> i) & 1);
-        set_out_pin(context, i, (data.output_bitp >> i) & 1);
-    }
-};
+        var data = eval("("+data+")"); // convert text to a json object
 
-var pre_update_piface = function()
-{
-    // get the piface image
-    var piface = new Image();
-    piface.src = "/static/images/pi.png";
-    update_piface.piface_img = piface;
+        // once we have the I/O stuff, then draw everything
+        var canvas  = document.getElementById("pifacecanvas");
+        var context = canvas.getContext("2d");
 
-    // only after the image has loaded, grab the I/O
-    piface.onload = function() {
-        // we have to regrab the context for some reason
+        // reset the canvas
+        canvas.width = canvas.width;
 
-        // update the I/O
-        send_ajax("read_input&read_output", update_piface);
-    };
+        // draw the pins
+        for (var i = 0; i <= 7; i++)
+        {
+            set_in_pin(context,  i, (data.input_bitp  >> i) & 1);
+            set_out_pin(context, i, (data.output_bitp >> i) & 1);
+        }
+    }); // ajax callback
 };
 
 /* sets up the page */
 var setup = function()
 {
-    pre_update_piface();
-
     // set some event listeners
     for (var i=1; i <= 8; i++)
         $("#pifaceoutputcheckbox"+i).click(output_checkbox_clicked);
 
+    update_piface(); // update now
     // update the board every second
-    window.setInterval(pre_update_piface, 1000);
+    window.setInterval(update_piface, 1000);
 };
 
 $(document).ready(setup);

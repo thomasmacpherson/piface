@@ -5,21 +5,23 @@ import simplejson
 
 import piface.pfio as pfio
 
-"""
 # fake pfio stuff for testing
+outpins = 0
+inpins = 0
 def fakepfioinit():
     pass
 def fakepfiowrite(something):
-    pass
+    global outpins
+    outpins = something
 def fakepfioreadin():
     return 0b10101010
 def fakepfioreadout():
-    return 0b10101010
+    global outpins
+    return outpins
 pfio.init = fakepfioinit
 pfio.write_output = fakepfiowrite
 pfio.read_input = fakepfioreadin
 pfio.read_output = fakepfioreadout
-"""
 
 
 def index(request):

@@ -1,0 +1,18 @@
+#piface_canvas_holder
+{
+    position: relative;
+    float:left;
+}
+
+#pifacecanvas
+{
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#output_controller_holder
+{
+    float: left;
+    margin-left: 1em;
+}

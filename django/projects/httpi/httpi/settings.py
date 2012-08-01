@@ -1,6 +1,6 @@
 # Django settings for httpi project.
-#dir_prefix = "/home/X09/prestotx/raspberry_pi/piface/django/"
-dir_prefix = "/home/pi/piface/django/"
+dir_prefix = "/home/X09/prestotx/raspberry_pi/piface/django/"
+#dir_prefix = "/home/pi/piface/django/"
 
 DEBUG = True
 
