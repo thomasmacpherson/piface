@@ -11,8 +11,52 @@
     left: 0;
 }
 
+.pifaceled
+{
+    position: absolute;
+    display: none;
+}
+
+#pifaceled0
+{
+    top: 123px;
+    left: 175px;
+}
+
+#pifaceled1
+{
+    top: 64px;
+    left: 175px;
+}
+
+#pifaceled2
+{
+    top: 14px;
+    left: 214px;
+}
+
+#pifaceled3
+{
+    top: 14px;
+    left: 231px;
+}
+
 #output_controller_holder
 {
     float: left;
     margin-left: 1em;
+}
+
+#content
+{
+    padding-bottom: 3em;
+}
+
+#footer
+{
+    clear: both;
+    position: relative;
+    z-index: 10;
+    height: 3em;
+    margin-top: -3em;
 }
