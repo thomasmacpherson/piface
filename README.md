@@ -31,9 +31,13 @@ Just C
 
     # apt-get install automake
 
-Optional (easyteach):
+Easyteach:
 
     # apt-get install espeak
+
+Web Interface
+
+    # apt-get install python-django simplejson
     
 ### Getting the source
 To download all of the source files simply run the following command:
