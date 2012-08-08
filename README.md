@@ -18,6 +18,14 @@ kernel that supports the SPI devices (we're using [bootc](http://www.bootc.net/)
 and that the user 'pi' has read/write access to /dev/spidev*. This can
 be set up using the spidev_setup.sh script in scripts/.
 
+### Dependencies
+
+    # apt-get install python-dev python-gtk2-dev git
+
+Optional (easyteach):
+
+    # apt-get install espeak
+    
 ### Getting the source
 To download all of the source files simply run the following command:
 
