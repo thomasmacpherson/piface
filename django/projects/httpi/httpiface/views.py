@@ -47,18 +47,25 @@ def ajax(request):
     data = request.GET.dict()
     return_values = dict()
 
-    if 'write_output' in data:
-        try:
-            output_bitp = int(data['write_output'])
-        except ValueError:
-            return HttpResponseBadRequest("write_output needs an integer bit pattern.")
-
-        pfio.write_output(output_bitp)
-    
     if 'read_input' in data:
         return_values.update({'input_bitp' : pfio.read_input()})
 
     if 'read_output' in data:
         return_values.update({'output_bitp' : pfio.read_output()})
+
+    if 'write_output' in data:
+        try:
+            output_bitp = int(data['write_output'])
+        except ValueError:
+            return_values.update({'write_output_status' : "error"})
+            return_values.update({'write_output_error' : "write_output needs an integer bit pattern."})
+            return HttpResponseBadRequest(simplejson.dumps(return_values))
+
+        try:
+            pfio.write_output(output_bitp)
+            return_values.update({'write_output_status' : "success"})
+        except Exception as e:
+            return_values.update({'write_output_status' : "error"})
+            return_values.update({'write_output_error' : "The pfio errored: " + e})
 
     return HttpResponse(simplejson.dumps(return_values))
