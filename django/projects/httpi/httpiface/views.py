@@ -47,6 +47,15 @@ def ajax(request):
     data = request.GET.dict()
     return_values = dict()
 
+    if 'init' in data:
+        try:
+            pfio.init()
+            return_values.update({'init_status' : 'success'})
+        except pfio.InitError as error:
+            return_values.update({'init_status' : 'failed'})
+            return_values.update({'init_error' : error})
+            return HttpResponseBadRequest(simplejson.dumps(return_values))
+
     if 'read_input' in data:
         return_values.update({'input_bitp' : pfio.read_input()})
 
