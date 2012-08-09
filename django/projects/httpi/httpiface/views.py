@@ -52,7 +52,7 @@ def ajax(request):
             pfio.init()
         except pfio.InitError as error:
             return_values.update({'status' : 'init failed'})
-            return_values.update({'error' : error})
+            return_values.update({'error' : str(error)})
             return HttpResponseBadRequest(simplejson.dumps(return_values))
         else:
             return_values.update({'init_status' : 'success'})
@@ -62,7 +62,7 @@ def ajax(request):
             input_bitp = pfio.read_input()
         except Exception as e:
             return_values.update({'status' : 'read_input failed'})
-            return_values.update({'error' : e})
+            return_values.update({'error' : str(e)})
             return HttpResponseBadRequest(simplejson.dumps(return_values))
         else:
             return_values.update({'input_bitp' : input_bitp})
@@ -72,7 +72,7 @@ def ajax(request):
             output_bitp = pfio.read_output()
         except Exception as e:
             return_values.update({'status' : 'read_output failed'})
-            return_values.update({'error' : e})
+            return_values.update({'error' : str(e)})
             return HttpResponseBadRequest(simplejson.dumps(return_values))
         else:
             return_values.update({'output_bitp' : output_bitp})
@@ -89,7 +89,7 @@ def ajax(request):
             pfio.write_output(output_bitp)
         except Exception as e:
             return_values.update({'status' : "write_output failed"})
-            return_values.update({'error' : e})
+            return_values.update({'error' : str(e)})
             return HttpResponseBadRequest(simplejson.dumps(return_values))
 
     return_values.update({'status' : 'success'})
