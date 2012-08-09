@@ -54,8 +54,6 @@ def ajax(request):
             return_values.update({'status' : 'init failed'})
             return_values.update({'error' : str(error)})
             return HttpResponseBadRequest(simplejson.dumps(return_values))
-        else:
-            return_values.update({'init_status' : 'success'})
 
     if 'read_input' in data:
         try:
