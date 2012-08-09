@@ -1,0 +1,14 @@
+#!/bin/bash
+#: Description: Starts the apache webserver
+#:      Author: Thomas Preston
+
+udev_rules_file='/etc/udev/rules.d/50-spi.rules'
+
+# check if the script is being run as root
+if [[ $EUID -ne 0 ]]
+then
+	printf 'This script must be run as root.\nExiting..\n'
+	exit 1
+fi
+
+service apache2 start
