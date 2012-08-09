@@ -25,6 +25,7 @@ echo 'KERNEL=="spidev*", GROUP="spiuser", MODE="0660"' > $udev_rules_file
 
 groupadd spiuser # create the spiuser group
 gpasswd -a pi spiuser # add pi to the spiuser group
+gpasswd -a www-data spiuser # add the webserver user to the spiuser group
 
 printf 'User "pi" can now access the /dev/spidev* devices\n'
 printf 'Please REBOOT for the changes to take effect\n'

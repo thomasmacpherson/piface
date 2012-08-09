@@ -19,12 +19,25 @@ and that the user 'pi' has read/write access to /dev/spidev*. This can
 be set up using the spidev_setup.sh script in scripts/.
 
 ### Dependencies
+Everything (if you're unsure, just run this one)
+
+    # apt-get install python-dev python-gtk2-dev git automake espeak
+
+Just Python
 
     # apt-get install python-dev python-gtk2-dev git
 
-Optional (easyteach):
+Just C
+
+    # apt-get install automake
+
+Easyteach:
 
     # apt-get install espeak
+
+Web Interface
+
+    # apt-get install python-django simplejson
     
 ### Getting the source
 To download all of the source files simply run the following command:
