@@ -50,31 +50,47 @@ def ajax(request):
     if 'init' in data:
         try:
             pfio.init()
-            return_values.update({'init_status' : 'success'})
         except pfio.InitError as error:
-            return_values.update({'init_status' : 'failed'})
-            return_values.update({'init_error' : error})
+            return_values.update({'status' : 'init failed'})
+            return_values.update({'error' : error})
             return HttpResponseBadRequest(simplejson.dumps(return_values))
+        else:
+            return_values.update({'init_status' : 'success'})
 
     if 'read_input' in data:
-        return_values.update({'input_bitp' : pfio.read_input()})
+        try:
+            input_bitp = pfio.read_input()
+        except Exception as e:
+            return_values.update({'status' : 'read_input failed'})
+            return_values.update({'error' : e})
+            return HttpResponseBadRequest(simplejson.dumps(return_values))
+        else:
+            return_values.update({'input_bitp' : input_bitp})
 
     if 'read_output' in data:
-        return_values.update({'output_bitp' : pfio.read_output()})
+        try:
+            output_bitp = pfio.read_output()
+        except Exception as e:
+            return_values.update({'status' : 'read_output failed'})
+            return_values.update({'error' : e})
+            return HttpResponseBadRequest(simplejson.dumps(return_values))
+        else:
+            return_values.update({'output_bitp' : output_bitp})
 
     if 'write_output' in data:
         try:
             output_bitp = int(data['write_output'])
         except ValueError:
-            return_values.update({'write_output_status' : "error"})
-            return_values.update({'write_output_error' : "write_output needs an integer bit pattern."})
+            return_values.update({'status' : 'write_output failed'})
+            return_values.update({'error' : "write_output needs an integer bit pattern."})
             return HttpResponseBadRequest(simplejson.dumps(return_values))
 
         try:
             pfio.write_output(output_bitp)
-            return_values.update({'write_output_status' : "success"})
         except Exception as e:
-            return_values.update({'write_output_status' : "error"})
-            return_values.update({'write_output_error' : "The pfio errored: " + e})
+            return_values.update({'status' : "write_output failed"})
+            return_values.update({'error' : e})
+            return HttpResponseBadRequest(simplejson.dumps(return_values))
 
+    return_values.update({'status' : 'success'})
     return HttpResponse(simplejson.dumps(return_values))
