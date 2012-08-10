@@ -125,7 +125,7 @@ def start_pfio_server(callback=None, verbose=False, port=DEFAULT_PORT):
         return
     else:
         if verbose:
-            print "Socket it bound to %s on port %d" % (hostname, port)
+            print "Listening at %s on port %d" % (hostname, port)
 
     while True:
         # get the packet
