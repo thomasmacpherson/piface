@@ -100,17 +100,6 @@ class PfionPacket(object):
 
     bit_pattern = property(_get_bit_pattern, _set_bit_pattern)
 
-class PfioWorker(threading.Thread):
-    def __init__(self, pfio_socket, src_addr, connection_number):
-        print "Initialising connection %s from %s" % (connection_number, src_addr)
-        threading.Thread.__init__(self)
-        self.pfio_socket = pfio_socket
-        self.connection_number = connection_number
-        self.src_addr = src_addr
-
-    def run(self):
-        self.pfio_socket.close()
-
 
 def start_pfio_server(callback=None, verbose=False, port=DEFAULT_PORT):
     """Starts listening for pfio packets over the network"""
