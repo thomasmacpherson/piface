@@ -25,6 +25,8 @@ DIGITAL_READ_ACK  = 10
 
 STRUCT_UNIT_TYPE = "B"
 
+"""
+# testing without pfio
 outpins = 0
 inpins = 0
 def fakepfioinit():
@@ -44,6 +46,7 @@ pfio.init = fakepfioinit
 pfio.write_output = fakepfiowrite
 pfio.read_input = fakepfioreadin
 pfio.read_output = fakepfioreadout
+"""
 
 
 class UnknownPacketReceivedError(Exception):
