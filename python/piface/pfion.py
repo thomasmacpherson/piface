@@ -105,13 +105,27 @@ def start_pfio_server(callback=None, verbose=False, port=DEFAULT_PORT):
     """Starts listening for pfio packets over the network"""
     pfio.init()
     try:
-        hostname = socket.gethostname()
+        # this returns the loopback ip on the RPi :-(
+        #hostname = socket.gethostname()
+
+        ###################################################
+        # this is pretty hacky, if anyone can find a better
+        # solution, then please change this!
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80)) # try to connect to google's dns
+        hostname = s.getsockname()[0] # get this device's hostname
+        s.close()
+        # blergh, nasty stuff
+        ###################################################
+
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind((hostname, port))
+
     except socket.error as e:
         print "There was an error setting up the server socket!"
         print e
         return
+
     else:
         if verbose:
             print "Listening at %s on port %d" % (hostname, port)
