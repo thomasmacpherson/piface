@@ -21,7 +21,7 @@ be set up using the spidev_setup.sh script in scripts/.
 ### Dependencies
 Everything (if you're unsure, just run this one)
 
-    # apt-get install python-dev python-gtk2-dev git automake espeak
+    # apt-get install python-dev python-gtk2-dev git automake espeak python-django python-simplejson
 
 Just Python
 
@@ -37,7 +37,7 @@ Easyteach:
 
 Web Interface
 
-    # apt-get install python-django simplejson
+    # apt-get install python-django python-simplejson
     
 ### Getting the source
 To download all of the source files simply run the following command:
