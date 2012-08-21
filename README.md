@@ -49,7 +49,9 @@ project tree stored in this Git repository.
 
 ### Python
 To install the piface python package you must first download the source,
-move into the piface directory and then run the setup script as root:
+move into the piface directory and then run the setup script as root (ignore
+the compiler warnings about data types not matching up, it's just being
+picky!):
 
     $ cd piface/python/
     $ sudo python setup.py install
