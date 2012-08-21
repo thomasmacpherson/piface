@@ -57,7 +57,7 @@ picky!):
     $ sudo python setup.py install
 
 Now whenever you enter a python shell you can access the piface's
-input/output module or the emulator by importing them as such:
+input/output module or the emulator by importing them like so:
 
     $ python
     >>> import piface.pfio
@@ -66,6 +66,9 @@ input/output module or the emulator by importing them as such:
     >>> led1.turn_off()
     >>> import piface.emulator
     >>> piface.emulator.init()
+
+*Note: Make sure you have left the python source directory before importing
+any modules, otherwise Python may get confused*
 
 If you prefer, you can refer to the pfio and emulator modules directly
 using the following Python syntax:
