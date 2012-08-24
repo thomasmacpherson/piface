@@ -168,7 +168,7 @@ def start_pfio_server(callback=None, verbose=False, port=DEFAULT_PORT):
             sock.sendto(p.for_network(), sender)
 
         elif callback != None:
-            callback(packet)
+            callback(packet, sender)
 
         elif verbose:
             print "Unkown packet command (%d). Ignoring." % packet.command
