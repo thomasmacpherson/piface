@@ -1,7 +1,7 @@
 from array import array
+from time import sleep
 import threading
 import socket
-import time
 import sys
 import struct
 
@@ -15,6 +15,7 @@ PORT = 42001
 DEFAULT_HOST = '127.0.0.1'
 BUFFER_SIZE = 100
 SOCKET_TIMEOUT = 1
+SENDER_DELAY = 0.02 # poll the Pi Face every 20ms
 
 SCRATCH_SENSOR_NAME_INPUT = (
     'piface-input1',
@@ -56,6 +57,7 @@ class ScratchSender(threading.Thread):
     def run(self):
         last_bit_pattern = 0
         while not self.stopped():
+            sleep(SENDER_DELAY)
             pin_bit_pattern = pfio.read_input()
 
             # if there is a change in the input pins
