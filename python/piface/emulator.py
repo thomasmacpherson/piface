@@ -114,7 +114,7 @@ class Emulator(threading.Thread):
         try:
             pfio.init()
             pfio_connect = True
-        except pfio.spi.error:
+        except pfio.InitError:
             print "Could not connect to the SPI module (check privileges). Starting emulator assuming that the PiFace is not connected."
             pfio_connect = False
             emulator_parts.pfio = None
