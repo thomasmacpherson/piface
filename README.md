@@ -21,7 +21,7 @@ be set up using the spidev_setup.sh script in scripts/.
 ### Dependencies
 Everything (if you're unsure, just run this one)
 
-    # apt-get install python-dev python-gtk2-dev git automake espeak python-django python-simplejson
+    # apt-get install python-dev python-gtk2-dev git automake libtool espeak python-django python-simplejson
 
 Just Python
 
@@ -29,7 +29,7 @@ Just Python
 
 Just C
 
-    # apt-get install automake
+    # apt-get install automake libtool
 
 Easyteach:
 
