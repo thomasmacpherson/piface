@@ -9,6 +9,7 @@ peripherals connected for interacting with the raspberry pi
 from time import sleep
 from datetime import datetime
 
+import sys
 import spi
 
 
@@ -63,13 +64,18 @@ class InputDeviceError(Exception):
 # classes
 class Item(object):
     """An item connected to a pin on the RaspberryPi"""
-    def __init__(self, pin_number):
+    def __init__(self, pin_number, handler=None):
         self.pin_number = pin_number
+
+    def _get_handler(self):
+        return sys.modules[__name__]
+
+    handler = property(_get_handler, None)
 
 class InputItem(Item):
     """An input connected to a pin on the RaspberryPi"""
     def _get_value(self):
-        return digital_read(self.pin_number)
+        return self._handler().digital_read(self.pin_number)
 
     def _set_value(self, data):
         raise InputDeviceError("You cannot set an input's values!")
@@ -78,16 +84,16 @@ class InputItem(Item):
 
 class OutputItem(Item):
     """An output connected to a pin on the RaspberryPi"""
-    def __init__(self, pin_number):
+    def __init__(self, pin_number, handler=None):
         self.current = 0
-        Item.__init__(self, pin_number)
+        Item.__init__(self, pin_number, handler)
 
     def _get_value(self):
         return self.current
 
     def _set_value(self, data):
         self.current = data
-        return digital_write(self.pin_number, data)
+        return self.handler.digital_write(self.pin_number, data)
 
     value = property(_get_value, _set_value)
 
@@ -102,7 +108,7 @@ class OutputItem(Item):
 
 class LED(OutputItem):
     """An LED on the RaspberryPi"""
-    def __init__(self, led_number):
+    def __init__(self, led_number, handler=None):
         if led_number == 1:
             pin_number = PH_PIN_LED_1
         elif led_number == 2:
@@ -112,21 +118,21 @@ class LED(OutputItem):
         else:
             pin_number = PH_PIN_LED_4
 
-        OutputItem.__init__(self, pin_number)
+        OutputItem.__init__(self, pin_number, handler)
 
 class Relay(OutputItem):
     """A relay on the RaspberryPi"""
-    def __init__(self, relay_number):
+    def __init__(self, relay_number, handler=None):
         if relay_number == 1:
             pin_number = PH_PIN_RELAY_1
         else:
             pin_number = PH_PIN_RELAY_2
 
-        OutputItem.__init__(self, pin_number)
+        OutputItem.__init__(self, pin_number, handler)
 
 class Switch(InputItem):
     """A switch on the RaspberryPi"""
-    def __init__(self, switch_number):
+    def __init__(self, switch_number, handler=None):
         if switch_number == 1:
             switch_number = PH_PIN_SWITCH_1
         elif switch_number == 2:
@@ -136,7 +142,7 @@ class Switch(InputItem):
         else:
             switch_number = PH_PIN_SWITCH_4
 
-        InputItem.__init__(self, switch_number)
+        InputItem.__init__(self, switch_number, handler)
 
 
 # functions
