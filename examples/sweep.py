@@ -2,14 +2,22 @@
 
 import time
 import piface.pfio
+import piface.emulator
 
-piface.pfio.init()
+# Set thing to 
+#   piface.emulator    to run with emulator
+#   piface.pfio        to run without emulator
 
-led1 = piface.pfio.LED(1)
+#thing = piface.emulator
+thing = piface.pfio
+
+thing.init()
+
+led1 = thing.LED(1)
 
 while True:
   for i in range(1, 5):
-    led = piface.pfio.LED(i)
+    led = thing.LED(i)
     led.turn_on()
     time.sleep(0.5)
     led.turn_off()
