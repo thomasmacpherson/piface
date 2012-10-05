@@ -1,5 +1,8 @@
-#!/bin/bash
-#: Description: Starts the PiFace emulator
-#:      Author: Thomas Preston
+#!/usr/bin/env python
 
-python -c "import piface.emulator as e; e.init()"
+import piface.emulator as emu
+
+emu.init()
+
+# vim:ts=2:sw=2:sts=2:et:ft=python
+
