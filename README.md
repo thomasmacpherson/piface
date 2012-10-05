@@ -83,6 +83,8 @@ The emulator can be used in the same way as the pfio. Upon initialisation,
 an image of the Pi Face will be drawn to a window and its inputs/outputs
 can be seen.
 
+You can find some example python scripts in python/demos.
+
 ### C
 To install the C pfio library download the source, move into the C directory,
 call the setup scripts and then (as root) run the install command:
