@@ -21,7 +21,7 @@ be set up using the spidev_setup.sh script in scripts/.
 ### Dependencies
 Everything (if you're unsure, just run this one)
 
-    # apt-get install python-dev python-gtk2-dev git automake espeak python-django python-simplejson
+    # apt-get install python-dev python-gtk2-dev git automake libtool espeak python-django python-simplejson
 
 Just Python
 
@@ -29,7 +29,7 @@ Just Python
 
 Just C
 
-    # apt-get install automake
+    # apt-get install automake libtool
 
 Easyteach:
 
@@ -82,6 +82,8 @@ using the following Python syntax:
 The emulator can be used in the same way as the pfio. Upon initialisation,
 an image of the Pi Face will be drawn to a window and its inputs/outputs
 can be seen.
+
+You can find some example python scripts in python/demos.
 
 ### C
 To install the C pfio library download the source, move into the C directory,
