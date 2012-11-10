@@ -39,6 +39,10 @@ PH_PIN_LED_1 = 1
 PH_PIN_LED_2 = 2
 PH_PIN_LED_3 = 3
 PH_PIN_LED_4 = 4
+PH_PIN_LED_5 = 5
+PH_PIN_LED_6 = 6
+PH_PIN_LED_7 = 7
+PH_PIN_LED_8 = 8
 PH_PIN_RELAY_1 = 1
 PH_PIN_RELAY_2 = 2
 # inputs
@@ -115,8 +119,16 @@ class LED(OutputItem):
             pin_number = PH_PIN_LED_2
         elif led_number == 3:
             pin_number = PH_PIN_LED_3
-        else:
+        elif led_number == 4:
             pin_number = PH_PIN_LED_4
+        elif led_number == 5:
+            pin_number = PH_PIN_LED_5
+        elif led_number == 6:
+            pin_number = PH_PIN_LED_6
+        elif led_number == 7:
+            pin_number = PH_PIN_LED_7
+        else:
+            pin_number = PH_PIN_LED_8
 
         OutputItem.__init__(self, pin_number, handler)
 
