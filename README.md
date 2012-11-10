@@ -61,6 +61,7 @@ input/output module or the emulator by importing them like so:
 
     $ python
     >>> import piface.pfio
+    >>> piface.pfio.init()
     >>> piface.pfio.digital_write(1, 1)
     >>> led1 = piface.pfio.LED(1)
     >>> led1.turn_off()
