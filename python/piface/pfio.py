@@ -175,19 +175,23 @@ def init():
 
     # set up the ports
     write(IOCON,  8)    # enable hardware addressing
+    write(GPIOA,  0x00) # set port A on
     write(IODIRA, 0)    # set port A as outputs
     write(IODIRB, 0xFF) # set port B as inputs
-    write(GPIOA,  0xFF) # set port A on
+    #write(GPIOA,  0xFF) # set port A on
     #write(GPIOB,  0xFF) # set port B on
-    write(GPPUA,  0xFF) # set port A pullups on
+    #write(GPPUA,  0xFF) # set port A pullups on
     write(GPPUB,  0xFF) # set port B pullups on
 
     # check the outputs are being set (primitive board detection)
-    test_value = 0b10101010
-    write_output(test_value)
-    if read_output() != test_value:
-        spi_handler = None
-        raise InitError("The PiFace board could not be detected")
+#AR removed this test as it lead to flashing of outputs which 
+# could surprise users!
+
+#    test_value = 0b10101010
+#    write_output(test_value)
+#    if read_output() != test_value:
+#        spi_handler = None
+#        raise InitError("The PiFace board could not be detected")
 
     # initialise all outputs to 0
     write_output(0)
