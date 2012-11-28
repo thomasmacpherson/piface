@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from array import array
 from time import sleep
 import threading
