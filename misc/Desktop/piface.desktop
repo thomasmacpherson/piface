@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=PiFace Emulator
+Comment=From http://piface.openlx.org.uk
+Exec=/home/pi/piface/scripts/piface-emulator
+Icon=/home/pi/piface/piface.xpm
+Terminal=false
+Type=Application
+Categories=Application;
+StartupNotify=true

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Scratch PiFace Handler
+Exec=lxterminal -e /home/pi/piface/scratch/scratch_handler.py
+Icon=scratch.xpm
+Type=Application
+Categories=Application;
