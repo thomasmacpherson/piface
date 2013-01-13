@@ -9,7 +9,7 @@ TESTING = False
 
 # relative directories
 VIRT_PI_IMAGE = "images/pi.png"
-VIRT_LED_ON_IMAGE = "images/led_on.png"
+VIRT_LED_ON_IMAGE = "images/smt_led_on.png"
 if not TESTING:
     import os.path, sys
     package_dir = os.path.dirname(sys.modules["piface"].__file__)
@@ -22,20 +22,23 @@ PIN_COLOUR_RGB = (0, 1, 1)
 
 DEFAULT_SPACING = 10
 
+LED_Y_ROW = 33.0
+INPUT_PIN_Y = 189.0
+
 # pin circle locations
-ledsX = [180.7, 180.7, 236.7, 219.1]
-ledsY = [131.3, 72.3, 22.2, 22.2]
-switchesX = [14.3, 39.3, 64.3, 89.3]
-switchesY = [157.5, 157.5, 157.5, 157.5]
-relay1VirtPinsX = [285.0,285.0,285.0]
-relay1VirtPinsY = [124.0,136.0,148.0]
-relay2VirtPinsX = [285.0,285.0,285.0,]
-relay2VirtPinsY = [73.0,86.0,98.0]
-boardInputVirtPinsX = [6.0,19.0,31.0,44.0,56.0,68.0,80.0,92.0,104]
-boardInputVirtPinsY = [186.0,186.0,186.0,186.0,186.0,186.0,186.0,186.0,186.0]
+ledsX = [162.0, 174.0, 186.0, 198.0, 210.0, 222.0, 234.0, 246.0]
+ledsY = [LED_Y_ROW, LED_Y_ROW, LED_Y_ROW, LED_Y_ROW, LED_Y_ROW, LED_Y_ROW, LED_Y_ROW, LED_Y_ROW]
+switchesX = [19.0, 43.5, 68.0, 93.0]
+switchesY = [159.0, 159.0, 159.0, 159.0]
+relay1VirtPinsX = [291.0,291.0,291.0]
+relay1VirtPinsY = [127.0,139.0,151.0]
+relay2VirtPinsX = [291.0,291.0,291.0]
+relay2VirtPinsY = [76.0,89.0,101.0]
+boardInputVirtPinsX = [9.0,21.0,33.0,45.0,57.0,69.0,81.0,93.0,105]
+boardInputVirtPinsY = [INPUT_PIN_Y,INPUT_PIN_Y,INPUT_PIN_Y,INPUT_PIN_Y,INPUT_PIN_Y,INPUT_PIN_Y,INPUT_PIN_Y,INPUT_PIN_Y]
 # 8 <- 1
-boardOutputVirtPinsX = [266.0, 254.0, 242.0, 230.0, 218.0, 206.0, 194.0, 181.0]
-boardOutputVirtPinsY = [8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0]
+boardOutputVirtPinsX = [163.0, 175.0, 187.0, 199.0, 211.0, 223.0, 235.0, 247.0]
+boardOutputVirtPinsY = [12.0, 12.0,12.0,12.0,12.0,12.0,12.0,12.0,12.0]
 
 RELAY_PIN_PATTERN_ON  = (0, 1, 1)
 RELAY_PIN_PATTERN_OFF = (1, 1, 0)
@@ -355,7 +358,7 @@ class EmulatorScreen(Screen):
 
         self.output_pins = [VirtPin(i) for i in range(1,9)]
         self.relays = [VirtRelay(i+1, self.output_pins[i]) for i in range(2)]
-        self.leds = [VirtLED(i+1, self.output_pins[i]) for i in range(4)]
+        self.leds = [VirtLED(i+1, self.output_pins[i]) for i in range(8)]
 
     def draw(self):
         cr = self.cr # Shabby shortcut.

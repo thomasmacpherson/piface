@@ -14,8 +14,12 @@ import sys
 VERBOSE_MODE = False
 DEFAULT_SPACING = 10
 
-EMU_WIDTH  = 292
-EMU_HEIGHT = 193
+EMU_WIDTH  = 302
+EMU_HEIGHT = 201
+
+#EMU_WIDTH  = 292
+#EMU_HEIGHT = 193
+
 EMU_SPEED  = 20
 WINDOW_TITLE = "PiFace Emulator"
 
@@ -114,6 +118,12 @@ class Emulator(threading.Thread):
             self.spi_vis_check.connect("clicked", self.toggle_spi_visualiser)
             self.spi_vis_check.show()
 
+            # enable pullups checkbox
+            self.en_pull_check = gtk.CheckButton("Enable pullups")
+            self.en_pull_check.set_active(True)
+            self.en_pull_check.connect("clicked", self.toggle_en_pullups)
+            self.en_pull_check.show()
+
         # output override section
         self.output_override_section = \
                 emulator_parts.OutputOverrideSection(self.emu_screen.output_pins)
@@ -135,6 +145,7 @@ class Emulator(threading.Thread):
         if pfio_connect:
             container0.pack_start(update_inputs_containter)
             container0.pack_start(self.spi_vis_check)
+            container0.pack_start(self.en_pull_check)
 
         container0.show()
 
@@ -181,6 +192,12 @@ class Emulator(threading.Thread):
         else:
             self.spi_visualiser_section.hide()
             self.emu_window.resize(10, 10)
+
+    def toggle_en_pullups(self, widget, data=None):
+        if widget.get_active():
+		pfio.write_pullups(0xff)
+        else:
+		pfio.write_pullups(0)
 
 class InputUpdater(threading.Thread):
     def __init__(self, update_interval_entry, rpi_emulator):

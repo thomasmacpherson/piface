@@ -30,6 +30,7 @@ GPPUA  = 0x0C # port A pullups
 GPPUB  = 0x0D # port B pullups
 OUTPUT_PORT = GPIOA
 INPUT_PORT  = GPIOB
+INPUT_PULLUPS = GPPUB
 
 # piface peripheral pin numbers
 # each peripheral is connected to an I/O pin
@@ -283,6 +284,35 @@ def digital_read(pin_number):
     else:
         return 0
 
+def digital_write_pullup(pin_number, value):
+    """Writes the pullup value given to the pin specified"""
+    if VERBOSE_MODE:
+        __pfio_print("digital write pullup start")
+
+    pin_bit_mask = get_pin_bit_mask(pin_number)
+
+    if VERBOSE_MODE:
+        __pfio_print("pin bit mask: %s" % bin(pin_bit_mask))
+
+    old_pin_values = read_pullup()
+
+    if VERBOSE_MODE:
+        __pfio_print("old pin values: %s" % bin(old_pin_values))
+
+    # generate the 
+    if value:
+        new_pin_values = old_pin_values | pin_bit_mask
+    else:
+        new_pin_values = old_pin_values & ~pin_bit_mask
+
+    if VERBOSE_MODE:
+        __pfio_print("new pin values: %s" % bin(new_pin_values))
+
+    write_pullups(new_pin_values)
+
+    if VERBOSE_MODE:
+        __pfio_print("digital write end")
+
 """
 Some wrapper functions so the user doesn't have to deal with
 ugly port variables
@@ -297,6 +327,15 @@ def read_input():
     port, data = read(INPUT_PORT)
     # inputs are active low, but the user doesn't need to know this...
     return data ^ 0xff 
+
+def read_pullups():
+    """Reads value of pullup registers"""
+    port, data = read(INPUT_PULLUPS)
+    return data
+
+def write_pullups(data):
+    port, data = write(INPUT_PULLUPS, data)
+    return data
 
 def write_output(data):
     """Writed the values of the output pins"""
