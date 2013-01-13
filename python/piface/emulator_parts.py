@@ -26,7 +26,7 @@ LED_Y_ROW = 33.0
 INPUT_PIN_Y = 189.0
 
 # pin circle locations
-ledsX = [162.0, 174.0, 186.0, 198.0, 210.0, 222.0, 234.0, 246.0]
+ledsX = [246.0, 234.0, 222.0, 210.0, 198.0, 186.0, 174.0, 162.0]
 ledsY = [LED_Y_ROW, LED_Y_ROW, LED_Y_ROW, LED_Y_ROW, LED_Y_ROW, LED_Y_ROW, LED_Y_ROW, LED_Y_ROW]
 switchesX = [19.0, 43.5, 68.0, 93.0]
 switchesY = [159.0, 159.0, 159.0, 159.0]
@@ -37,7 +37,7 @@ relay2VirtPinsY = [76.0,89.0,101.0]
 boardInputVirtPinsX = [9.0,21.0,33.0,45.0,57.0,69.0,81.0,93.0,105]
 boardInputVirtPinsY = [INPUT_PIN_Y,INPUT_PIN_Y,INPUT_PIN_Y,INPUT_PIN_Y,INPUT_PIN_Y,INPUT_PIN_Y,INPUT_PIN_Y,INPUT_PIN_Y]
 # 8 <- 1
-boardOutputVirtPinsX = [163.0, 175.0, 187.0, 199.0, 211.0, 223.0, 235.0, 247.0]
+boardOutputVirtPinsX = [247.0, 235.0, 223.0, 211.0, 199.0, 187.0, 175.0, 163.0]
 boardOutputVirtPinsY = [12.0, 12.0,12.0,12.0,12.0,12.0,12.0,12.0,12.0]
 
 RELAY_PIN_PATTERN_ON  = (0, 1, 1)
