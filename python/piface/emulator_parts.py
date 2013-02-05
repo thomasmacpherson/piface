@@ -466,7 +466,7 @@ class OutputOverrideSection(gtk.VBox):
         # pin override buttons
         self.override_buttons = list()
         for i in range(self.number_of_override_buttons):
-            new_button = gtk.ToggleButton("Output Pin %d" % (i+1))
+            new_button = gtk.ToggleButton("Output Pin %d" % (i))
             new_button.connect('clicked', self.output_override_clicked, i)
             new_button.show()
             new_button.set_sensitive(False)

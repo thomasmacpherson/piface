@@ -251,29 +251,11 @@ def deinit():
     rpi_emulator.emu_screen = None
 
 def get_pin_bit_mask(pin_number):
-    """Translates a pin number to pin bit mask. First pin is pin1 (not pin0).
-    pin3 = 0b00000100
-    pin4 = 0b00001000
-
-    TODO: throw and exception if the pin number is out of range
-    #return 2**(pin_number-1)
-    return 1 << (pin_number - 1) # shifting makes more sense
-    """
+    """Translates a pin number to pin bit mask."""
     return pfio.get_pin_bit_mask(pin_number)
 
 def get_pin_number(bit_pattern):
     """Returns the lowest pin number from a given bit pattern"""
-    """
-    pin_number = 1 # assume pin 1
-    while (bit_pattern & 1) == 0:
-        bit_pattern = bit_pattern >> 1
-        pin_number += 1
-        if pin_number > 8:
-            pin_number = 0
-            break
-    
-    return pin_number
-    """
     return pfio.get_pin_number(bit_pattern)
 
 def hex_cat(items):

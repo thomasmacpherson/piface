@@ -52,7 +52,6 @@ PH_PIN_SWITCH_2 = 2
 PH_PIN_SWITCH_3 = 3
 PH_PIN_SWITCH_4 = 4
 
-
 spi_handler = None
 
 spi_visualiser_section = None # for the emulator spi visualiser
@@ -63,6 +62,9 @@ class InitError(Exception):
     pass
 
 class InputDeviceError(Exception):
+    pass
+
+class PinRangeError(Exception):
     pass
 
 
@@ -209,22 +211,19 @@ def __pfio_print(text):
     print "%s %s" % (__pfio_print_PREFIX, text)
 
 def get_pin_bit_mask(pin_number):
-    """Translates a pin number to pin bit mask. First pin is pin1 (not pin0).
-    pin3 = 0b00000100
-    pin4 = 0b00001000
-
-    TODO: throw and exception if the pin number is out of range
-    """
-    #return 2**(pin_number-1)
-    return 1 << (pin_number - 1) # shifting makes more sense
+    """Translates a pin number to pin bit mask. First pin is pin0."""
+    if pin_number > 7 or pin_number < 0:
+        raise PinRangeError("Specified pin number (%d) out of range." % pin_number)
+    else:
+        return 1 << (pin_number)
 
 def get_pin_number(bit_pattern):
     """Returns the lowest pin number from a given bit pattern"""
-    pin_number = 1 # assume pin 1
+    pin_number = 0 # assume pin 0
     while (bit_pattern & 1) == 0:
         bit_pattern = bit_pattern >> 1
         pin_number += 1
-        if pin_number > 8:
+        if pin_number > 7:
             pin_number = 0
             break
     
@@ -232,7 +231,7 @@ def get_pin_number(bit_pattern):
 
 def byte_cat(items):
     """
-    Returns a value comprised of the concatenation of the given items
+    Returns a value comprised of the concatenation of the given hex values
     Example: (0x41, 0x16, 0x01) -> 0x411601
     """
     items = list(items)
@@ -398,9 +397,9 @@ def send(spi_commands, custom_spi=False):
 
 
 def test_method():
-    digital_write(1,1)
+    digital_write(1,1) # write pin 1 high
     sleep(2)
-    digital_write(1,0)
+    digital_write(1,0) # write pin 1 low
 
 if __name__ == "__main__":
     init()
