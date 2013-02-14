@@ -23,22 +23,6 @@ EMU_HEIGHT = 201
 EMU_SPEED  = 20
 WINDOW_TITLE = "PiFace Emulator"
 
-# piface peripheral pin numbers
-# each peripheral is connected to an I/O pin
-# some pins are connected to many peripherals
-# outputs
-PH_PIN_LED_1 = 1
-PH_PIN_LED_2 = 2
-PH_PIN_LED_3 = 3
-PH_PIN_LED_4 = 4
-PH_PIN_RELAY_1 = 1
-PH_PIN_RELAY_2 = 2
-# inputs
-PH_PIN_SWITCH_1 = 1
-PH_PIN_SWITCH_2 = 2
-PH_PIN_SWITCH_3 = 3
-PH_PIN_SWITCH_4 = 4
-
 # global variables are bad, AND YOU SHOULD FEEL BAD!
 rpi_emulator = None
 pfio_connect = False

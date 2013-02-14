@@ -43,22 +43,6 @@ boardOutputVirtPinsY = [12.0, 12.0,12.0,12.0,12.0,12.0,12.0,12.0,12.0]
 RELAY_PIN_PATTERN_ON  = (0, 1, 1)
 RELAY_PIN_PATTERN_OFF = (1, 1, 0)
 
-# piface peripheral pin numbers
-# each peripheral is connected to an I/O pin
-# some pins are connected to many peripherals
-# outputs
-PH_PIN_VirtLED_1 = 1
-PH_PIN_VirtLED_2 = 2
-PH_PIN_VirtLED_3 = 3
-PH_PIN_VirtLED_4 = 4
-PH_PIN_RELAY_1 = 1
-PH_PIN_RELAY_2 = 2
-# inputs
-PH_PIN_SWITCH_1 = 1
-PH_PIN_SWITCH_2 = 2
-PH_PIN_SWITCH_3 = 3
-PH_PIN_SWITCH_4 = 4
-
 rpi_emulator = None
 have_led_image = False
 
