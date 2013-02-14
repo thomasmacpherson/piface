@@ -139,10 +139,9 @@ class Switch(InputItem):
 def get_spi_handler():
     return spi.SPI(0,0) # spi.SPI(X,Y) is /dev/spidevX.Y
 
-def init():
+def init(init_ports=True):
     """Initialises the PiFace"""
     if VERBOSE_MODE:
-         #print "PIFO: initialising SPI mode, reading data, reading length . . . \n"
          __pfio_print("initialising SPI")
 
     global spi_handler
@@ -151,28 +150,28 @@ def init():
     except spi.error as error:
         raise InitError(error)
 
-    # set up the ports
-    write(IOCON,  8)    # enable hardware addressing
-    write(GPIOA,  0x00) # set port A on
-    write(IODIRA, 0)    # set port A as outputs
-    write(IODIRB, 0xFF) # set port B as inputs
-    #write(GPIOA,  0xFF) # set port A on
-    #write(GPIOB,  0xFF) # set port B on
-    #write(GPPUA,  0xFF) # set port A pullups on
-    write(GPPUB,  0xFF) # set port B pullups on
+    if init_ports:
+        # set up the ports
+        write(IOCON,  8)    # enable hardware addressing
+        write(GPIOA,  0x00) # set port A on
+        write(IODIRA, 0)    # set port A as outputs
+        write(IODIRB, 0xFF) # set port B as inputs
+        #write(GPIOA,  0xFF) # set port A on
+        #write(GPIOB,  0xFF) # set port B on
+        #write(GPPUA,  0xFF) # set port A pullups on
+        write(GPPUB,  0xFF) # set port B pullups on
 
-    # check the outputs are being set (primitive board detection)
-#AR removed this test as it lead to flashing of outputs which 
-# could surprise users!
+        # check the outputs are being set (primitive board detection)
+        # AR removed this test as it lead to flashing of outputs which 
+        # could surprise users!
+        #test_value = 0b10101010
+        #write_output(test_value)
+        #if read_output() != test_value:
+        #    spi_handler = None
+        #    raise InitError("The PiFace board could not be detected")
 
-#    test_value = 0b10101010
-#    write_output(test_value)
-#    if read_output() != test_value:
-#        spi_handler = None
-#        raise InitError("The PiFace board could not be detected")
-
-    # initialise all outputs to 0
-    write_output(0)
+        # initialise all outputs to 0
+        write_output(0)
 
 def deinit():
     """Deinitialises the PiFace"""
