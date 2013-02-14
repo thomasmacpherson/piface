@@ -123,7 +123,7 @@ class Relay(OutputItem):
             raise RelayRangeError(
                     "Specified relay index (%d) out of range." % relay_number)
         else:
-            OutputItem.__init__(self, pin_number, handler)
+            OutputItem.__init__(self, relay_number, handler)
 
 class Switch(InputItem):
     """A switch on the RaspberryPi"""
