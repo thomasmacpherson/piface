@@ -8,15 +8,13 @@ This repository contains code relating to piface projects.
 
 [Downloads](http://pi.cs.man.ac.uk/download)
 
+**PiFace uses Python 2 and is incompatible with Python 3**
+
 Installation and Setup
 ======================
-**Ignore the following steps if you have installed the custom
-Raspberry Pi SDCard image (see [Getting Started](https://docs.google.com/document/d/145TkSMwnPAJaqKMLxdvD8aGULQ8UgIIU3hg-JAKwAa0/edit))**
+[Official Documentation](http://www.farnell.com/datasheets/1684425.pdf)
 
-These instructions assume you are on working on a Raspberry Pi with a 
-kernel that supports the SPI devices (we're using [bootc](http://www.bootc.net/)).
-and that the user 'pi' has read/write access to /dev/spidev*. This can
-be set up using the spidev_setup.sh script in scripts/.
+If you're doing things by yourself then the following might be of some use.
 
 ### Dependencies
 Everything (if you're unsure, just run this one)
