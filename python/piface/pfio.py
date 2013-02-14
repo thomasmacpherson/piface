@@ -32,26 +32,6 @@ OUTPUT_PORT = GPIOA
 INPUT_PORT  = GPIOB
 INPUT_PULLUPS = GPPUB
 
-# piface peripheral pin numbers
-# each peripheral is connected to an I/O pin
-# some pins are connected to many peripherals
-# outputs
-PH_PIN_LED_1 = 1
-PH_PIN_LED_2 = 2
-PH_PIN_LED_3 = 3
-PH_PIN_LED_4 = 4
-PH_PIN_LED_5 = 5
-PH_PIN_LED_6 = 6
-PH_PIN_LED_7 = 7
-PH_PIN_LED_8 = 8
-PH_PIN_RELAY_1 = 1
-PH_PIN_RELAY_2 = 2
-# inputs
-PH_PIN_SWITCH_1 = 1
-PH_PIN_SWITCH_2 = 2
-PH_PIN_SWITCH_3 = 3
-PH_PIN_SWITCH_4 = 4
-
 spi_handler = None
 
 spi_visualiser_section = None # for the emulator spi visualiser
@@ -65,6 +45,15 @@ class InputDeviceError(Exception):
     pass
 
 class PinRangeError(Exception):
+    pass
+
+class LEDRangeError(Exception):
+    pass
+
+class RelayRangeError(Exception):
+    pass
+
+class SwitchRangeError(Exception):
     pass
 
 
@@ -116,48 +105,29 @@ class OutputItem(Item):
 class LED(OutputItem):
     """An LED on the RaspberryPi"""
     def __init__(self, led_number, handler=None):
-        if led_number == 1:
-            pin_number = PH_PIN_LED_1
-        elif led_number == 2:
-            pin_number = PH_PIN_LED_2
-        elif led_number == 3:
-            pin_number = PH_PIN_LED_3
-        elif led_number == 4:
-            pin_number = PH_PIN_LED_4
-        elif led_number == 5:
-            pin_number = PH_PIN_LED_5
-        elif led_number == 6:
-            pin_number = PH_PIN_LED_6
-        elif led_number == 7:
-            pin_number = PH_PIN_LED_7
-        else:
-            pin_number = PH_PIN_LED_8
-
-        OutputItem.__init__(self, pin_number, handler)
+        try:
+            OutputItem.__init__(self, led_number, handler)
+        except PinRangeError:
+            raise LEDRangeError(
+                    "Specified LED index (%d) out of range." % led_number)
 
 class Relay(OutputItem):
     """A relay on the RaspberryPi"""
     def __init__(self, relay_number, handler=None):
-        if relay_number == 1:
-            pin_number = PH_PIN_RELAY_1
+        if relay_number < 0 or relay_number > 1:
+            raise RelayRangeError(
+                    "Specified relay index (%d) out of range." % relay_number)
         else:
-            pin_number = PH_PIN_RELAY_2
-
-        OutputItem.__init__(self, pin_number, handler)
+            OutputItem.__init__(self, pin_number, handler)
 
 class Switch(InputItem):
     """A switch on the RaspberryPi"""
     def __init__(self, switch_number, handler=None):
-        if switch_number == 1:
-            switch_number = PH_PIN_SWITCH_1
-        elif switch_number == 2:
-            switch_number = PH_PIN_SWITCH_2
-        elif switch_number == 3:
-            switch_number = PH_PIN_SWITCH_3
+        if switch_number < 0 or switch_number > 3:
+            raise SwitchRangeError(
+                  "Specified switch index (%d) out of range." % switch_number)
         else:
-            switch_number = PH_PIN_SWITCH_4
-
-        InputItem.__init__(self, switch_number, handler)
+            InputItem.__init__(self, switch_number, handler)
 
 
 # functions
