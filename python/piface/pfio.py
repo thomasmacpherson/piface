@@ -110,7 +110,7 @@ class OutputItem(Item):
 class LED(OutputItem):
     """An LED on the RaspberryPi"""
     def __init__(self, led_number, handler=None):
-        if led_number > 0 or led_number > 7:
+        if led_number < 0 or led_number > 7:
             raise LEDRangeError(
                     "Specified LED index (%d) out of range." % led_number)
         else:
