@@ -62,6 +62,8 @@ class Item(object):
     """An item connected to a pin on the RaspberryPi"""
     def __init__(self, pin_number, handler=None):
         self.pin_number = pin_number
+        if handler:
+            self.handler = handler
 
     def _get_handler(self):
         return sys.modules[__name__]
@@ -70,8 +72,11 @@ class Item(object):
 
 class InputItem(Item):
     """An input connected to a pin on the RaspberryPi"""
+    def __init__(self, pin_number, handler=None):
+        Item.__init__(self, pin_number, handler)
+
     def _get_value(self):
-        return self._handler().digital_read(self.pin_number)
+        return self.handler.digital_read(self.pin_number)
 
     def _set_value(self, data):
         raise InputDeviceError("You cannot set an input's values!")
@@ -105,11 +110,11 @@ class OutputItem(Item):
 class LED(OutputItem):
     """An LED on the RaspberryPi"""
     def __init__(self, led_number, handler=None):
-        try:
-            OutputItem.__init__(self, led_number, handler)
-        except PinRangeError:
+        if led_number > 0 or led_number > 7:
             raise LEDRangeError(
                     "Specified LED index (%d) out of range." % led_number)
+        else:
+            OutputItem.__init__(self, led_number, handler)
 
 class Relay(OutputItem):
     """A relay on the RaspberryPi"""
