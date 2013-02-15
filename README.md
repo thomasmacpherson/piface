@@ -1,13 +1,6 @@
-**Future development will take place in tool specific repositories. Please
-refer to them for more up-to-date software**
-
-[spipy](https://github.com/tompreston/spipy)
-
-[pifacedigitalio](https://github.com/tompreston/pifacedigitalio)
-
 About
 =====
-This repository contains code relating to piface projects. 
+This repository contains code relating to piface projects.
 
 *PiFace uses Python 2 and is incompatible with Python 3*
 
@@ -19,11 +12,38 @@ This repository contains code relating to piface projects.
 
 [Downloads](http://pi.cs.man.ac.uk/download)
 
+News
+====
+15/02/2013 - We're making the project more modular and so future development
+on the indvidual components will take place in component specific repositories.
+This repo will remain maintained but no new major features will be added.
+
+[spipy](https://github.com/tompreston/spipy)
+
+[pifacedigitalio](https://github.com/tompreston/pifacedigitalio)
+
 Installation and Setup
 ======================
-Please refer to the [Official Documentation](http://www.farnell.com/datasheets/1684425.pdf).
+Please refer to the [Official Documentation](http://www.farnell.com/datasheets/1684425.pdf)
+for simple instructions.
 
-If you're doing things by yourself then the following might be of some use.
+If you'd like to do things by yourself then the following might be of some use.
+
+\# is the root user prompt, $ is the normal user (pi) prompt. You can prefix user
+commands with *sudo* to run them with root user privileges.
+
+### Enabling the SPI module
+PiFace Digital communicates with the Raspberry Pi using the SPI interface.
+The SPI interface driver is included in the later Raspbian distributions
+but is not enabled by default.
+
+To load the SPI driver manually, type:
+
+    # modprobe spi-bcm2708
+
+*This will not persist after a reboot.* To permanently enable the SPI module
+comment out the spi module blacklist line in /etc/modprobe.d/raspi-blacklist.conf
+(you will have to be root).
 
 ### Dependencies
 Everything (if you're unsure, just run this one)
