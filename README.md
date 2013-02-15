@@ -4,7 +4,7 @@ This repository contains code relating to piface projects.
 
 *PiFace uses Python 2 and is incompatible with Python 3*
 
-[Official Documentation](http://www.farnell.com/datasheets/1684425.pdf)
+[Farnell Documentation](http://www.farnell.com/datasheets/1684425.pdf)
 
 [Getting Started](https://docs.google.com/document/d/145TkSMwnPAJaqKMLxdvD8aGULQ8UgIIU3hg-JAKwAa0/edit)
 
@@ -24,7 +24,7 @@ This repo will remain maintained but no new major features will be added.
 
 Installation and Setup
 ======================
-Please refer to the [Official Documentation](http://www.farnell.com/datasheets/1684425.pdf)
+Please refer to the [Farnell Documentation](http://www.farnell.com/datasheets/1684425.pdf)
 for simple instructions.
 
 If you'd like to do things by yourself then the following might be of some use.
