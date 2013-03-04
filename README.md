@@ -6,8 +6,6 @@ This repo will remain maintained but no new major features will be added.
 
 If you would like to use the most up-to-date software, use the following links:
 
-~~[spipy](https://github.com/tompreston/spipy)~~
-
 [pifacedigitalio](https://github.com/tompreston/pifacedigitalio)
 
 About
