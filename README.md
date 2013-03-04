@@ -1,8 +1,20 @@
+News
+====
+15/02/2013 - We're making the project more modular and so future development
+on the indvidual components will take place in component specific repositories.
+This repo will remain maintained but no new major features will be added.
+
+If you would like to use the most up-to-date software, use the following links:
+
+~~[spipy](https://github.com/tompreston/spipy)~~
+
+[pifacedigitalio](https://github.com/tompreston/pifacedigitalio)
+
 About
 =====
 This repository contains code relating to piface projects.
 
-*PiFace uses Python 2 and is incompatible with Python 3*
+*The software in this repository uses Python 2 and is incompatible with Python 3*
 
 [Farnell Documentation](http://www.farnell.com/datasheets/1684425.pdf)
 
@@ -11,16 +23,6 @@ This repository contains code relating to piface projects.
 [Documentation](https://docs.google.com/folder/d/0B-UAZ9CyJCLGQjJ3RDlqa2pqaDg/edit)
 
 [Downloads](http://pi.cs.man.ac.uk/download)
-
-News
-====
-15/02/2013 - We're making the project more modular and so future development
-on the indvidual components will take place in component specific repositories.
-This repo will remain maintained but no new major features will be added.
-
-[spipy](https://github.com/tompreston/spipy)
-
-[pifacedigitalio](https://github.com/tompreston/pifacedigitalio)
 
 Installation and Setup
 ======================
