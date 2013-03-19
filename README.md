@@ -113,6 +113,10 @@ can be seen.
 
 You can find some example python scripts in python/demos.
 
+If you would like to remove the PiFace Python libraries, issue the following command:
+
+     $ sudo rm -r /usr/local/lib/python2.7/dist-packages/{piface,piface-1.0.egg-info}
+
 ### C
 To install the C pfio library download the source, move into the C directory,
 call the setup scripts and then (as root) run the install command:
