@@ -169,12 +169,12 @@ class RacingCar(pfio.Relay):
 class ButtonLight(pfio.OutputItem):
     def __init__(self, button_number):
         # button lights are connected directly to pins
-        super().__init__(button_number)
+        pfio.OutputItem.__init__(self, button_number)
 
 class ButtonSwitch(pfio.InputItem):
     def __init__(self, button_number):
         # button switches are connected directly to pins
-        super().__init__(button_number, True) # input
+        pfio.InputItem.__init__(self, button_number, True) # input
 
 class Button(object):
     def __init__(self, button_switch, button_light):
