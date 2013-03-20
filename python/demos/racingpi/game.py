@@ -158,7 +158,7 @@ class RacingPiGame(threading.Thread):
 class RacingCar(pfio.Relay):
     def __init__(self, racing_car_number):
         # racing car number directly translates to the relay number
-        super().__init__(racing_car_number)
+        pfio.Relay.__init__(self, racing_car_number)
     
     def drive(self, drive_period):
         """Move the car for the specified amount of seconds"""
