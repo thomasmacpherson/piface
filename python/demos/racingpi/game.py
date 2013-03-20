@@ -158,7 +158,7 @@ class RacingPiGame(threading.Thread):
 class RacingCar(pfio.Relay):
     def __init__(self, racing_car_number):
         # racing car number directly translates to the relay number
-        pfio.Relay.__init__(self, racing_car_number)
+        super().__init__(racing_car_number)
     
     def drive(self, drive_period):
         """Move the car for the specified amount of seconds"""
@@ -166,15 +166,15 @@ class RacingCar(pfio.Relay):
         time.sleep(drive_period)
         self.turn_off()
 
-class ButtonLight(pfio.Item):
+class ButtonLight(pfio.OutputItem):
     def __init__(self, button_number):
         # button lights are connected directly to pins
-        pfio.Item.__init__(self, button_number)
+        super().__init__(button_number)
 
-class ButtonSwitch(pfio.Item):
+class ButtonSwitch(pfio.InputItem):
     def __init__(self, button_number):
         # button switches are connected directly to pins
-        pfio.Item.__init__(self, button_number, True) # input
+        super().__init__(button_number, True) # input
 
 class Button(object):
     def __init__(self, button_switch, button_light):
