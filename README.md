@@ -133,7 +133,7 @@ the piface library and then compile with the correct flags:
     int main(void)
     {
        pfio_init();
-       pfio_digital_write(1, 1);
+       pfio_digital_write(0, 1);
        pfio_deinit();
     }
     $ gcc -L/usr/local/lib/ -lpiface-1.0 -o piface_program piface_program.c

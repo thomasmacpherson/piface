@@ -60,14 +60,14 @@ char pfio_init(void)
     }
     spi->maxspeed = maxspeed;
 
-    // set up some ports
-    spi_write(IOCON,  8);    // enable hardware addressing
-    spi_write(IODIRA, 0);    // set port A as outputs
-    spi_write(IODIRB, 0xFF); // set port B as inputs
-    spi_write(GPIOA,  0xFF); // set port A on
-    //spi_write(GPIOB,  0xFF); // set port B on
-    spi_write(GPPUA,  0xFF); // set port A pullups on
-    spi_write(GPPUB,  0xFF); // set port B pullups on
+    // set up the ports
+    // fixed SPI addresses so that we don't have that annoying
+    // LED flashing when initializing pfio.
+    spi_write(IOCON,  8); // enable hardware addressing
+    spi_write(GPIOA, 0x00); // turn on port A
+    spi_write(IODIRA, 0); // set port A as an output
+    spi_write(IODIRB, 0xFF); // set port B as an input
+    spi_write(GPPUB, 0xFF); // turn on port B pullups
 
     // initialise all outputs to 0
     int i;
@@ -88,7 +88,10 @@ char pfio_digital_read(char pin_number)
 {
     char current_pin_values = pfio_read_input();
     char pin_bit_mask = pfio_get_pin_bit_mask(pin_number);
-    return (current_pin_values & pin_bit_mask) > 0;
+    // note: when using bitwise operators and checking if a mask is
+    // in there it is always better to check if the result equals
+    // to the desidered mask, in this case pin_bit_mask.
+    return ( current_pin_values & pin_bit_mask ) == pin_bit_mask;
 }
 
 void pfio_digital_write(char pin_number, char value)
@@ -115,7 +118,10 @@ void pfio_digital_write(char pin_number, char value)
 
 char pfio_read_input(void)
 {
-    return spi_read(INPUT_PORT);
+    // XOR by 0xFF so we get the right outputs.
+    // before a turned off input would read as 1,
+    // confusing developers.
+    return spi_read(INPUT_PORT) ^ 0xFF;
 }
     
 char pfio_read_output(void)
@@ -130,16 +136,19 @@ void pfio_write_output(char value)
 
 char pfio_get_pin_bit_mask(char pin_number)
 {
-    return 1 << (pin_number-1);
+    // removed - 1 to reflect pin numbering of
+    // the python interface (0, 1, ...) instead
+    // of (1, 2, ...)
+    return 1 << pin_number;
 }
 
 char pfio_get_pin_number(char bit_pattern)
 {
-    char pin_number = 1; // assume pin 1
+    char pin_number = 0; // assume pin 0
     while ((bit_pattern & 1) == 0)
     {
         bit_pattern >>= 1;
-        if (++pin_number > 8)
+        if (++pin_number > 7)
         {
             pin_number = 0;
             break;
