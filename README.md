@@ -6,7 +6,7 @@ This repo will remain maintained but no new major features will be added.
 
 If you would like to use the most up-to-date software, use the following links:
 
-[pifacedigitalio](https://github.com/piface/pifacedigitalio)
+[piface](https://github.com/piface/)
 
 About
 =====
