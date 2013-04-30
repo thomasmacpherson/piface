@@ -56,7 +56,7 @@ Just Python
 
 Just C
 
-    # apt-get install automake libtool
+    # apt-get install automake libtool git
 
 Easyteach:
 
