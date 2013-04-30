@@ -124,6 +124,10 @@ call the setup scripts and then (as root) run the install command:
     $ cd piface/c/
     $ ./autogen.sh && ./configure && make && sudo make install
     
+You may also need to run ldconfig to reconfigure the libraries:
+
+    $ sudo ldconfig
+    
 To use the C libraries you will need to include the pfio header file from 
 the piface library and then compile with the correct flags:
 
