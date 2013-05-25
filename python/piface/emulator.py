@@ -268,7 +268,7 @@ def digital_read(pin_number):
     value = rpi_emulator.emu_screen.input_pins[pin_number-1].value
     emulator_parts.request_digtial_read = False
 
-    emu_screen.queue_draw()
+    rpi_emulator.emu_screen.queue_draw()
     return value
 
 """
