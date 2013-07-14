@@ -37,6 +37,9 @@
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct
 {
@@ -62,3 +65,7 @@ static void spi_transfer(char * txbuffer, char * rxbuffer);
 static void spi_write(char port, char value);
 static char spi_read(char port);
 */
+
+#ifdef __cplusplus
+}
+#endif
