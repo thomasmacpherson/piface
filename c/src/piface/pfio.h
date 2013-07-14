@@ -2,6 +2,10 @@
  * pfio.h
  * functions for accessing the PiFace add-on for the Raspberry Pi
  */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,10 +40,6 @@
 #define INPUT_PORT  GPIOB
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef struct
 {
