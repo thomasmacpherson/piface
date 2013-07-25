@@ -3,24 +3,65 @@
  * functions for accessing the PiFace add-on for the Raspberry Pi
  */
 #include "pfio.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <linux/spi/spidev.h>
+#include <linux/types.h>
+#include <sys/ioctl.h>
+
+// /dev/spidev<BUS>.<DEVICE>
+#define SPI_BUS    0
+#define SPI_DEVICE 0
+#define MAXPATH    16
+
+#define TRANSFER_LEN   3
+#define TRANSFER_DELAY 5
+#define TRANSFER_SPEED 1000000
+#define TRANSFER_BPW   8
+
+#define SPI_WRITE_CMD 0x40
+#define SPI_READ_CMD 0x41
+
+// Port configuration
+#define IODIRA 0x00 // I/O direction A
+#define IODIRB 0x01 // I/O direction B
+#define IOCON  0x0A // I/O config
+#define GPIOA  0x12 // port A
+#define GPIOB  0x13 // port B
+#define GPPUA  0x0C // port A pullups
+#define GPPUB  0x0D // port B pullups
+#define OUTPUT_PORT GPIOA
+#define INPUT_PORT  GPIOB
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+
+typedef struct
+{
+    int fd;          // open file descriptor: /dev/spi-X.Y
+    int mode;        // current SPI mode
+    int bitsperword; // current SPI bits per word setting
+    int maxspeed;    // current SPI max speed setting in Hz
+} Spi;
 
 #undef VERBOSE_MODE
 
 static Spi * spi;
 
-static void spi_transfer(char * txbuffer, char * rxbuffer);
-static void spi_write(char port, char value);
-static char spi_read(char port);
+static void spi_transfer(uint8_t * txbuffer, uint8_t * rxbuffer);
+static void spi_write(uint8_t port, uint8_t value);
+static uint8_t spi_read(uint8_t port);
 
 
-char pfio_init(void)
+int pfio_init(void)
 {
     if ((spi = malloc(sizeof(Spi))) == NULL)
         return -1;
 
     // initialise the spi with some values
     // create the path string
-    char path[MAXPATH];
+    uint8_t path[MAXPATH];
     if (snprintf(path, MAXPATH, "/dev/spidev%d.%d", SPI_BUS, SPI_DEVICE) >= MAXPATH)
     {
         fprintf(stderr, "ERROR: Bus and/or device number is invalid.");
@@ -35,7 +76,7 @@ char pfio_init(void)
     }
 
     // try to control the device
-    char temp;
+    uint8_t temp;
     if (ioctl(spi->fd, SPI_IOC_RD_MODE, &temp) < 0)
     {
         fprintf(stderr, "ERROR: Can not get spi mode");
@@ -77,29 +118,29 @@ char pfio_init(void)
     return 0;
 }
 
-char pfio_deinit(void)
+int pfio_deinit(void)
 {
     close(spi->fd);
     free(spi);
     return 0;
 }
 
-char pfio_digital_read(char pin_number)
+uint8_t pfio_digital_read(uint8_t pin_number)
 {
-    char current_pin_values = pfio_read_input();
-    char pin_bit_mask = pfio_get_pin_bit_mask(pin_number);
+    uint8_t current_pin_values = pfio_read_input();
+    uint8_t pin_bit_mask = pfio_get_pin_bit_mask(pin_number);
     // note: when using bitwise operators and checking if a mask is
     // in there it is always better to check if the result equals
     // to the desidered mask, in this case pin_bit_mask.
     return ( current_pin_values & pin_bit_mask ) == pin_bit_mask;
 }
 
-void pfio_digital_write(char pin_number, char value)
+void pfio_digital_write(uint8_t pin_number, uint8_t value)
 {
-    char pin_bit_mask = pfio_get_pin_bit_mask(pin_number);
-    char old_pin_values = pfio_read_output();
+    uint8_t pin_bit_mask = pfio_get_pin_bit_mask(pin_number);
+    uint8_t old_pin_values = pfio_read_output();
 
-    char new_pin_values;
+    uint8_t new_pin_values;
     if (value > 0)
         new_pin_values = old_pin_values | pin_bit_mask;
     else
@@ -116,7 +157,7 @@ void pfio_digital_write(char pin_number, char value)
     pfio_write_output(new_pin_values);
 }
 
-char pfio_read_input(void)
+uint8_t pfio_read_input(void)
 {
     // XOR by 0xFF so we get the right outputs.
     // before a turned off input would read as 1,
@@ -124,17 +165,17 @@ char pfio_read_input(void)
     return spi_read(INPUT_PORT) ^ 0xFF;
 }
     
-char pfio_read_output(void)
+uint8_t pfio_read_output(void)
 {
     return spi_read(OUTPUT_PORT);
 }
 
-void pfio_write_output(char value)
+void pfio_write_output(uint8_t value)
 {
     spi_write(OUTPUT_PORT, value);
 }
 
-char pfio_get_pin_bit_mask(char pin_number)
+uint8_t pfio_get_pin_bit_mask(uint8_t pin_number)
 {
     // removed - 1 to reflect pin numbering of
     // the python interface (0, 1, ...) instead
@@ -142,9 +183,9 @@ char pfio_get_pin_bit_mask(char pin_number)
     return 1 << pin_number;
 }
 
-char pfio_get_pin_number(char bit_pattern)
+uint8_t pfio_get_pin_number(uint8_t bit_pattern)
 {
-    char pin_number = 0; // assume pin 0
+    uint8_t pin_number = 0; // assume pin 0
     while ((bit_pattern & 1) == 0)
     {
         bit_pattern >>= 1;
@@ -158,7 +199,7 @@ char pfio_get_pin_number(char bit_pattern)
 }
 
 
-static void spi_transfer(char * txbuffer, char * rxbuffer)
+static void spi_transfer(uint8_t * txbuffer, uint8_t * rxbuffer)
 {
     // set up some transfer information
     struct spi_ioc_transfer transfer_buffer = 
@@ -179,17 +220,17 @@ static void spi_transfer(char * txbuffer, char * rxbuffer)
     }
 }
 
-static void spi_write(char port, char value)
+static void spi_write(uint8_t port, uint8_t value)
 {
-    char txbuffer[] = {SPI_WRITE_CMD, port, value};
-    char rxbuffer[ARRAY_SIZE(txbuffer)];
+    uint8_t txbuffer[] = {SPI_WRITE_CMD, port, value};
+    uint8_t rxbuffer[ARRAY_SIZE(txbuffer)];
     spi_transfer(txbuffer, rxbuffer);
 }
 
-static char spi_read(char port)
+static uint8_t spi_read(uint8_t port)
 {
-    char txbuffer[] = {SPI_READ_CMD, port, 0xff};
-    char rxbuffer[ARRAY_SIZE(txbuffer)];
+    uint8_t txbuffer[] = {SPI_READ_CMD, port, 0xff};
+    uint8_t rxbuffer[ARRAY_SIZE(txbuffer)];
     spi_transfer(txbuffer, rxbuffer);
     return rxbuffer[2];
 }
