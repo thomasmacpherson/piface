@@ -98,7 +98,18 @@ void testDigitalReadInput(void)
 /*
 extern char pfio_init(void);
 - pfio_init twice
+? Interface requirements - if init called twice then call should return failure (-1) but should still be able to perform I/O
+*/
+/*
+void testInitTwice(void)
+{
+   uint8_t result = pfio_init();
+   TEST_ASSERT_EQUAL_INT(-1,result);
+   testWriteOutputAll();
+}
+*/
 
+/*
 extern char pfio_deinit(void);
 - pfio_deinit twice
 

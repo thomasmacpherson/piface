@@ -9,7 +9,7 @@ TARGET = tests
 OUT_FILE=-o $(TARGET)
 SRC_FILES=/usr/share/cmock/vendor/unity/src/unity.c test/$(TARGET).c build/$(TARGET)_Runner.c ../src/piface/pfio.c
 INC_DIRS=-I/usr/share/cmock/vendor/unity/src/ -I../src/piface/
-SYMBOLS=-DTEST -DUNITY_SUPPORT_64 -std=c99
+SYMBOLS=-DTEST -DUNITY_SUPPORT_64 -std=c99 -Wall
 
 CLEANUP = rm -f build/*.o ; rm -f $(TARGET)
 
