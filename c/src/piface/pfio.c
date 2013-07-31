@@ -61,7 +61,7 @@ int pfio_init(void)
 
     // initialise the spi with some values
     // create the path string
-    uint8_t path[MAXPATH];
+    char path[MAXPATH];
     if (snprintf(path, MAXPATH, "/dev/spidev%d.%d", SPI_BUS, SPI_DEVICE) >= MAXPATH)
     {
         fprintf(stderr, "ERROR: Bus and/or device number is invalid.");
