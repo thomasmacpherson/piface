@@ -1,6 +1,12 @@
+**New PiFace Digital Documentation: http://piface.github.io/pifacedigitalio/**
+
+**New PiFace GitHub: https://github.com/piface**
+
 News
 ====
-15/02/2013 - We're making the project more modular and so future development
+2013/02/15
+----------
+We're making the project more modular and so future development
 on the indvidual components will take place in component specific repositories.
 This repo will remain maintained but no new major features will be added.
 
